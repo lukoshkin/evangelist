@@ -13,6 +13,6 @@ LOGNAME=root
 @monthly	15	cron.monthly	run-parts --report /etc/cron.monthly
 
 # My jobs (NOTE: as of now, @period can only be @monthly)
-7   15  purgeVimUndo    /bin/sh /home/lukoshkin/.vim/purgeVimUndo.sh
-@monthly    15  purgeAllUndoes  find /home/anthony/.vim/undo-dir -type f -mtime +30 -delete
+7   15  purgeVimUndo    /bin/sh /home/lukoshkin/.vim/purgeVimUndo.sh /home/lukoshkin/.vim/undo
+@monthly    15  purgeAllUndoes  find /home/lukoshkin/.vim/undo -type f -mtime +30 -delete
 

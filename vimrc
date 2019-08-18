@@ -45,12 +45,13 @@ set smartindent
 set number
 highlight LineNr ctermfg=green ctermbg=darkgrey
 
-set textwidth=110
+"set textwidth=110
 set cursorline
 set lazyredraw
 
 " Pattern searching
 set hlsearch
+set incsearch
 " Press Space to turn off highlighting and clear any message 
 " already displayed.
 nnoremap <silent> <Space> :nohlsearch<Bar>:echo<CR>
@@ -64,6 +65,15 @@ set wildmenu
 inoremap jj <esc>
 nnoremap m o<esc>
 let mapleader=","
+
+" Run the currently edited file with python
+xnoremap <leader>p :w !python<CR>
+nnoremap <leader><S-p> :w !python<CR>
+
+" Copy to clipboard
+xnoremap <leader>y "+y
+nnoremap <leader>y :%y+<CR>
+
 
 " >>> Mundo-Related Settings >>>
 " ------------------------------
@@ -125,5 +135,6 @@ let g:ctrlp_user_command = {
 " *** ignore rc block2 ***
 " ----------------------------------
 " <<< CtrlP Plugin Customization <<<
+
 
 let g:ycm_global_ycm_extra_conf = "~/.vim/.ycm_extra_conf.py"

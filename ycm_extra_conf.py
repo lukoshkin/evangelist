@@ -17,7 +17,9 @@ BASE_FLAGS = [
         '-std=c++11',
         '-xc++',
         '-I/usr/lib/',
-        '-I/usr/include/'
+        '-I/usr/include/',
+        '-I/home/lukoshkin/.vim/ycm_include',
+        '-I/usr/include/mpi',
         ]
 
 SOURCE_EXTENSIONS = [
@@ -26,7 +28,7 @@ SOURCE_EXTENSIONS = [
         '.cc',
         '.c',
         '.m',
-        '.mm'
+        '.mm',
         ]
 
 SOURCE_DIRECTORIES = [
@@ -38,7 +40,7 @@ HEADER_EXTENSIONS = [
         '.h',
         '.hxx',
         '.hpp',
-        '.hh'
+        '.hh',
         ]
 
 HEADER_DIRECTORIES = [

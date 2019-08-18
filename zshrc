@@ -9,13 +9,13 @@
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 
-# You may download some of these themes I like:
+# This ships by default
+#ZSH_THEME="robbyrussell"
+# I like:
 # sporty_256
 # bullet-train
+# agnosterzak
 # powerlevel9k/powerlevel9k
-
-# the theme below contains some of my customizations. It should lie
-# here: $ZSH_CUSTOM/themes (~/.oh-my-zsh/custom/themes)
 ZSH_THEME="agnosterzak"
 
 
@@ -157,3 +157,11 @@ fi
 unset __conda_setup
 # <<< conda init <<<
 
+# ------- conda autoenv --------
+source /home/lukoshkin/BuildPacks/miniconda3/bin/conda_autoenv.sh
+# ------- conda autoenv --------
+
+#+++++++++ golang ++++++++++++++
+export PATH="$PATH:/usr/local/go/bin"
+export GOPATH="$HOME/Miscellanea/TestLab/go"
+#+++++++++ golang ++++++++++++++
