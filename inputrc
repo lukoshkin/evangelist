@@ -1,0 +1,26 @@
+# My bash key-bindings on a remote server
+$include /etc/inputrc
+set editing-mode vi
+set keymap vi
+
+# This command is not supported by old bash versions
+set show-mode-in-prompt On
+
+set colored-stats On
+set completion-ignore-case On
+set completion-prefix-display-length 3
+set mark-symlinked-directories On
+set show-all-if-ambiguous On
+set show-all-if-unmodified On
+set visible-stats On
+
+set keymap vi-insert
+"jj": vi-movement-mode
+
+
+set keymap vi-command
+v: ''
+"j": history-search-forward
+"k": history-search-backward
+"gg": beginning-of-history
+"G": end-of-history
