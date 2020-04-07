@@ -1,9 +1,11 @@
 // Configure CodeMirror Keymap
 require([
-  'nbextensions/vim_binding/vim_binding',   // depends your installation
+  'nbextensions/vim_binding/vim_binding',   // depends on your installation
 ], function() {
   // Map jj to <Esc>
   CodeMirror.Vim.map("jj", "<Esc>", "insert");
+  CodeMirror.Vim.map("m", "o<Esc>", "normal");
+  CodeMirror.Vim.map("M", "O<Esc>", "normal");
 });
 
 // Configure Jupyter Keymap
@@ -17,7 +19,6 @@ require([
     // Indicate the key combination to run the commands
     km.edit_shortcuts.add_shortcut("Esc", CodeMirror.prototype.leaveNormalMode, true);
     km.edit_shortcuts.add_shortcut("alt-j", CodeMirror.prototype.leaveNormalMode, true);
-
     // Update help
     km.edit_shortcuts.events.trigger('rebuild.QuickHelp');
   });

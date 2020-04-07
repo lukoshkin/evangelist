@@ -1,0 +1,55 @@
+{
+  "load_extensions": {
+    "vim_binding/vim_binding": true,
+    "nbextensions_configurator/config_menu/main": true,
+    "collapsible_headings/main": true,
+    "notify/notify": true,
+    "freeze/main": true,
+    "contrib_nbextensions_help_item/main": true,
+    "toc2/main": true,
+    "init_cell/main": true,
+    "spellchecker/main": true,
+    "scratchpad/main": true,
+    "runtools/main": false,
+    "keyboard_shortcut_editor/main": true
+  },
+  "collapsible_headings": {
+    "shortcuts": {
+      "collapse": "h",
+      "uncollapse": "h"
+    },
+    "use_shortcuts": true,
+    "make_toggle_controls_buttons": false
+  },
+  "Notebook": {
+    "Header": true
+  },
+  "keys": {
+    "command": {
+      "bind": {
+        "f": "Freeze:freeze-cells",
+        "l": "Freeze:make-cells-read-only",
+        "n": "Freeze:make-cells-normal",
+        "f,f": "Freeze:make-cells-normal",
+        "f, f": "Freeze:make-cells-normal",
+        "h, h": "collapsible_headings:uncollapse_heading",
+        "h,k": "collapsible_headings:collapse_heading",
+        "h,j": "collapsible_headings:uncollapse_heading",
+        "ctrl-j": "vim-binding:move-cell-down",
+        "ctrl-k": "vim-binding:move-cell-up",
+        "ctrl-c": "jupyter-notebook:interrupt-kernel",
+        "shift-i": "auto:run-initialization-cells",
+        "0,0": "jupyter-notebook:restart-kernel",
+        "enter": "jupyter-notebook:run-cell"
+      },
+      "unbind": [
+        "h",
+        "0,0",
+        "alt-enter",
+        "shift-enter",
+        "ctrl-enter",
+        "enter"
+      ]
+    }
+  }
+}
