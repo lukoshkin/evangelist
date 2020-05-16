@@ -71,7 +71,7 @@ prompt_context() {
   if [[ -n "$SSH_CLIENT" ]]; then
     prompt_segment magenta white "%{$fg_bold[white]%(!.%{%F{white}%}.)%}$USER@%m%{$fg_no_bold[white]%}"
   else
-    prompt_segment yellow magenta "%{$fg_bold[brown]%(!.%{%F{brown}%}.)%}@$USER%{$fg_no_bold[brown]%}"   # all fields are changed from magenta to brown
+    prompt_segment yellow magenta "%{$fg_bold[brown]%(!.%{%F{brown}%}.)%}@$USER%{$fg_no_bold[brown]%}"   ## my modifications: all fields are changed from magenta to brown
   fi
 }
 
@@ -210,7 +210,7 @@ prompt_git() {
 
     local number_modified=$(\grep -c "^.M" <<< "${git_status}")
     if [[ $number_modified -gt 0 ]]; then
-      modified=" $number_modified●"
+      modified=" $number_modified● "  ## my modifications: Add one space after "filled circle"
       bgclr='red'
       fgclr='white'
     fi
@@ -220,12 +220,12 @@ prompt_git() {
     if [[ $number_modified -gt 0 && $number_added_modified -gt 0 ]]; then
       modified="$modified$((number_added_modified+number_added_renamed))±"
     elif [[ $number_added_modified -gt 0 ]]; then
-      modified=" ●$((number_added_modified+number_added_renamed))±"
+      modified=" ● $((number_added_modified+number_added_renamed))±"  ## my modifications: Add one space after "filled circle"
     fi
 
     local number_deleted=$(\grep -c "^.D" <<< "${git_status}")
     if [[ $number_deleted -gt 0 ]]; then
-      deleted=" $number_deleted‒"
+      deleted=" $number_deleted- "  ## my modifications: Add space to the end of str
       bgclr='red'
       fgclr='white'
     fi
@@ -234,7 +234,7 @@ prompt_git() {
     if [[ $number_deleted -gt 0 && $number_added_deleted -gt 0 ]]; then
       deleted="$deleted$number_added_deleted±"
     elif [[ $number_added_deleted -gt 0 ]]; then
-      deleted=" ‒$number_added_deleted±"
+      deleted="‒ $number_added_deleted±"  ## my modifications: Remove space from the beginning, add after long dash
     fi
 
     local tag_at_current_commit=$(git describe --exact-match --tags $current_commit_hash 2> /dev/null)
@@ -261,10 +261,11 @@ prompt_git() {
     has_diverged=false
     if [[ $commits_ahead -gt 0 && $commits_behind -gt 0 ]]; then has_diverged=true; fi
     if [[ $has_diverged == false && $commits_ahead -gt 0 ]]; then
+      ## Because of %{ %}-closure absense, the last line of any command's stdout was eaten by PS1
       if [[ $bgclr == 'red' || $bgclr == 'magenta' ]] then
-        to_push=" $fg_bold[white]↑$commits_ahead$fg_bold[$fgclr]"
+        to_push=" %{$fg_bold[white]%}↑$commits_ahead%{$fg_bold[$fgclr]%}" ## my modifications: add closure %{ %} -- read about its functionality on google "zsh %{ %}"
       else
-        to_push=" $fg_bold[black]↑$commits_ahead$fg_bold[$fgclr]"
+        to_push=" %{$fg_bold[black]%}↑$commits_ahead%{$fg_bold[$fgclr]%}" ## my modifications: add closure %{ %} -- read about its functionality on google "zsh %{ %}"
       fi
     fi
     if [[ $has_diverged == false && $commits_behind -gt 0 ]]; then to_pull=" $fg_bold[magenta]↓$commits_behind$fg_bold[$fgclr]"; fi
@@ -325,9 +326,9 @@ prompt_dir() {
 
 # Virtualenv: current working virtualenv
 prompt_virtualenv() {
-  local virtualenv_path="$CONDA_PREFIX"
-  if [[ -n $virtualenv_path && -n $CONDA_DEFAULT_ENV ]]; then
-    prompt_segment blue black "[$CONDA_DEFAULT_ENV]"
+  local virtualenv_path="$CONDA_PREFIX"     ## my modifications
+  if [[ -n $virtualenv_path && -n $CONDA_DEFAULT_ENV ]]; then       ## my modifications
+    prompt_segment blue black "[$CONDA_DEFAULT_ENV]"      ## my modifications
   fi
 }
 
@@ -355,7 +356,7 @@ build_prompt() {
   print -n "\n"
   prompt_status
   prompt_battery
-#  prompt_time
+#  prompt_time    ## my modifications
   prompt_virtualenv
   prompt_dir
   prompt_git

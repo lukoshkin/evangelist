@@ -15,11 +15,13 @@ BASE_FLAGS = [
         '-ferror-limit=10000',
         '-DNDEBUG',
         '-std=c++11',
-        '-xc++',
+        '-x',
+        'c++',
         '-I/usr/lib/',
         '-I/usr/include/',
         '-I/home/lukoshkin/.vim/ycm_include',
         '-I/usr/include/mpi',
+        '-isystem/cpp/pybind11',
         ]
 
 SOURCE_EXTENSIONS = [

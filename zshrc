@@ -129,6 +129,7 @@ zle -N kill-left
 zle -N kill-right
 bindkey -M vicmd '^U' kill-left
 bindkey -M vicmd '^P' kill-right
+
 # Print the current vim mode at the end of the line. 
 function zle-line-init zle-keymap-select {
     RPS1="${${KEYMAP/vicmd/-- NORMAL --}/(main|viins)/-- INSERT --}"

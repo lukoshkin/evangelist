@@ -9,7 +9,7 @@
     "toc2/main": true,
     "init_cell/main": true,
     "spellchecker/main": true,
-    "scratchpad/main": true,
+    "scratchpad/main": false,
     "runtools/main": false,
     "keyboard_shortcut_editor/main": true
   },
@@ -32,15 +32,14 @@
         "n": "Freeze:make-cells-normal",
         "f,f": "Freeze:make-cells-normal",
         "f, f": "Freeze:make-cells-normal",
-        "h, h": "collapsible_headings:uncollapse_heading",
         "h,k": "collapsible_headings:collapse_heading",
         "h,j": "collapsible_headings:uncollapse_heading",
         "ctrl-j": "vim-binding:move-cell-down",
         "ctrl-k": "vim-binding:move-cell-up",
-        "ctrl-c": "jupyter-notebook:interrupt-kernel",
         "shift-i": "auto:run-initialization-cells",
         "0,0": "jupyter-notebook:restart-kernel",
-        "enter": "jupyter-notebook:run-cell"
+        "enter": "jupyter-notebook:run-cell",
+        "ctrl-shift-c": "jupyter-notebook:interrupt-kernel"
       },
       "unbind": [
         "h",
