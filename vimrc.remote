@@ -1,0 +1,41 @@
+set colorcolumn=80
+highlight ColorColumn ctermbg=darkgray
+
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+set expandtab
+set smartindent
+
+set number
+highlight LineNr ctermfg=green ctermbg=darkgrey
+
+"set textwidth=110
+set cursorline
+set lazyredraw
+
+" Pattern searching
+set hlsearch
+set incsearch
+" Press Space to turn off highlighting and clear any message 
+" already displayed.
+nnoremap <silent> <Space> :nohlsearch<Bar>:echo<CR>
+
+" Provides tab-completion for all file-related tasks
+set path+=**
+
+" Display all matching files when tab complete
+set wildmenu
+
+inoremap jj <esc>
+nnoremap m o<esc>
+nnoremap <S-m> <S-o><esc>
+let mapleader=","
+
+" Run the currently edited file with python
+xnoremap <leader>p :w !python<CR>
+nnoremap <leader><S-p> :w !python<CR>
+
+" Copy to clipboard
+xnoremap <leader>y "+y
+nnoremap <leader>y :%y+<CR>
