@@ -71,7 +71,7 @@ prompt_context() {
   if [[ -n "$SSH_CLIENT" ]]; then
     prompt_segment magenta white "%{$fg_bold[white]%(!.%{%F{white}%}.)%}$USER@%m%{$fg_no_bold[white]%}"
   else
-    prompt_segment yellow magenta "%{$fg_bold[brown]%(!.%{%F{brown}%}.)%}@$USER%{$fg_no_bold[brown]%}"   ## my modifications: all fields are changed from magenta to brown
+    prompt_segment yellow magenta "%{$fg_bold[brown]%(!.%{%F{brown}%}.)%}@$USER%{$fg_no_bold[brown]%}"   ## my modifications: All fields are changed from magenta to brown
   fi
 }
 
@@ -263,9 +263,9 @@ prompt_git() {
     if [[ $has_diverged == false && $commits_ahead -gt 0 ]]; then
       ## Because of %{ %}-closure absense, the last line of any command's stdout was eaten by PS1
       if [[ $bgclr == 'red' || $bgclr == 'magenta' ]] then
-        to_push=" %{$fg_bold[white]%}↑$commits_ahead%{$fg_bold[$fgclr]%}" ## my modifications: add closure %{ %} -- read about its functionality on google "zsh %{ %}"
+        to_push=" %{$fg_bold[white]%}↑$commits_ahead%{$fg_bold[$fgclr]%}" ## my modifications: Add closure %{ %} -- read about its functionality on google "zsh %{ %}"
       else
-        to_push=" %{$fg_bold[black]%}↑$commits_ahead%{$fg_bold[$fgclr]%}" ## my modifications: add closure %{ %} -- read about its functionality on google "zsh %{ %}"
+        to_push=" %{$fg_bold[black]%}↑$commits_ahead%{$fg_bold[$fgclr]%}" ## my modifications: Add closure %{ %} -- read about its functionality on google "zsh %{ %}"
       fi
     fi
     if [[ $has_diverged == false && $commits_behind -gt 0 ]]; then to_pull=" $fg_bold[magenta]↓$commits_behind$fg_bold[$fgclr]"; fi
@@ -321,7 +321,7 @@ prompt_hg() {
 
 # Dir: current working directory
 prompt_dir() {
-  prompt_segment cyan white "%{$fg_bold[white]%}%~%{$fg_no_bold[white]%}"
+  prompt_segment cyan white "%{$fg_bold[white]%}%1~%{$fg_no_bold[white]%}"  ## my modifications: Change %~ to %1~ to display in PS1 only the name of dir you are in
 }
 
 # Virtualenv: current working virtualenv

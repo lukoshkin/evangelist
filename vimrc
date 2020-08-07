@@ -14,13 +14,16 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'Valloric/YouCompleteMe'
 Plugin 'davidhalter/jedi-vim'
-Plugin 'simnalamburt/vim-mundo' 
+Plugin 'simnalamburt/vim-mundo'
+Plugin 'tpope/vim-surround'
+Plugin 'lervag/vimtex'
+Plugin 'suan/vim-instant-markdown', {'rtp': 'after'}
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
 " To ignore plugin indent changes, instead use:
-"filetype plugin on
+" filetype plugin on
 "
 " Brief help
 " :PluginList       - lists configured plugins
@@ -62,9 +65,18 @@ set path+=**
 " Display all matching files when tab complete
 set wildmenu
 
-inoremap jj <esc>
-nnoremap m o<esc>
-nnoremap <S-m> <S-o><esc>
+
+" >>> Common Mappings >>>
+" -----------------------
+inoremap jj <Esc>
+" timeoutlen is set to 400 ms in /etc/vim/vimrc,
+" so the option applies globally. The problem now is
+" that one should hit some key combos (like ',y') swiftly
+execute "set <A-m>=\em"
+execute "set <A-M>=\eM"
+nnoremap <A-m> o<Esc>
+nnoremap <A-M> <S-o><Esc>
+
 let mapleader=","
 
 " Run the currently edited file with python
@@ -74,6 +86,18 @@ nnoremap <leader><S-p> :w !python<CR>
 " Copy to clipboard
 xnoremap <leader>y "+y
 nnoremap <leader>y :%y+<CR>
+
+" Spell checker ('<leader>e' to switch on)
+" To add ru lang, you need to download the dictionary
+" After the launch, 'z=' (nmode) over a misspelled word shows
+" the substitutions; ']s'/'[s' (nmode) - to navigate through
+" the misspelled words
+map <leader>e :setlocal spell! spelllang=en_us<CR>
+
+"Make a timestamp
+nmap <leader>t i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>
+" -----------------------
+" <<< Common Mappings <<<
 
 
 " >>> Mundo-Related Settings >>>
@@ -109,7 +133,11 @@ let g:ctrlp_working_path_mode = 'ra'
 " Set this to 1 if you want CtrlP to scan for dotfiles and dotdirs:
 let g:ctrlp_show_hidden = 0
 
-set wildignore+=*/tmp/*,*.swp,*.zip ",*/.cache
+" Set MRU file mode to default
+" (one can consider CtrlPMixed. It is > MRU, but quite slow)
+let g:ctrlp_cmd = 'CtrlPMRU'
+
+set wildignore+=*/tmp/*,*.swp,*.zip,*/.cache
 set wildignore+=*/miniconda3,*/Music,*/Video
 let g:ctrlp_custom_ignore = {
 	\ 'dir':  '\v/\.(git|hg|ipynb_checkpoints)$',
@@ -126,7 +154,7 @@ let g:ctrlp_custom_ignore = {
 " globpath(). Use %s in place of the target directory
 let g:ctrlp_user_command = {
   \ 'types': {
-    \ 1: ['.git', 'cd %s && git ls-files --exclude-standard --others'],
+    \ 1: ['.git', 'cd %s && git ls-files --exclude-standard'],
     \ 2: ['.hg', 'hg --cwd %s locate -I .'],
     \ },
   \ 'fallback': 'find %s -type f -readable 2> /dev/null |
@@ -141,3 +169,19 @@ let g:ctrlp_user_command = {
 let g:ycm_global_ycm_extra_conf = "~/.vim/.ycm_extra_conf.py"
 let g:ycm_confirm_extra_conf = 0
 " << Turns off the suggestion to use ycm_conf found in the workdir
+
+" >>> Vim-Instant-Markdown Settings >>>
+" ---------------------------------------------------------------------
+let g:instant_markdown_slow = 1             " disable real-time update
+let g:instant_markdown_autostart = 0        " pdf preview on script openning
+let g:instant_markdown_mathjax = 1          " enable latex math
+" let g:instant_markdown_port = 8888        " default is 8090
+" let g:instant_markdown_autoscroll = 0     " pdf preview is consistent with
+
+" Open and close markdown preview with 'm' button
+nnoremap <leader>m :InstantMarkdownPreview<CR>
+nnoremap <leader>mm :InstantMarkdownStop<CR>
+
+" More settings on https://github.com/suan/vim-instant-markdown
+" ---------------------------------------------------------------------
+" <<< Vim-Instant-Markdown Settings <<<

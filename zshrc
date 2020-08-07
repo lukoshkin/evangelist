@@ -108,6 +108,9 @@ alias renew="source $ZDOTDIR/.zshrc"
 
 # >>> vim setup <<<
 # -----------------
+# Key repeat rate (to navigate faster with a key pressed)
+xset r rate 250 70
+
 # Some cozy bindings
 bindkey -v 
 bindkey -M viins 'jj' vi-cmd-mode
@@ -132,8 +135,8 @@ bindkey -M vicmd '^P' kill-right
 
 # Print the current vim mode at the end of the line. 
 function zle-line-init zle-keymap-select {
-    RPS1="${${KEYMAP/vicmd/-- NORMAL --}/(main|viins)/-- INSERT --}"
-    RPS2=$RPS1
+    RPS1="${${KEYMAP/vicmd/-- NORMAL --}/(main|viins)/-- INSERT --}"  # right promt statement
+    RPS2=$RPS1  # continuation interactive RPS (for commands broken into several lines with '\')
     zle reset-prompt
 }
 zle -N zle-line-init
@@ -161,8 +164,3 @@ unset __conda_setup
 # ------- conda autoenv --------
 source /home/lukoshkin/BuildPacks/miniconda3/bin/conda_autoenv.sh
 # ------- conda autoenv --------
-
-#+++++++++ golang ++++++++++++++
-export PATH="$PATH:/usr/local/go/bin"
-export GOPATH="$HOME/Miscellanea/TestLab/go"
-#+++++++++ golang ++++++++++++++
