@@ -1,9 +1,7 @@
-# My bash key-bindings on a remote server
-$include /etc/inputrc
 set editing-mode vi
 set keymap vi
 
-# This command is not supported by old bash versions
+# bash >= 4.3
 set show-mode-in-prompt On
 
 set colored-stats On
@@ -16,7 +14,6 @@ set visible-stats On
 
 set keymap vi-insert
 "jj": vi-movement-mode
-
 
 set keymap vi-command
 v: ''

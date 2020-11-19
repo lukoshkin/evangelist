@@ -1,4 +1,8 @@
+set nocompatible
+filetype plugin indent on
+
 set colorcolumn=80
+colorscheme ron
 highlight ColorColumn ctermbg=darkgray
 
 set tabstop=4

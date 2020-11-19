@@ -72,7 +72,7 @@ ENABLE_CORRECTION="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-autosuggestions)
+plugins=(zsh-autosuggestions zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -105,6 +105,9 @@ source $ZSH/oh-my-zsh.sh
 alias zshconfig="vim $ZDOTDIR/.zshrc"
 alias ohmyzsh="vim $ZSH/oh-my-zsh.sh"
 alias renew="source $ZDOTDIR/.zshrc"
+alias tor="cd ~/BuildPacks/Tor/tor-browser_en-US && ./start-tor-browser.desktop && cd > /dev/null"
+alias vimrc="vim ~/.config/nvim/init.vim"
+
 
 # >>> vim setup <<<
 # -----------------
@@ -112,7 +115,7 @@ alias renew="source $ZDOTDIR/.zshrc"
 xset r rate 250 70
 
 # Some cozy bindings
-bindkey -v 
+bindkey -v   # <-- explicitly set vim-bindings
 bindkey -M viins 'jj' vi-cmd-mode
 bindkey -M viins '^Q' push-line
 bindkey -M viins '^U' backward-delete-char
@@ -120,29 +123,119 @@ bindkey -M viins '^P' delete-char
 bindkey -M vicmd 'k' up-line-or-beginning-search
 bindkey -M vicmd 'j' down-line-or-beginning-search
 bindkey -M vicmd '/' history-incremental-search-backward
-function kill-left() {
-  zle backward-kill-line
-  zle vi-insert
-}
-function kill-right() {
-  zle kill-line
-  zle vi-insert
-}
-zle -N kill-left
-zle -N kill-right
-bindkey -M vicmd '^U' kill-left
-bindkey -M vicmd '^P' kill-right
+# * To list zsh bindings, execute 'bindkey' without arguments
+# * To find some laptop (Ubuntu) bindings that contain <pattern>,
+#   use 'gsettings list-recursively | grep <pattern>'.
 
 # Print the current vim mode at the end of the line. 
 function zle-line-init zle-keymap-select {
-    RPS1="${${KEYMAP/vicmd/-- NORMAL --}/(main|viins)/-- INSERT --}"  # right promt statement
-    RPS2=$RPS1  # continuation interactive RPS (for commands broken into several lines with '\')
-    zle reset-prompt
+  RPS1="${${KEYMAP/vicmd/-- NORMAL --}/(main|viins)/-- INSERT --}"  # right promt statement
+  RPS2=$RPS1  # continuation interactive RPS (for commands broken into several lines with '\')
+  zle reset-prompt  # widget invocation
 }
+
+# 'zle -N <widget_name>' creates a user-defined widget, or overwrites existed
+# one with the same name as specified in the option.
 zle -N zle-line-init
 zle -N zle-keymap-select
+
+# 'smartcase' completion on the cmd line
+zstyle ':completion:*' matcher-list 'm:{[:lower:]}={[:upper:]}'
 #------------------
 # <<< vim setup <<<
+
+
+# The following settings allow to change the terminal window transparency
+# from the command line (not from an editor or another app opened in the console).
+# Requires 'transset' to be installed. One can change the transparency
+# in the range [0, max], where 'max' is the transparency value defined
+# in preferences of the terminal. And consistently with the last statement,
+# the value by which transparency is changed with functions below is relative,
+# not absolute.
+function incr-transp() {
+  transset -a --inc .02 > /dev/null
+}
+
+function decr-transp() {
+  transset -a --dec .02 > /dev/null
+}
+
+zle -N incr-transp
+zle -N decr-transp
+# <Alt - '+' > = decrease transparency a bit
+# <Alt - '-' > = increase transparency a bit
+bindkey -M vicmd '^[+' incr-transp
+bindkey -M vicmd '^[-' decr-transp
+
+# Set on startup transparency
+transset -a .9 > /dev/null
+
+# exporting ignorecommon as HISTORY_IGNORE ruins everything (why?)
+ignorecommon="(\
+^cd ?$|\
+^l[las]? ?$|\
+^vi[m]? ?$|\
+^echo ?$|\
+^pwd ?$|\
+^clear ?$|\
+^man \S*$|\
+^tmux ?$|\
+^dirs -v$|\
+^pushd ?$|^pushd [+-][0-9]*$|\
+^popd ?$|^popd [+-][0-9]*$"
+
+ignorecommon+="|\
+^vim [^/]*$|\
+^l[las]? \S+$|\
+^cd [^/]*$|\
+^echo \S+$)"
+# Add also "cd simple-path", "vim simple-path"
+
+# zsh hook on appending lines to the history file. Note:
+# a command is added to history before being executed.
+zshaddhistory() {
+  emulate -L zsh
+  ! [[ $(tr -s ' ' <<< ${1%%$'\n'}) =~ $ignorecommon ]];
+}
+
+# preexec() {
+#   LASTCMD=$1
+# }
+
+# zsh hook that goes off after execution of a command (cmd)
+# but before its prompt. A cmd always enters the history list
+# and is there at least until the next cmd execution. All
+# processing on ignore patterns is done after adding. And
+# zshaddhistory hook also follows this rule: that any cmd
+# enters the history list, at least for a while (see zsh manual).
+precmd() {
+  [[ $? -ne 0 ]] && last_cmd=$(fc -ln -1 | tr -s ' ') \
+    && ([[ $last_cmd =~ "^ " || $last_cmd =~ $ignorecommon ]] \
+          || echo ${last_cmd%'\n'} >> $(dirname $HISTFILE)/nnzcmds)
+}
+
+
+# >>> ZSH OPTIONS >>>
+#--------------------
+## zsh options are case insensitive and ignore underscores in the name.
+setopt histignorealldups
+setopt histreduceblanks
+
+# the options prefixed with 'no' are the same as writing 'unsetopt'.
+setopt nohistignoredups  # <-- w/o no breaks LIFO, sets FIFO instead 
+setopt nohistexpiredupsfirst  # <-- no need for it (w/o no) when 'histignorealldups' is set
+setopt nopushdminus  # abolish canceled +N/-N arguments
+
+## quite powerful option which enables:
+## - recursive globbing     ls **/foo       foo, dir1/foo, dir1/dir2/foo
+## - negation               ls ^foo         all except foo
+## - approximate matching   ls (#a1)foobar  fobar, 
+## - qualifiers             ls foo/*(#q@)   finds all symblic links (@) in foo 
+## more info here: https://www.refining-linux.org/archives/37-ZSH-Gem-2-Extended-globbing-and-expansion.html
+setopt extendedglob
+#--------------------
+# <<< ZSH OPTIONS <<<
+
 
 # added by Miniconda3 4.5.12 installer
 # >>> conda init >>>
@@ -164,3 +257,14 @@ unset __conda_setup
 # ------- conda autoenv --------
 source /home/lukoshkin/BuildPacks/miniconda3/bin/conda_autoenv.sh
 # ------- conda autoenv --------
+
+
+# >>> TMUX >>>
+# ~~~~ tmux autostart (graphical environment only) ~~~~~
+# if command -v tmux >/dev/null 2>&1 && [ "${DISPLAY}" ]; then
+#     # if not inside a tmux session, and if no session is started, start a new session
+#     [ -z "${TMUX}" ] && (tmux attach >/dev/null 2>&1 || tmux)
+# fi
+# ~~~~ tmux autostart ~~~~~
+## Possibly, some other tmux's settings below
+# <<< TMUX >>>
