@@ -5,6 +5,8 @@ export XDG_DATA_HOME="$HOME/.local/share"
 
 # ZSH
 export ZDOTDIR="$HOME/.config/zsh"
+export ZPLUG_HOME="$XDG_DATA_HOME/zplug"
+export ZPLUG_CACHE_DIR="$XDG_CACHE_HOME/zplug"
 export HISTFILE="$XDG_DATA_HOME/zsh_history"
 export HISTSIZE=100000
 export SAVEHIST=$HISTSIZE
@@ -41,5 +43,5 @@ export EDITOR="$VISUAL"
 # grep
 ## set the color of 'file name' section in grep's output
 ## fn=33 (default is 35); 33 is better visible on a white background of
-## transparent terminal window.
+## transparent dark terminal window.
 export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=33:ln=32:bn=32:se=36'

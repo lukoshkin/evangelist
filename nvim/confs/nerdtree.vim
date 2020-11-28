@@ -1,4 +1,5 @@
 nnoremap <leader>nt :NERDTreeToggle<CR>
+nnoremap <leader>nf :NERDTreeFind<CR>
 
 " Open NERDTree automatically when vim starts up on opening a directory.
 autocmd StdinReadPre * let s:std_in=1

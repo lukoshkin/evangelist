@@ -3,7 +3,7 @@
 
 if [[ -z $LUKOVNADOTFILES ]]; then
   cat bash/bashrc >> ~/.bashrc
-  export LUKOVNADOTFILES="You are bash-vimmer now"
+  export LUKOVNADOTFILES="I am bash-vimmer!"
   [[ -z $XDG_CONFIG_HOME ]] && export XDG_CONFIG_HOME="$HOME/.config"
   [[ -z $XDG_DATA_HOME ]] && export XDG_DATA_HOME="$HOME/.local/share"
   [[ -z $XDG_CACHE_HOME ]] && export XDG_CACHE_HOME="$HOME/.cache"
@@ -21,3 +21,23 @@ fi
 
 vim +source $XDG_CONFIG_HOME/nvim/init.vim +q
 vim +PlugInstall +qall
+
+
+if [[ -z $JUPYTER_CONFIG_DIR ]]; then
+  [[ -d ~/.jupyter ]] && JUPYTER_CONFIG_DIR=~/.jupyter || exit
+fi
+
+pip install \
+  jupyter \
+  jupyter_contrib_nbextensions \
+  jupyter_nbextensions_configurator
+
+git clone https://github.com/lambdalisue/jupyter-vim-binding \
+  $HOME/.local/share/jupyter/nbextensions/vim_binding && \
+  jupyter nbextension enable vim_binding/vim_binding && \
+  jupyter contrib nbextension install --user
+
+rsync -a jupyter/custom.js $JUPYTER_CONFIG_DIR/custom/
+cp jupyter/notebook.json $JUPYTER_CONFIG_DIR/nbconfig
+
+[[ $EUID -eq 0 ]] && cp anacron/anacrontab.young /etc/anacrontab

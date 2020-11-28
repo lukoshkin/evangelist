@@ -7,8 +7,6 @@ set wildmenu
 
 
 " Mouse support
-set mouse=a
-
 noremap <F9> :call ToggleMouse()<CR>
 inoremap <F9> <Esc>:call ToggleMouse()<CR>a
 

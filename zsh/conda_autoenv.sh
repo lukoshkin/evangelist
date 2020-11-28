@@ -8,7 +8,7 @@
 #  (3) installs and updates your pip requirements per the 
 #      requirements.txt in the directory as well
 # 
-# To install, add this line to your .bashrc or .bash-profile:
+# To install, add this line to your .zshrc/.bashrc or .bash-profile:
 #
 #       source /path/to/conda_autoenv.sh
 #

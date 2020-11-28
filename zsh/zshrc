@@ -1,243 +1,33 @@
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+source "$ZPLUG_HOME/init.zsh"
 
-# Path to your oh-my-zsh installation.
-export ZSH="$XDG_CONFIG_HOME/oh-my-zsh"
+zplug "zsh-users/zsh-autosuggestions"
+zplug "zsh-users/zsh-syntax-highlighting", defer:2
+zplug "zsh-users/zsh-history-substring-search", defer:3
+zplug 'zplug/zplug', hook-build:'zplug --self-manage'
+zplug 'zsh-users/zsh-completions', depth:1
 
-# Set name of the theme to load --- if set to "random", it will
-# load a random theme each time oh-my-zsh is loaded, in which case,
-# to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
+AGKOZAK_MULTILINE=0
+AGKOZAK_PROMPT_CHAR=( '>' '>' ':' )
+AGKOZAK_VIRTUALENV_CHARS=( '' '' )
 
-# This ships by default
-#ZSH_THEME="robbyrussell"
-# I like:
-# sporty_256
-# bullet-train
-# agnosterzak
-# powerlevel9k/powerlevel9k
-ZSH_THEME="agnosterzak"
+AGKOZAK_COLORS_PATH=white
+AGKOZAK_COLORS_USER_HOST=yellow
+AGKOZAK_COLORS_BRANCH_STATUS=red
+AGKOZAK_COLORS_VIRTUALENV=blue
+AGKOZAK_COLORS_PROMPT_CHAR=white
+zplug 'agkozak/agkozak-zsh-theme'
 
+if ! zplug check --verbose; then
+  printf "Install? [y/N]: "
+  if read -q; then
+    echo; zplug install
+  fi
+fi
 
-
-# Set list of themes to pick from when loading at random
-# Setting this variable when ZSH_THEME=random will cause zsh to load
-# a theme from this variable instead of looking in ~/.oh-my-zsh/themes/
-# If set to an empty array, this variable will have no effect.
-# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
-
-# Uncomment the following line to use case-sensitive completion.
-# CASE_SENSITIVE="true"
-
-# Uncomment the following line to use hyphen-insensitive completion.
-# Case-sensitive completion must be off. _ and - will be interchangeable.
-# HYPHEN_INSENSITIVE="true"
-
-# Uncomment the following line to disable bi-weekly auto-update checks.
-# DISABLE_AUTO_UPDATE="true"
-
-# Uncomment the following line to change how often to auto-update (in days).
-export UPDATE_ZSH_DAYS=13
-
-# Uncomment the following line to disable colors in ls.
-# DISABLE_LS_COLORS="true"
-
-# Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
-
-# Uncomment the following line to enable command auto-correction.
-ENABLE_CORRECTION="true"
-
-# Uncomment the following line to display red dots whilst waiting for completion.
-# COMPLETION_WAITING_DOTS="true"
-
-# Uncomment the following line if you want to disable marking untracked files
-# under VCS as dirty. This makes repository status check for large repositories
-# much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
-
-# Uncomment the following line if you want to change the command execution time
-# stamp shown in the history command output.
-# You can set one of the optional three formats:
-# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# or set a custom format using the strftime function format specifications,
-# see 'man strftime' for details.
-# HIST_STAMPS="mm/dd/yyyy"
-
-# Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
-
-# Which plugins would you like to load?
-# Standard plugins can be found in ~/.oh-my-zsh/plugins/*
-# Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
-plugins=(zsh-autosuggestions zsh-syntax-highlighting)
-
-source $ZSH/oh-my-zsh.sh
-
-# User configuration
-
-# export MANPATH="/usr/local/man:$MANPATH"
-
-# You may need to manually set your language environment
-# export LANG=en_US.UTF-8
-
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
-# fi
-
-# Compilation flags
-# export ARCHFLAGS="-arch x86_64"
-
-# ssh
-# export SSH_KEY_PATH="~/.ssh/rsa_id"
-
-# Set personal aliases, overriding those provided by oh-my-zsh libs,
-# plugins, and themes. Aliases can be placed here, though oh-my-zsh
-# users are encouraged to define aliases within the ZSH_CUSTOM folder.
-# For a full list of active aliases, run `alias`.
-#
-# Example aliases
-alias zshconfig="vim $ZDOTDIR/.zshrc"
-alias ohmyzsh="vim $ZSH/oh-my-zsh.sh"
-alias renew="source $ZDOTDIR/.zshrc"
-alias tor="cd ~/BuildPacks/Tor/tor-browser_en-US && ./start-tor-browser.desktop && cd > /dev/null"
-alias vimrc="vim ~/.config/nvim/init.vim"
+zplug load
+source $ZDOTDIR/extra.zsh
 
 
-# >>> vim setup <<<
-# -----------------
-# Key repeat rate (to navigate faster with a key pressed)
-xset r rate 250 70
-
-# Some cozy bindings
-bindkey -v   # <-- explicitly set vim-bindings
-bindkey -M viins 'jj' vi-cmd-mode
-bindkey -M viins '^Q' push-line
-bindkey -M viins '^U' backward-delete-char
-bindkey -M viins '^P' delete-char
-bindkey -M vicmd 'k' up-line-or-beginning-search
-bindkey -M vicmd 'j' down-line-or-beginning-search
-bindkey -M vicmd '/' history-incremental-search-backward
-# * To list zsh bindings, execute 'bindkey' without arguments
-# * To find some laptop (Ubuntu) bindings that contain <pattern>,
-#   use 'gsettings list-recursively | grep <pattern>'.
-
-# Print the current vim mode at the end of the line. 
-function zle-line-init zle-keymap-select {
-  RPS1="${${KEYMAP/vicmd/-- NORMAL --}/(main|viins)/-- INSERT --}"  # right promt statement
-  RPS2=$RPS1  # continuation interactive RPS (for commands broken into several lines with '\')
-  zle reset-prompt  # widget invocation
-}
-
-# 'zle -N <widget_name>' creates a user-defined widget, or overwrites existed
-# one with the same name as specified in the option.
-zle -N zle-line-init
-zle -N zle-keymap-select
-
-# 'smartcase' completion on the cmd line
-zstyle ':completion:*' matcher-list 'm:{[:lower:]}={[:upper:]}'
-#------------------
-# <<< vim setup <<<
-
-
-# The following settings allow to change the terminal window transparency
-# from the command line (not from an editor or another app opened in the console).
-# Requires 'transset' to be installed. One can change the transparency
-# in the range [0, max], where 'max' is the transparency value defined
-# in preferences of the terminal. And consistently with the last statement,
-# the value by which transparency is changed with functions below is relative,
-# not absolute.
-function incr-transp() {
-  transset -a --inc .02 > /dev/null
-}
-
-function decr-transp() {
-  transset -a --dec .02 > /dev/null
-}
-
-zle -N incr-transp
-zle -N decr-transp
-# <Alt - '+' > = decrease transparency a bit
-# <Alt - '-' > = increase transparency a bit
-bindkey -M vicmd '^[+' incr-transp
-bindkey -M vicmd '^[-' decr-transp
-
-# Set on startup transparency
-transset -a .9 > /dev/null
-
-# exporting ignorecommon as HISTORY_IGNORE ruins everything (why?)
-ignorecommon="(\
-^cd ?$|\
-^l[las]? ?$|\
-^vi[m]? ?$|\
-^echo ?$|\
-^pwd ?$|\
-^clear ?$|\
-^man \S*$|\
-^tmux ?$|\
-^dirs -v$|\
-^pushd ?$|^pushd [+-][0-9]*$|\
-^popd ?$|^popd [+-][0-9]*$"
-
-ignorecommon+="|\
-^vim [^/]*$|\
-^l[las]? \S+$|\
-^cd [^/]*$|\
-^echo \S+$)"
-# Add also "cd simple-path", "vim simple-path"
-
-# zsh hook on appending lines to the history file. Note:
-# a command is added to history before being executed.
-zshaddhistory() {
-  emulate -L zsh
-  ! [[ $(tr -s ' ' <<< ${1%%$'\n'}) =~ $ignorecommon ]];
-}
-
-# preexec() {
-#   LASTCMD=$1
-# }
-
-# zsh hook that goes off after execution of a command (cmd)
-# but before its prompt. A cmd always enters the history list
-# and is there at least until the next cmd execution. All
-# processing on ignore patterns is done after adding. And
-# zshaddhistory hook also follows this rule: that any cmd
-# enters the history list, at least for a while (see zsh manual).
-precmd() {
-  [[ $? -ne 0 ]] && last_cmd=$(fc -ln -1 | tr -s ' ') \
-    && ([[ $last_cmd =~ "^ " || $last_cmd =~ $ignorecommon ]] \
-          || echo ${last_cmd%'\n'} >> $(dirname $HISTFILE)/nnzcmds)
-}
-
-
-# >>> ZSH OPTIONS >>>
-#--------------------
-## zsh options are case insensitive and ignore underscores in the name.
-setopt histignorealldups
-setopt histreduceblanks
-
-# the options prefixed with 'no' are the same as writing 'unsetopt'.
-setopt nohistignoredups  # <-- w/o no breaks LIFO, sets FIFO instead 
-setopt nohistexpiredupsfirst  # <-- no need for it (w/o no) when 'histignorealldups' is set
-setopt nopushdminus  # abolish canceled +N/-N arguments
-
-## quite powerful option which enables:
-## - recursive globbing     ls **/foo       foo, dir1/foo, dir1/dir2/foo
-## - negation               ls ^foo         all except foo
-## - approximate matching   ls (#a1)foobar  fobar, 
-## - qualifiers             ls foo/*(#q@)   finds all symblic links (@) in foo 
-## more info here: https://www.refining-linux.org/archives/37-ZSH-Gem-2-Extended-globbing-and-expansion.html
-setopt extendedglob
-#--------------------
-# <<< ZSH OPTIONS <<<
-
-
-# added by Miniconda3 4.5.12 installer
 # >>> conda init >>>
 # !! Contents within this block are managed by 'conda init' !!
 __conda_setup="$(CONDA_REPORT_ERRORS=false '/home/lukoshkin/BuildPacks/miniconda3/bin/conda' shell.bash hook 2> /dev/null)"
@@ -253,18 +43,3 @@ else
 fi
 unset __conda_setup
 # <<< conda init <<<
-
-# ------- conda autoenv --------
-source /home/lukoshkin/BuildPacks/miniconda3/bin/conda_autoenv.sh
-# ------- conda autoenv --------
-
-
-# >>> TMUX >>>
-# ~~~~ tmux autostart (graphical environment only) ~~~~~
-# if command -v tmux >/dev/null 2>&1 && [ "${DISPLAY}" ]; then
-#     # if not inside a tmux session, and if no session is started, start a new session
-#     [ -z "${TMUX}" ] && (tmux attach >/dev/null 2>&1 || tmux)
-# fi
-# ~~~~ tmux autostart ~~~~~
-## Possibly, some other tmux's settings below
-# <<< TMUX >>>
