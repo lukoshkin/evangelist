@@ -4,15 +4,9 @@
 if [[ -z $LUKOVNADOTFILES ]]; then
   cat bash/bashrc >> ~/.bashrc
   export LUKOVNADOTFILES="I am bash-vimmer!"
-  [[ -z $XDG_CONFIG_HOME ]] \
-    && export XDG_CONFIG_HOME="$HOME/.config" \
-    && echo 'export XDG_CONFIG_HOME="$HOME/.config"' >> ~/.bashrc
-  [[ -z $XDG_DATA_HOME ]] \
-    && export XDG_DATA_HOME="$HOME/.local/share" \
-    && echo 'export XDG_DATA_HOME="$HOME/.local/share"' >> ~/.bashrc
-  [[ -z $XDG_CACHE_HOME ]] \
-    && export XDG_CACHE_HOME="$HOME/.cache" \
-    && echo 'export XDG_CACHE_HOME="$HOME/.cache"' >> ~/.bashrc
+  [[ -z $XDG_CONFIG_HOME ]] && export XDG_CONFIG_HOME="$HOME/.config"
+  [[ -z $XDG_DATA_HOME ]] && export XDG_DATA_HOME="$HOME/.local/share"
+  [[ -z $XDG_CACHE_HOME ]] && export XDG_CACHE_HOME="$HOME/.cache"
 fi
 
 cp tmux.conf ~/.tmux.conf
