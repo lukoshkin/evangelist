@@ -4,10 +4,15 @@ FROM $IMG_NAME
 ARG UID=1000
 ARG GID=1000
 
-ENV XDG_CONFIG_HOME=~/.config
-ENV XDG_CACHE_HOME=~/.cache
-ENV XDG_DATA_HOME=~/.local/share
+ENV XDG_CONFIG_HOME=$HOME/.config
+ENV XDG_CACHE_HOME=$HOME/.cache
+ENV XDG_DATA_HOME=$HOME/.local/share
 
+RUN mkdir -p $XDG_CONFIG_HOME \
+    && mkdir -p $XDG_CACHE_HOME \
+    && mkdir -p $XDG_DATA_HOME
+
+USER root
 # Install all the libraries required by Neovim
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get -qq update \
@@ -31,14 +36,15 @@ RUN pip3 install --no-cache-dir --upgrade \
         jupyter_contrib_nbextensions \
         jupyter_nbextensions_configurator
 
-# Download configs and distribute them to their locations
+USER $USER
+# Download configs and distribute them to their locations.
 RUN cd ~ && git clone https://github.com/lukoshkin/dotfiles.git \
     && cd dotfiles \
-    && cat bash/bashrc >> ~/.bashrc \
-    && cp tmux.conf ~/.tmux.conf \
-    && cp bash/inputrc ~/.inputrc \
-    && mkdir -p $XDG_CONFIG_HOME \
-    && cp -r nvim $XDG_CONFIG_HOME/ \
+    && if [ -z $(grep -o "LUKOVNADOTFILES") ]; then \
+        cat bash/bashrc >> ~/.bashrc; fi \
+    && mv tmux.conf ~/.tmux.conf \
+    && mv bash/inputrc ~/.inputrc \
+    && mv nvim $XDG_CONFIG_HOME/ \
     && curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim \
     && git clone https://github.com/lambdalisue/jupyter-vim-binding \
@@ -46,8 +52,8 @@ RUN cd ~ && git clone https://github.com/lukoshkin/dotfiles.git \
     && jupyter nbextension enable vim_binding/vim_binding \
     && jupyter contrib nbextension install --user \
     && mkdir -p ~/.jupyter/custom \
-    && cp jupyter/custom.js ~/.jupyter/custom/ \
-    && cp jupyter/notebook.json ~/.jupyter/nbconfig \
+    && mv jupyter/custom.js ~/.jupyter/custom/ \
+    && mv jupyter/notebook.json ~/.jupyter/nbconfig \
     && vim --headless +PlugInstall +qall \
     && rm -rf ~/dotfiles
 

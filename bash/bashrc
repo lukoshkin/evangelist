@@ -1,13 +1,11 @@
-#!/bin/bash
-
 # Use LUKOVNADOTFILES to append these settings only once.
 export LUKOVNADOTFILES="You are bash-vimmer now"
 [[ -z $XDG_CONFIG_HOME ]] && export XDG_CONFIG_HOME="$HOME/.config"
 [[ -z $XDG_DATA_HOME ]] && export XDG_DATA_HOME="$HOME/.local/share"
 [[ -z $XDG_CACHE_HOME ]] && export XDG_CACHE_HOME="$HOME/.cache"
 
-# To be able to set colors with 'dircolors', SHELL shoud be defined.jj
-[[ -z $SHELL ]] && export SHELL=/bin/bash
+# To be able to set colors with 'dircolors', SHELL shoud be defined.
+[ $SHELL = /bin/bash ] || export SHELL=/bin/bash
 
 # Set minimalist prompt.
 # \\[\e[1;32m\\] - color begins (1;32 - bold green)
@@ -16,10 +14,10 @@ export LUKOVNADOTFILES="You are bash-vimmer now"
 # \W - current workdir
 export PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
 
-# Use regular bash colors for ls
+# Use regular bash colors for ls.
 export LS_COLORS=$(dircolors | grep -Po "'\K.*(?=')")
 
-# Colored output for basic commands
+# Colored output for basic commands.
 alias ls='ls --color=auto'
 alias dir='dir --color=auto'
 alias vdir='vdir --color=auto'
@@ -27,7 +25,7 @@ alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
-# Finish configuring locales
+# Finish configuring locales.
 if [[ -z $LANG ]]; then
   export LC_ALL="en_US.UTF-8"
   export LANG="en_US.UTF-8"
