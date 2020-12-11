@@ -25,9 +25,6 @@ export LUKOVNADOTFILES="You are bash-vimmer now"
 [[ -z $XDG_DATA_HOME ]] && export XDG_DATA_HOME="$HOME/.local/share"
 [[ -z $XDG_CACHE_HOME ]] && export XDG_CACHE_HOME="$HOME/.cache"
 
-# To be able to set colors with 'dircolors', SHELL shoud be defined.
-# [ $SHELL = /bin/bash ] || export SHELL=/bin/bash
-
 # Set minimalist prompt.
 ## \\[\e[1;32m\\] - color begins (1;32 - bold green)
 ## \\[\e[m\\] - color ends
@@ -35,26 +32,18 @@ export LUKOVNADOTFILES="You are bash-vimmer now"
 ## \W - current workdir
 export PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
 
-# Use regular bash colors for ls.
-# export LS_COLORS=$(dircolors | grep -Po "'\K.*(?=')")
-
 # Colored output for basic commands.
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'  # is the same as grep -F
+alias egrep='egrep --color=auto'  # is the same as grep -E
 
-alias -g ...=../..
-alias -g ....=../../..
-alias -g .....=../../../..
-alias -g ......=../../../../..
-
+# Handy aliases
 alias l='ls -lAh'
 alias ll='ls -lAht'
 alias fd='find . -type d -name'
 alias ff='find . -type f -name'
 alias md='mkdir -p'
-
 
 # Finish configuring locales.
 if [[ -z $LANG ]]; then

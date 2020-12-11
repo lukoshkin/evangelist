@@ -35,7 +35,7 @@ RUN pip3 install --no-cache-dir --upgrade \
 
 USER $USER
 # Download configs and distribute them to their locations.
-RUN cd ~ && git clone https://github.com/lukoshkin/dotfiles.git \
+RUN cd ~ && git clone -b develop https://github.com/lukoshkin/dotfiles.git \
     && cd dotfiles \
     && mv bash/bashrc ~/.bashrc \
     && mv tmux.conf ~/.tmux.conf \
