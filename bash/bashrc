@@ -1,3 +1,24 @@
+# Standard bash settings
+## If not running interactively, don't do anything.
+[ -z "$PS1" ] && return
+
+## Don't put duplicate lines in the history. See bash(1) for more options
+## ... or force ignoredups and ignorespace.
+HISTCONTROL=ignoredups:ignorespace
+
+## Append to the history file, don't overwrite it.
+shopt -s histappend
+
+## For setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+## Check the window size after each command and, if necessary,
+## Update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+
+
 # Use LUKOVNADOTFILES to append these settings only once.
 export LUKOVNADOTFILES="You are bash-vimmer now"
 [[ -z $XDG_CONFIG_HOME ]] && export XDG_CONFIG_HOME="$HOME/.config"
@@ -5,25 +26,35 @@ export LUKOVNADOTFILES="You are bash-vimmer now"
 [[ -z $XDG_CACHE_HOME ]] && export XDG_CACHE_HOME="$HOME/.cache"
 
 # To be able to set colors with 'dircolors', SHELL shoud be defined.
-[ $SHELL = /bin/bash ] || export SHELL=/bin/bash
+# [ $SHELL = /bin/bash ] || export SHELL=/bin/bash
 
 # Set minimalist prompt.
-# \\[\e[1;32m\\] - color begins (1;32 - bold green)
-# \\[\e[m\\] - color ends
-# \u - username
-# \W - current workdir
+## \\[\e[1;32m\\] - color begins (1;32 - bold green)
+## \\[\e[m\\] - color ends
+## \u - username
+## \W - current workdir
 export PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
 
 # Use regular bash colors for ls.
-export LS_COLORS=$(dircolors | grep -Po "'\K.*(?=')")
+# export LS_COLORS=$(dircolors | grep -Po "'\K.*(?=')")
 
 # Colored output for basic commands.
 alias ls='ls --color=auto'
-alias dir='dir --color=auto'
-alias vdir='vdir --color=auto'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
+
+alias -g ...=../..
+alias -g ....=../../..
+alias -g .....=../../../..
+alias -g ......=../../../../..
+
+alias l='ls -lAh'
+alias ll='ls -lAht'
+alias fd='find . -type d -name'
+alias ff='find . -type f -name'
+alias md='mkdir -p'
+
 
 # Finish configuring locales.
 if [[ -z $LANG ]]; then
