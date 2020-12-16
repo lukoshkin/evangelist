@@ -41,6 +41,8 @@ RUN cd ~ && git clone -b develop https://github.com/lukoshkin/dotfiles.git \
     && mv tmux.conf ~/.tmux.conf \
     && mv bash/inputrc ~/.inputrc \
     && mv nvim $XDG_CONFIG_HOME/ \
+    && echo "source ~/.bashrc" > ~/.profile \
+    && sed -i '1i set-option -g default-shell /bin/bash' ~/.tmux.conf \
     && curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim \
     && git clone https://github.com/lambdalisue/jupyter-vim-binding \

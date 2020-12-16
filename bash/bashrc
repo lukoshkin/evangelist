@@ -19,8 +19,10 @@ shopt -s checkwinsize
 
 
 
-# Use LUKOVNADOTFILES to append these settings only once.
-export LUKOVNADOTFILES="You are bash-vimmer now"
+# XDG base directory specification.
+## Even if you don't care about your $HOME neat,
+## which is the primary goal of these variable definitions,
+## other files require them to be defined.
 [[ -z $XDG_CONFIG_HOME ]] && export XDG_CONFIG_HOME="$HOME/.config"
 [[ -z $XDG_DATA_HOME ]] && export XDG_DATA_HOME="$HOME/.local/share"
 [[ -z $XDG_CACHE_HOME ]] && export XDG_CACHE_HOME="$HOME/.cache"
@@ -35,8 +37,8 @@ export PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
 # Colored output for basic commands.
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'  # is the same as grep -F
-alias egrep='egrep --color=auto'  # is the same as grep -E
+alias fgrep='fgrep --color=auto'  # same as grep -F
+alias egrep='egrep --color=auto'  # same as grep -E
 
 # Handy aliases
 alias l='ls -lAh'
