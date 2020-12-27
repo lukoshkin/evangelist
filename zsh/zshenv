@@ -11,34 +11,21 @@ export HISTFILE="$XDG_DATA_HOME/zsh_history"
 export HISTSIZE=100000
 export SAVEHIST=$HISTSIZE
 
-# texlive
-export PATH="$PATH:/usr/local/texlive/2020/bin/x86_64-linux"
-
-# golang
-export PATH="$PATH:/usr/local/go/bin"
-export GOPATH="$HOME/Miscellanea/TestLab/go"
-
-# aspell (used by vim spell checker ?)
+# aspell (used by vim spell checker)
 export ASPELL_CONF="per-conf $XDG_CONFIG_HOME/aspell/aspell.conf; \
     personal $XDG_CONFIG_HOME/aspell/en.pws; \
     repl $XDG_CONFIG_HOME/aspell/en.prepl"
 
-# docker
-export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
-export SINGULARITY_CACHEDIR="$XDG_CACHE_HOME/singularity"
-
-# ipython/jupyter
-export IPYTHONDIR="$XDG_CONFIG_HOME/ipython"
-export JUPYTER_CONFIG_DIR="$XDG_CONFIG_HOME/jupyter"
-
-# less, wget, libice
-export LESSHISTFILE=-
-export WGETRC="$XDG_CONFIG_HOME/wgetrc"
-export ICEAUTHORITY="$XDG_CACHE_HOME/ICEauthority"
-
 # nvim
 export VISUAL=nvim
 export EDITOR="$VISUAL"
+
+# locales
+if [[ -z $LANG ]]; then
+  export LC_ALL="en_US.UTF-8"
+  export LANG="en_US.UTF-8"
+  export LANGUAGE="en_US.UTF-8"
+fi
 
 # grep
 ## set the color of 'file name' section in grep's output
