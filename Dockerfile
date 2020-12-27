@@ -1,6 +1,7 @@
 ARG IMG_NAME
 FROM $IMG_NAME
 
+ARG BASH_REWRITE=true
 ENV XDG_CONFIG_HOME=$HOME/.config
 ENV XDG_CACHE_HOME=$HOME/.cache
 ENV XDG_DATA_HOME=$HOME/.local/share
@@ -37,7 +38,12 @@ USER $USER
 # Download configs and distribute them to their locations.
 RUN cd ~ && git clone https://github.com/lukoshkin/dotfiles.git \
     && cd dotfiles \
-    && mv bash/bashrc ~/.bashrc \
+    && if [ BASH_REWRITE ]; \
+       then \
+         mv bash/bashrc ~/.bashrc; \
+       else \
+         cat bash/bashrc >> ~/.bashrc; \
+       fi \
     && mv tmux.conf ~/.tmux.conf \
     && mv bash/inputrc ~/.inputrc \
     && mv nvim $XDG_CONFIG_HOME/ \
@@ -52,7 +58,7 @@ RUN cd ~ && git clone https://github.com/lukoshkin/dotfiles.git \
     && mkdir -p ~/.jupyter/custom \
     && mv jupyter/custom.js ~/.jupyter/custom/ \
     && mv jupyter/notebook.json ~/.jupyter/nbconfig \
-    && vim --headless +PlugInstall +qall \
+    && nvim --headless +PlugInstall +qall \
     && rm -rf ~/dotfiles
 
 ENTRYPOINT ["/bin/bash"]
