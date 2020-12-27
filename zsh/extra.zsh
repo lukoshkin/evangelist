@@ -23,7 +23,7 @@ function tree() {
   local treesize
 
   [[ -n $1 ]] && threshold=$1 || threshold=100
-  [[ -n $2 ]] && w8=$2 || w8=1 
+  [[ -n $2 ]] && w8=${2}s || w8=1s
 
   treesize=$(wc -l < <(timeout $w8 \
     find . -not -path '*/\.*' -type d 2> /dev/null))
@@ -31,12 +31,13 @@ function tree() {
   if [[ $treesize -gt $threshold ]]
   then
     echo "The project tree is too large!"
-    echo "There are $treesize directories found in less than $w8 second(s)."
+    echo "There are $treesize directories found in less than $w8."
     printf "Try to run the command in a subfolder "
     printf "or relax the project traversing conditions.\n"
   else
-      ls -R | grep ":$" | sed -e 's/:$//' \
-        -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+    echo "$treesize < $threshold"
+    ls -R | grep ":$" | sed -e 's/:$//' \
+      -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
   fi
 }
 
@@ -60,12 +61,26 @@ xset r rate 250 70
 ### First line says: use vim bindings map
 bindkey -v
 bindkey -M viins 'jj' vi-cmd-mode
-bindkey -M viins '^Q' push-line
 bindkey -M viins '^U' backward-delete-char
 bindkey -M viins '^P' delete-char
 bindkey -M vicmd 'k' history-substring-search-up
 bindkey -M vicmd 'j' history-substring-search-down
 bindkey -M vicmd '/' history-interactive-fuzzy-search
+
+## Push input
+### unbind C-q and C-s
+stty start '^-' stop '^-'
+
+bindkey -M viins '^Q' push-input
+bindkey -M vicmd '^Q' push-input-from-cmd
+
+## 'zle -N <widget_name>' creates a user-defined widget, or overwrites
+## active one with the same name as specified in the option.
+zle -N push-input-from-cmd
+function push-input-from-cmd() {
+  zle push-input
+  zle vi-insert
+}
 
 ## Requires installed fuzzy finder (fzf)
 function history-interactive-fuzzy-search() {
@@ -74,8 +89,6 @@ function history-interactive-fuzzy-search() {
   [[ -z $BUFFER ]] && BUFFER=$_buffer
 }
 
-## 'zle -N <widget_name>' creates a user-defined widget, or overwrites
-## active one with the same name as specified in the option.
 zle -N history-interactive-fuzzy-search
 
 ## Meta(=Alt) + j/k to match the beginning of a command history
@@ -210,4 +223,4 @@ setopt extendedglob
 
 
 # AUTO CONDA ENV
-[[ -n $CONDA_EXE ]] && source $ZDOTDIR/conda_autoenv.sh
+[[ -n $CONDA_EXE ]] && source $ZDOTDIR/conda_autoenv.sh || :
