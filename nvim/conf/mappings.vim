@@ -85,3 +85,7 @@ nnoremap <silent><Space><Space> :nohlsearch<Bar>:echo<CR>
 noremap <silent><A-+> :silent !transset -a --inc .02<CR>
 noremap <silent><A--> :silent !transset -a --dec .02<CR>
 " :silent discards the output of a command that follows it.
+
+
+" Remove all extra spaces at the end of lines
+command! Trim %s/\s*$//g
