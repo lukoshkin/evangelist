@@ -23,19 +23,28 @@ function tree() {
   local treesize
 
   [[ -n $1 ]] && threshold=$1 || threshold=100
-  [[ -n $2 ]] && w8=${2}s || w8=1s
+  [[ -n $2 ]] && w8=$2 || w8=1
 
-  treesize=$(wc -l < <(timeout $w8 \
-    find . -not -path '*/\.*' -type d 2> /dev/null))
+  local hierarchy=$(timeout $w8 find . ! -path '*/\.*' -type d 2> /dev/null)
+
+  if [[ $? -ne 0 ]]
+  then
+    treesize=$((threshold + 1))
+  else
+    treesize=$(echo $hierarchy | wc -l)
+  fi
+
+  # BUG: the following fails sometimes.
+  # treesize=$(wc -l < <(timeout $w8 \
+  #   find . ! -path '*/\.*' -type d 2> /dev/null))
 
   if [[ $treesize -gt $threshold ]]
   then
     echo "The project tree is too large!"
-    echo "There are $treesize directories found in less than $w8."
+    echo "There are $treesize directories found in less than ${w8}s."
     printf "Try to run the command in a subfolder "
     printf "or relax the project traversing conditions.\n"
   else
-    echo "$treesize < $threshold"
     ls -R | grep ":$" | sed -e 's/:$//' \
       -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
   fi
@@ -44,11 +53,6 @@ function tree() {
 alias zshrc="vim $ZDOTDIR/.zshrc"
 alias vimrc="vim ~/.config/nvim/init.vim"
 ## To list all active aliases, run `alias`
-
-function tor() {
-  local tordir="$HOME/BuildPacks/Tor/tor-browser_en-US"
-  cd $tordir && ./start-tor-browser.desktop && cd > /dev/null
-}
 
 
 
