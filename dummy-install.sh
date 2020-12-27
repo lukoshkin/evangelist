@@ -5,6 +5,10 @@
 [[ -z $XDG_DATA_HOME ]] && export XDG_DATA_HOME="$HOME/.local/share"
 [[ -z $XDG_CACHE_HOME ]] && export XDG_CACHE_HOME="$HOME/.cache"
 
+mkdir -p $XDG_CONFIG_HOME
+mkdir -p $XDG_DATA_HOME
+mkdir -p $XDG_CACHE_HOME
+
 # As you can see, the first 3 copies do not follow XDG concept.
 # It might be fixed in further updates.
 cp bash/bashrc ~/.bashrc
@@ -15,7 +19,7 @@ cp -r nvim $XDG_CONFIG_HOME
 [[ -n $(which conda) ]] && conda init bash
 
 vimPlug="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
-if [[ -f $vimPlug ]]; then
+if [[ ! -f $vimPlug ]]; then
   sh -c 'curl -fLo $vimPlug --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 fi
@@ -25,7 +29,7 @@ vim +PlugInstall +qall
 
 
 # PIP_FLAGS=(--no-cache-dir --upgrade)
-# [[ -n $(which conda) ]] && {conda init bash; PIP_FLAGS+=(--user)
+# [[ -n $(which conda) ]] && (conda init bash; PIP_FLAGS+=(--user))
 
 PIP_FLAGS=(--user --no-cache-dir --upgrade)
 
