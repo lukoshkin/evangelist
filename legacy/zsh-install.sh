@@ -15,13 +15,13 @@ mkdir -p $ZPLUG_HOME
 
 # Copy configs
 cp zsh/zshrc $ZDOTDIR/.zshrc
-cp zsh/{extra.zsh,conda_autoenv.sh} $ZDOTDIR
+cp zsh/{agkozakrc,extra.zsh,conda_autoenv.sh} $ZDOTDIR
 cp zsh/zshenv ~/.zshenv
 
-[[ -z $(which tmux) ]] \
-  && (mkdir -p $XDG_CACHE_HOME/tmux; \
-    cp tmux.conf $XDG_CACHE_HOME/tmux/tmux.conf) \
-  || cp tmux.conf ~/.tmux.conf
+which tmux \
+  && cp tmux.conf ~/.tmux.conf \
+  || (mkdir -p $XDG_CACHE_HOME/tmux; \
+    cp tmux.conf $XDG_CACHE_HOME/tmux/tmux.conf)
 
 cp -r nvim $XDG_CONFIG_HOME
 
@@ -30,6 +30,8 @@ sudo apt-get -qq update
 sudo apt-get install -yq \
   git neovim tmux curl npm x11-apps locales zsh
 
+#sudo mkdir -p /usr/local/lib/node_modules
+#sudo chown -R $USER /usr/local/lib/node_modules
 npm install -g neovim
 which pip3 && pip3 install --upgrade pynvim
 
@@ -58,4 +60,4 @@ which anacron && sudo cp anacron/anacrontab.young /etc/anacrontab
 
 
 # Add conda init to zshrc
-[[ -n $CONDA_EXE ]] && conda init zsh || :
+[[ -n $CONDA_EXE ]] && $CONDA_EXE init zsh || :
