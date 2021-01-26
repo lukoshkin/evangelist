@@ -8,16 +8,14 @@ zplug "zsh-users/zsh-history-substring-search", defer:3
 zplug 'zplug/zplug', hook-build:'zplug --self-manage'
 zplug 'zsh-users/zsh-completions', depth:1
 
-AGKOZAK_MULTILINE=0
-AGKOZAK_PROMPT_CHAR=( '>' '>' ':' )
-AGKOZAK_VIRTUALENV_CHARS=( '' '' )
-
-AGKOZAK_COLORS_PATH=white
-AGKOZAK_COLORS_USER_HOST=yellow
-AGKOZAK_COLORS_BRANCH_STATUS=red
-AGKOZAK_COLORS_VIRTUALENV=blue
-AGKOZAK_COLORS_PROMPT_CHAR=white
+# THEME
+## If you don't face any bugs,
+## (particularly the one related to resizing terminal window)
+## powerlevel10k is a good choice.
+# zplug 'romkatv/powerlevel10k', as:theme, depth:1
+## Otherwise, you can use minimalistic 'agkozak' theme.
 zplug 'agkozak/agkozak-zsh-theme'
+[[ -n $(zplug list | grep agkozak) ]] && source $ZDOTDIR/agkozakrc
 
 if ! zplug check --verbose; then
   printf "Install? [y/N]: "
@@ -28,3 +26,4 @@ fi
 
 zplug load
 source $ZDOTDIR/extra.zsh
+[[ -n $CONDA_EXE ]] && source $ZDOTDIR/conda_autoenv.sh || :
