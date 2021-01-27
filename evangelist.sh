@@ -9,7 +9,7 @@ main() {
     _install $2
   elif [[ $1 == update ]]
   then
-    _update
+    _update $2
   elif [[ $1 == uninstall ]]
   then
     _uninstall
@@ -148,7 +148,7 @@ install_jupyter () {
   git clone https://github.com/lambdalisue/jupyter-vim-binding \
     $(jupyter --data-dir)/nbextensions/vim_binding
   jupyter nbextension enable vim_binding/vim_binding
-  jupyter contrib nbextension install --user
+  jupyter contrib nbextension install --user --JupyterApp.log_level='WARN'
 
   # Copy new configs
   mkdir -p $JUPCONFDIR/custom
@@ -186,7 +186,7 @@ install_tmux () {
     || { mkdir -p $XDG_CACHE_HOME/tmux; \
          cp tmux.conf $XDG_CACHE_HOME/tmux/tmux.conf; }
 
-  ECHO Installed successfully: Tmux configuration.
+  ECHO Successfully installed: Tmux configuration.
 }
 
 
@@ -271,14 +271,28 @@ install_zsh () {
 
 
 _update () {
-  # TODO: Add self-update
-
+  # Check the requirements
   HAS git || { ECHO2 Missing git; exit; }
-  UPD=$(git diff --name-only ..origin/master)
-  [[ -z $UPD ]] && { ECHO Up to date.; exit; } || git pull
   [[ -f update-list.txt ]] || { ECHO2 Missing 'update-list.txt'.; exit; }
 
-  ECHO Updating...
+  UPD=$(git diff --name-only ..origin/develop)
+  [[ -z $UPD ]] && { ECHO Up to date.; exit; }
+
+  SRC='evangelist.sh print-functions.sh'
+
+  if [[ $1 != SKIP && $UPD =~ $SRC ]]
+  then
+    ECHO Self-updating...
+
+    git fetch
+    git checkout origin/develop -- $SRC
+
+    bash $0 update SKIP
+    exit
+  fi
+
+  ECHO Updating installed components...
+  git pull || exit
 
   for OBJ in $(echo $UPD | grep -v 'nvim'); do
     case ${OBJ##*/} in
