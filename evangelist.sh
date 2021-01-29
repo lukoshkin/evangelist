@@ -21,12 +21,21 @@ main() {
 
 
 _checkhealth () {
-  # TODO: Make differentiation between Ubuntu and MacOS
-  # TODO: Add current installation status
+  if [[ ! -f 'update-list.txt' ]]
+  then
+    ECHO "\nNone of the listed configs is installed yet."
+  else
+    ECHO "\nInstalled: $(tr '\n' ' ' < update-list.txt)."
+  fi
+
+  ZSH_DEPS=(r:zsh r:git o:conda o:fzf)
+  [[ $(uname) != Darwin ]] \
+    && ZSH_DEPS+=(r:locale-gen:locales o:transset:x11-apps)
+
   [[ -z $1 || $1 == bash ]] \
     && modulecheck BASH o:locale-gen:locales o:conda
   [[ -z $1 || $1 == zsh ]] \
-    && modulecheck ZSH r:zsh r:git r:locale-gen:locales o:transset:x11-apps o:conda o:fzf
+    && modulecheck ZSH $ZSH_DEPS
   [[ -z $1 || $1 == vim ]] \
     && modulecheck VIM r:'nvim vim':neovim r:pip r:curl o:'npm conda'
   [[ -z $1 || $1 == jupyter ]] \
@@ -82,10 +91,10 @@ install_vim () {
   } 2> /dev/null
 
   # Back up original configs (just once)
-  [[ -d $XDG_CONFIG_HOME/nvim ]] && cp -rn $XDG_CONFIG_HOME/nvim .bak
+  [[ -d $XDG_CONFIG_HOME/nvim ]] && cp -Rn $XDG_CONFIG_HOME/nvim .bak
 
   # Copy new configs
-  cp -r nvim $XDG_CONFIG_HOME
+  cp -R nvim $XDG_CONFIG_HOME
 
   # Go on with Neovim if available, otherwise with Vim
   local VIM
@@ -234,7 +243,7 @@ install_zsh () {
   # Back up original configs (just once)
   [[ -f ~/.zshenv ]] && cp -n ~/.zshenv .bak
   [[ -f ~/.zshrc ]] && cp -n ~/.zshrc .bak
-  [[ -d $ZDOTDIR ]] && cp -rn $ZDOTDIR .bak/zdotdir
+  [[ -d $ZDOTDIR ]] && cp -Rn $ZDOTDIR .bak/zdotdir
 
   # Copy new configs
   cp zsh/zshrc $ZDOTDIR/.zshrc
@@ -377,7 +386,7 @@ _uninstall () {
         ;;
 
       nvim)
-        cp -r $OBJ $XDG_CONFIG_HOME
+        cp -R $OBJ $XDG_CONFIG_HOME
         ;;
 
       tmux.conf)

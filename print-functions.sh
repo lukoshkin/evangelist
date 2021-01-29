@@ -3,18 +3,18 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 ORANGE='\033[0;33m'
-PINK='\e[38;5;219m'
+PINK=$(tput setaf 219)
 
-BOLD='\033[1m'
-NOFONT='\033[0m'
+BOLD=$(tput bold)
+RESET=$(tput sgr0)
 
 
 ECHO () {
-  echo -e "${BOLD}${PINK}EVANGELIST =>$NOFONT $@"
+  echo -e "${BOLD}${PINK}EVANGELIST =>$RESET $@"
 }
 
 ECHO2 () {
-  >&2 echo -e "${BOLD}${PINK}EVANGELIST:${RED}PROBLEM:$NOFONT $@"
+  >&2 echo -e "${BOLD}${PINK}EVANGELIST:${RED}PROBLEM:$RESET $@"
 }
 
 
@@ -34,7 +34,9 @@ print_further_instructions () {
 prepend_text () {
   if [[ $(uname) == Darwin ]]
   then
-    sed -i '' "1s/^/$2\'$'\n/" $1
+    sed -i '' "1i\\
+$2\\
+" $1
   else
     sed -i "1i $2" $1
   fi
@@ -68,8 +70,8 @@ HAS () {
 }
 
 modulecheck () {
-  echo -e "${BOLD}\n$1$NOFONT"
-  delim=$(printf "%${#1}s"); echo -e "${BOLD}${delim// /-}$NOFONT"
+  echo -e "${BOLD}\n$1$RESET"
+  delim=$(printf "%${#1}s"); echo -e "${BOLD}${delim// /-}$RESET"
 
   shift
 
@@ -101,27 +103,27 @@ modulecheck () {
 
   case $ok in 
     0)
-      echo -e "${GREEN}All dependencies are satisfied!$NOFONT"
+      echo -e "${GREEN}All dependencies are satisfied!$RESET"
       ;;
     1)
-      echo -e "${ORANGE}Some of features may not work.$NOFONT"
+      echo -e "${ORANGE}Some of features may not work.$RESET"
       local COLOR=$ORANGE
       ;;
     *)
-      echo -e "${RED}Cannot be installed.$NOFONT"
+      echo -e "${RED}Cannot be installed.$RESET"
       local COLOR=$RED
       ;;
   esac
 
-  [[ $ok -gt 0 ]] && echo -e "${COLOR}Missing the following packages:\n$NOFONT"
-  [[ ${#required[@]} -ne 0 ]] && echo -e "${RED}[required]$NOFONT"
+  [[ $ok -gt 0 ]] && echo -e "${COLOR}Missing the following packages:\n$RESET"
+  [[ ${#required[@]} -ne 0 ]] && echo -e "${RED}[required]$RESET"
 
   for p in ${required[@]}
   do
     echo -e "  $p"
   done
 
-  [[ ${#optional[@]} -ne 0 ]] && echo -e "${ORANGE}[optional]$NOFONT"
+  [[ ${#optional[@]} -ne 0 ]] && echo -e "${ORANGE}[optional]$RESET"
 
   for p in ${optional[@]}
   do
