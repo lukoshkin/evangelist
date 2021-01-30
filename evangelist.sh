@@ -25,19 +25,42 @@ _checkhealth () {
   then
     ECHO "\nNone of the listed configs is installed yet."
   else
-    ECHO "\nInstalled: $(tr '\n' ' ' < update-list.txt)."
+    ECHO "\nInstalled: $(tr '\n' ' ' < update-list.txt)"
   fi
 
+  # modulecheck's syntaxis: MODIFIER:COMMAND[:PACKAGE]
+  # - MODIFIER is either 'r' (required) or 'o' (optional).
+  #
+  # - COMMAND is a shell command thah can be passed to
+  # which/whence/type commands as argument.
+  #
+  # - PACKAGE is the name of an installation package
+  # which contains the comannd. If the command name and
+  # package name coincide, one can omit the latter.
+  #
+  # Substitutable packages or a package and managers
+  # that will install it in case of absence can be specified
+  # in a single-quoted space-separated string:
+  #     'nvim vim' (precedence to the 1st)
+  #         or
+  #     'npm conda' (npm can be install via conda)
+
+  BASH_DEPS=(o:conda)
   ZSH_DEPS=(r:zsh r:git o:conda o:fzf)
+
   [[ $(uname) != Darwin ]] \
-    && ZSH_DEPS+=(r:locale-gen:locales o:transset:x11-apps)
+    && ZSH_DEPS+=(o:transset:x11-apps)
+
+  [[ -z $LANG ]] \
+    && { BASH_DEPS+=(o:locale-gen:locales);
+         ZSH_DEPS+=(r:locale-gen:locales); }
 
   [[ -z $1 || $1 == bash ]] \
-    && modulecheck BASH o:locale-gen:locales o:conda
+    && modulecheck BASH ${BASH_DEPS[@]}
   [[ -z $1 || $1 == zsh ]] \
-    && modulecheck ZSH $ZSH_DEPS
+    && modulecheck ZSH ${ZSH_DEPS[@]}
   [[ -z $1 || $1 == vim ]] \
-    && modulecheck VIM r:'nvim vim':neovim r:pip r:curl o:'npm conda'
+    && modulecheck VIM r:'nvim vim':neovim r:curl o:pip o:'npm conda'
   [[ -z $1 || $1 == jupyter ]] \
     && modulecheck JUPYTER r:pip r:git
   [[ -z $1 || $1 == tmux ]] \
@@ -51,7 +74,6 @@ _install () {
   [[ -z $XDG_DATA_HOME ]] && export XDG_DATA_HOME="$HOME/.local/share"
   [[ -z $XDG_CACHE_HOME ]] && export XDG_CACHE_HOME="$HOME/.cache"
 
-  > update-list.txt
   mkdir -p $XDG_CONFIG_HOME
   mkdir -p $XDG_DATA_HOME
   mkdir -p $XDG_CACHE_HOME
@@ -75,9 +97,8 @@ _install () {
 
 
 install_vim () {
-  # Check if pip and neovim are available
-  HAS pip || { ECHO2 Missing pip; exit; }
-  { HAS nvim || HAS vim; } || { ECHO2 Missing: vim, neovim; exit; }
+  # Check if neovim is available
+  { HAS nvim || HAS vim; } || { ECHO2 Missing: vim, neovim; return; }
   # NOTE: This installation assumes that either neovim or vim
   # ####  is installed, but NOT BOTH.
 
@@ -175,7 +196,7 @@ install_jupyter () {
 
 install_tmux () {
   # Check if tmux is available
-  HAS tmux || { ECHO2 Missing tmux; exit; }
+  HAS tmux || { ECHO2 Missing tmux; return; }
 
   ECHO Installing tmux configuration...
 

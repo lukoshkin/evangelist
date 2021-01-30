@@ -1,6 +1,12 @@
 let g:yoinkMaxItems = 10  " default: 10
 let g:yoinkIncludeDeleteOperations = 0  " default: 0
 
+if has('nvim')
+  let g:yoinkSavePersistently = 1
+else
+  let g:yoinkSavePersistently = 0
+endif
+
 nmap <M-n> <plug>(YoinkPostPasteSwapBack)
 nmap <M-p> <plug>(YoinkPostPasteSwapForward)
 

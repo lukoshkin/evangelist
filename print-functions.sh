@@ -2,7 +2,7 @@
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-ORANGE='\033[0;33m'
+YELLOW='\033[0;33m'
 PINK=$(tput setaf 219)
 
 BOLD=$(tput bold)
@@ -80,9 +80,9 @@ modulecheck () {
 
   while [[ -n $1 ]]
   do
-    local m=$(cut -d ':' -f 1 <<< $1)
-    local v=$(cut -d ':' -f 2 <<< $1)
-    local n=$(cut -d ':' -f 3 <<< $1)
+    local m=$(cut -d ':' -f1 <<< $1)
+    local v=$(cut -d ':' -f2 <<< $1)
+    local n=$(cut -d ':' -f3 <<< $1)
 
     if [[ $m == r ]]
     then
@@ -106,8 +106,8 @@ modulecheck () {
       echo -e "${GREEN}All dependencies are satisfied!$RESET"
       ;;
     1)
-      echo -e "${ORANGE}Some of features may not work.$RESET"
-      local COLOR=$ORANGE
+      echo -e "${YELLOW}Some of features may not work.$RESET"
+      local COLOR=$YELLOW
       ;;
     *)
       echo -e "${RED}Cannot be installed.$RESET"
@@ -123,7 +123,7 @@ modulecheck () {
     echo -e "  $p"
   done
 
-  [[ ${#optional[@]} -ne 0 ]] && echo -e "${ORANGE}[optional]$RESET"
+  [[ ${#optional[@]} -ne 0 ]] && echo -e "${YELLOW}[optional]$RESET"
 
   for p in ${optional[@]}
   do

@@ -1,10 +1,15 @@
 call plug#begin()
 
 Plug 'preservim/nerdtree'
-Plug 'simnalamburt/vim-mundo'
 Plug 'svermeulen/vim-yoink'
 Plug 'tpope/vim-surround'
 Plug 'ctrlpvim/ctrlp.vim'
+
+if has('python3')
+  Plug 'simnalamburt/vim-mundo'
+else
+  Plug 'mbbill/undotree'
+endif
 " Plug 'lervag/vimtex'
 " Plug 'iamcco/markdown-preview.nvim',
 "       \ { 'do': { -> mkdp#util#install() },
