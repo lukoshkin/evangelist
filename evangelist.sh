@@ -61,8 +61,8 @@ _checkhealth () {
     && modulecheck ZSH ${ZSH_DEPS[@]}
   [[ -z $1 || $1 == vim ]] \
     && modulecheck VIM r:'nvim vim':neovim r:curl o:pip o:'npm conda'
-  [[ -z $1 || $1 == jupyter ]] \
-    && modulecheck JUPYTER r:pip r:git
+  [[ -z $1 || $1 == notebook ]] \
+    && modulecheck NOTEBOOK r:pip r:git
   [[ -z $1 || $1 == tmux ]] \
     && modulecheck TMUX r:tmux
 }
@@ -105,6 +105,7 @@ install_vim () {
   ECHO Installing Vim configuration...
 
   # Optional: python and npm support
+  # TODO: add logging to this grouping
   {
     pip show -qq pynvim || pip install -q pynvim;
     HAS npm || pip install -q npm;
@@ -141,6 +142,8 @@ install_vim () {
 
   # Install Vim plugins
   $VIM +PlugInstall +qall
+
+  add_entry_to_update_list $VIM
 
   ECHO Successfully installed: Vim configuration.
 }
@@ -186,9 +189,7 @@ install_jupyter () {
   cp jupyter/custom.js $JUPCONFDIR/custom
   cp jupyter/notebook.json $JUPCONFDIR/nbconfig
 
-  # Add entry to update-list.txt
-  [[ -z $(grep notebook update-list.txt) ]] \
-    && echo notebook >> update-list.txt
+  add_entry_to_update_list notebook
 
   ECHO Successfully installed: Jupyter configuration.
 }
@@ -216,6 +217,8 @@ install_tmux () {
     || { mkdir -p $XDG_CACHE_HOME/tmux; \
          cp tmux.conf $XDG_CACHE_HOME/tmux/tmux.conf; }
 
+  add_entry_to_update_list tmux
+
   ECHO Successfully installed: Tmux configuration.
 }
 
@@ -233,12 +236,12 @@ install_bash () {
 
   make_descriptor ~/.bashrc
 
-  # Update update-list.txt
-  [[ -z $(grep bash update-list.txt) ]] \
-    && echo bash >> update-list.txt
-
   # Add conda init to .bashrc 
-  HAS conda && conda init bash
+  { HAS conda && conda 2> /dev/null; } \
+    && conda init bash \
+    || ECHO2 "conda doesn't seem to work"
+
+  add_entry_to_update_list bash
 
   ECHO Successfully installed: BASH configuration.
 
@@ -282,16 +285,17 @@ install_zsh () {
 
   make_descriptor ~/.zshenv
 
-  # Update update-list.txt
-  [[ -z $(grep zsh update-list.txt) ]] \
-    && echo zsh >> update-list.txt
-
   # Install zplug
   [[ ! -d $ZPLUG_HOME/.git ]] \
     && git clone https://github.com/zplug/zplug $ZPLUG_HOME
 
   # Add conda init to .zshrc
   HAS conda && conda init zsh
+  { HAS conda && conda 2> /dev/null; } \
+    && conda init zsh \
+    || ECHO2 "conda doesn't seem to work"
+
+  add_entry_to_update_list zsh
 
   ECHO Successfully installed: ZSH configuration.
 

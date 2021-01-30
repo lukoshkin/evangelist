@@ -64,6 +64,12 @@ make_descriptor () {
 }
 
 
+add_entry_to_update_list () {
+  [[ ! -f update-list.txt || -z $(grep $1 update-list.txt) ]] \
+    && echo $1 >> update-list.txt
+}
+
+
 HAS () {
   [[ $(type $@ |& grep -c 'not found') -lt $# ]] && return 0
   return 1
