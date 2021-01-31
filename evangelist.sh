@@ -130,6 +130,7 @@ install_vim () {
   then
     VIM=vim
     VIMPLUG=~/.vim/autoload/plug.vim
+    mkdir -p $XDG_DATA_HOME/nvim/site/undo
     export MYVIMRC=$XDG_CONFIG_HOME/nvim/init.vim
     export VIMINIT=":source $MYVIMRC"
   fi
@@ -309,16 +310,18 @@ _update () {
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f update-list.txt ]] || { ECHO2 Missing 'update-list.txt'.; exit; }
 
+  ECHO Checking for updates...
+
+  git fetch
   UPD=$(git diff --name-only ..origin/develop)
   [[ -z $UPD ]] && { ECHO Up to date.; exit; }
 
   SRC='evangelist.sh print-functions.sh'
 
-  if [[ $1 != SKIP && $UPD =~ $SRC ]]
+  if [[ $1 != SKIP ]] && str_has_any "$UPD" $SRC
   then
     ECHO Self-updating...
 
-    git fetch
     git checkout origin/develop -- $SRC
 
     bash $0 update SKIP
@@ -326,7 +329,7 @@ _update () {
   fi
 
   ECHO Updating installed components...
-  git pull || exit
+  git merge || exit
 
   for OBJ in $(echo $UPD | grep -v 'nvim'); do
     case ${OBJ##*/} in

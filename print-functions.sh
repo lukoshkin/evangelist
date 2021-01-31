@@ -75,14 +75,16 @@ HAS () {
   return 1
 }
 
+
 modulecheck () {
   echo -e "${BOLD}\n$1$RESET"
-  delim=$(printf "%${#1}s"); echo -e "${BOLD}${delim// /-}$RESET"
+  local delim=$(printf "%${#1}s")
+  echo -e "${BOLD}${delim// /-}$RESET"
 
   shift
 
-  required=()
-  optional=()
+  local required=()
+  local optional=()
 
   while [[ -n $1 ]]
   do
@@ -136,4 +138,19 @@ modulecheck () {
     echo -e "  $p"
   done
   echo
+}
+
+
+str_has_any () {
+  local intersection=0
+  local stringset=$1
+
+  while [[ -n $2 ]]
+  do
+    [[ $stringset =~ $2 ]] && (( intersection+=1))
+    shift
+  done
+
+  [[ $intersection -gt 0 ]] && return 0
+  return 1
 }
