@@ -11,11 +11,21 @@ fi
 
 # Finish configuring locales.
 if [[ -z $LANG ]]; then
-  export LC_ALL="en_US.UTF-8"
-  export LANG="en_US.UTF-8"
-  export LANGUAGE="en_US.UTF-8"
+  export LC_ALL=en_US.UTF-8
+  export LANG=en_US.UTF-8
+  export LANGUAGE=en_US.UTF-8
 fi
 
+if which nvim &> /dev/null
+then
+  VISUAL=nvim
+elif which vim &> /dev/null
+then
+  VISUAL=vim
+fi
+
+export VISUAL
+export EDITOR=$VISUAL
 
 # Don't go further if not running interactively
 [ -z "$PS1" ] && return
@@ -57,6 +67,8 @@ alias fd='find . -type d -name'
 alias ff='find . -type f -name'
 alias md='mkdir -p'
 
+# if the system has both Vim and Neovim, use the latter
+which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
 
 # Increase key repeat rate with xset if it is available.
 # Ignore "unable to open display" error that appears in docker.

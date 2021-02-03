@@ -16,6 +16,8 @@ main() {
   elif [[ $1 == checkhealth ]]
   then
     _checkhealth
+  else
+    _help
   fi
 }
 
@@ -104,13 +106,17 @@ install_vim () {
 
   ECHO Installing Vim configuration...
 
-  # Optional: python and npm support
-  # TODO: add logging to this grouping
-  {
-    pip show -qq pynvim || pip install -q pynvim;
-    HAS npm || pip install -q npm;
-    (npm ls -g | grep neovim) || npm install -g neovim; 
-  } 2> /dev/null
+  # Optional:
+  # - npm (for some plugins and Neovim)
+  # - python support (for Neovim)
+  HAS npm || conda install -yc conda-forge nodejs && echo Installed nodejs.
+
+  if HAS nvim
+  then
+    (npm ls -g | grep neovim) &> /dev/null \
+      || npm install --silent -g neovim && echo Installed neovim-client.
+    pip show -qq pynvim || pip install -q pynvim && echo Installed pynvim.
+  fi
 
   # Back up original configs (just once)
   [[ -d $XDG_CONFIG_HOME/nvim ]] && cp -Rn $XDG_CONFIG_HOME/nvim .bak
@@ -137,7 +143,7 @@ install_vim () {
 
   # Install vim-plug if it is not there yet
   if [[ ! -f $VIMPLUG ]]; then
-    sh -c "curl -fLo $VIMPLUG --create-dirs \
+    sh -c "curl -sS -fLo $VIMPLUG --create-dirs \
       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
   fi
 
@@ -237,9 +243,10 @@ install_bash () {
 
   make_descriptor ~/.bashrc
 
+  local CONDA
   # Add conda init to .bashrc 
-  { HAS conda && conda 2> /dev/null; } \
-    && conda init bash \
+  { HAS conda && conda &> /dev/null; } \
+    && { conda init bash > /dev/null && CONDA=A; } \
     || ECHO2 "conda doesn't seem to work"
 
   add_entry_to_update_list bash
@@ -247,7 +254,7 @@ install_bash () {
   ECHO Successfully installed: BASH configuration.
 
   # Check if necessary to change the shell
-  print_further_instructions bash
+  print_further_instructions_about bash $CONDA
 }
 
 
@@ -290,10 +297,10 @@ install_zsh () {
   [[ ! -d $ZPLUG_HOME/.git ]] \
     && git clone https://github.com/zplug/zplug $ZPLUG_HOME
 
+  local CONDA
   # Add conda init to .zshrc
-  HAS conda && conda init zsh
-  { HAS conda && conda 2> /dev/null; } \
-    && conda init zsh \
+  { HAS conda && conda &> /dev/null; } \
+    && { conda init zsh > /dev/null && CONDA=A; } \
     || ECHO2 "conda doesn't seem to work"
 
   add_entry_to_update_list zsh
@@ -301,7 +308,7 @@ install_zsh () {
   ECHO Successfully installed: ZSH configuration.
 
   # Check if necessary to change the shell
-  print_further_instructions zsh
+  print_further_instructions_about zsh $CONDA
 }
 
 

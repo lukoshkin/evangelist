@@ -18,17 +18,22 @@ ECHO2 () {
 }
 
 
-print_further_instructions () {
-  [[ ${SHELL##*/} == $1 ]] && return 
+print_further_instructions_about () {
+  [[ ${SHELL##*/} == $1 || -z $2 ]] && return
 
   ECHO "FURTHER INSTRUCTIONS:"
-  printf "TO FINISH THE INSTALLATION "
-  printf "RUN THE FOLLOWING COMMAND \n"
-  printf "(It changes the current shell to $1)\n\n"
-  printf "\tchsh -s $(which $1)\n\n"
-  printf "AND LOG OUT FROM THE CURRENT ACCOUNT. "
+  printf "TO FINISH THE INSTALLATION, "
+  if [[ ${SHELL##*/} == $1 ]]
+  then
+    printf "RUN THE FOLLOWING COMMAND \n"
+    printf "(It changes the current shell to $1)\n\n"
+    printf "\tchsh -s $(which $1)\n\n"
+    printf "AND "
+  fi
+  printf "LOG OUT FROM THE CURRENT ACCOUNT. "
   printf "THEN, LOG IN BACK.\n"
 }
+
 
 
 prepend_text () {
@@ -70,11 +75,11 @@ add_entry_to_update_list () {
 }
 
 
+
 HAS () {
   [[ $(type $@ |& grep -c 'not found') -lt $# ]] && return 0
   return 1
 }
-
 
 modulecheck () {
   echo -e "${BOLD}\n$1$RESET"
@@ -141,6 +146,7 @@ modulecheck () {
 }
 
 
+
 str_has_any () {
   local intersection=0
   local stringset=$1
@@ -153,4 +159,17 @@ str_has_any () {
 
   [[ $intersection -gt 0 ]] && return 0
   return 1
+}
+
+
+
+_help () {
+  echo -e "Usage: ./evangelist.sh [cmd] [args]\n"
+  echo -e "Commands:\n"
+
+  printf "  %-20s Update the repository and installed configs.\n" 'update'
+  printf "  %-20s Install one of the specified setups: bash zsh notebook.\n" 'install'
+  printf "  %-20s Show the installation status or readiness to install.\n" 'checkhealth'
+  printf "  %-20s Roll back to the original settings.\n" 'uninstall'
+  printf "  %-20s Show this message and quit.\n" 'help'
 }

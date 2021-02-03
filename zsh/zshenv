@@ -8,8 +8,19 @@ export ASPELL_CONF="per-conf $XDG_CONFIG_HOME/aspell/aspell.conf; \
     repl $XDG_CONFIG_HOME/aspell/en.prepl"
 
 # nvim
-export VISUAL=nvim
+if which nvim &> /dev/null
+then
+  VISUAL=nvim
+elif which vim &> /dev/null
+then
+  VISUAL=vim
+fi
+
+export VISUAL
 export EDITOR=$VISUAL
+
+# if the system has both Vim and Neovim, use the latter
+which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
 
 # locales
 if [[ -z $LANG ]]; then
@@ -30,3 +41,4 @@ then
   export MYVIMRC=$XDG_CONFIG_HOME/nvim/init.vim
   export VIMINIT=":source $MYVIMRC"
 fi
+
