@@ -19,9 +19,6 @@ fi
 export VISUAL
 export EDITOR=$VISUAL
 
-# if the system has both Vim and Neovim, use the latter
-which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
-
 # locales
 if [[ -z $LANG ]]; then
   export LC_ALL="en_US.UTF-8"
@@ -41,4 +38,3 @@ then
   export MYVIMRC=$XDG_CONFIG_HOME/nvim/init.vim
   export VIMINIT=":source $MYVIMRC"
 fi
-

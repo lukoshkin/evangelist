@@ -4,6 +4,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 PINK=$(tput setaf 219)
+CYAN=$(tput setaf 87)
 
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
@@ -19,16 +20,20 @@ ECHO2 () {
 
 
 print_further_instructions_about () {
-  [[ ${SHELL##*/} == $1 || -z $2 ]] && return
+  locale -a | grep -qi utf-8
+  local es=$?
 
-  ECHO "FURTHER INSTRUCTIONS:"
+  ECHO "\n${BOLD}${CYAN}FURTHER INSTRUCTIONS:$RESET"
   printf "TO FINISH THE INSTALLATION, "
-  if [[ ${SHELL##*/} == $1 ]]
+  if [[ ${SHELL##*/} != $1 ]]
   then
-    printf "RUN THE FOLLOWING COMMAND \n"
-    printf "(It changes the current shell to $1)\n\n"
+    printf "CHANGE THE CURRENT SHELL TO $1,\n\n"
     printf "\tchsh -s $(which $1)\n\n"
-    printf "AND "
+  elif [[ $es -eq 1 ]]
+  then
+    printf "GENERATE 'en_US' LOCALES,\n"
+    printf "(You can choose another one)\n\n"
+    printf "\tsudo locale-gen en_US.UTF-8\n\n"
   fi
   printf "LOG OUT FROM THE CURRENT ACCOUNT. "
   printf "THEN, LOG IN BACK.\n"
@@ -70,14 +75,15 @@ make_descriptor () {
 
 
 add_entry_to_update_list () {
-  [[ ! -f update-list.txt || -z $(grep $1 update-list.txt) ]] \
+  [[ ! -f update-list.txt ]] || ! grep -q $1 update-list.txt \
     && echo $1 >> update-list.txt
 }
 
 
 
+# NOTE: stderr-pipe redirection (|&) doesn't work on old shells
 HAS () {
-  [[ $(type $@ |& grep -c 'not found') -lt $# ]] && return 0
+  [[ $(type $@ 2>&1 | grep -c 'not found') -lt $# ]] && return 0
   return 1
 }
 

@@ -101,21 +101,26 @@ _install () {
 install_vim () {
   # Check if neovim is available
   { HAS nvim || HAS vim; } || { ECHO2 Missing: vim, neovim; return; }
-  # NOTE: This installation assumes that either neovim or vim
-  # ####  is installed, but NOT BOTH.
 
   ECHO Installing Vim configuration...
 
   # Optional:
   # - npm (for some plugins and Neovim)
   # - python support (for Neovim)
-  HAS npm || conda install -yc conda-forge nodejs && echo Installed nodejs.
+  if HAS npm
+  then
+    conda install -yc conda-forge nodejs &> /dev/null \
+    echo Installed nodejs.
+  fi
 
   if HAS nvim
   then
     (npm ls -g | grep neovim) &> /dev/null \
-      || npm install --silent -g neovim && echo Installed neovim-client.
-    pip show -qq pynvim || pip install -q pynvim && echo Installed pynvim.
+      || npm install --silent -g neovim \
+      && echo Installed neovim-client.
+    pip show -qq pynvim \
+      || pip install -q pynvim \
+      && echo Installed pynvim.
   fi
 
   # Back up original configs (just once)
@@ -165,8 +170,9 @@ install_jupyter () {
 
   # Install Jupyter if necessary
   HAS jupyter \
-    || { pip install -q jupyter > /dev/null && HAS jupyter; } \
-         || { ECHO2 Jupyter is not accessible.; exit; }
+    || { pip install -q jupyter \
+         && HAS jupyter && echo Installed jupyter.; } \
+      || { ECHO2 Jupyter is not accessible.; exit; }
 
   local JUPCONFDIR=$(jupyter --config-dir)
 
@@ -178,17 +184,20 @@ install_jupyter () {
 
   # Install nbextensions
   pip show -qq jupyter_contrib_nbextensions \
-    || pip install -q jupyter_contrib_nbextensions 
+    || pip install -q jupyter_contrib_nbextensions \
+    && echo Installed jupyter_contrib_nbextensions
 
   # Add extension tab in Jupyter Notebook 
-  pip show -qq jupyter_nbextensions_configurator\
-    || pip install -q jupyter_nbextensions_configurator
+  pip show -qq jupyter_nbextensions_configurator \
+    || pip install -q jupyter_nbextensions_configurator \
+    && echo Installed jupyter_nbextensions_configurator
 
   # Install Vim for Jupyter Notebook
-  git clone https://github.com/lambdalisue/jupyter-vim-binding \
+  git clone -q https://github.com/lambdalisue/jupyter-vim-binding \
     $(jupyter --data-dir)/nbextensions/vim_binding
   jupyter nbextension enable vim_binding/vim_binding
   jupyter contrib nbextension install --user --JupyterApp.log_level='WARN'
+  echo Enabled notebook extensions
 
   # Copy new configs
   mkdir -p $JUPCONFDIR/custom
@@ -286,7 +295,7 @@ install_zsh () {
 
   if [[ $(uname) == Darwin ]]
   then
-    cp zsh/macos.zsh $ZDOTDIR
+    cp zsh/macos.zsh $ZDOTDIR/extra.zsh
   else
     cp zsh/extra.zsh $ZDOTDIR
   fi
@@ -295,7 +304,8 @@ install_zsh () {
 
   # Install zplug
   [[ ! -d $ZPLUG_HOME/.git ]] \
-    && git clone https://github.com/zplug/zplug $ZPLUG_HOME
+    && git clone -q https://github.com/zplug/zplug $ZPLUG_HOME \
+    && echo Installed zplug.
 
   local CONDA
   # Add conda init to .zshrc
@@ -317,9 +327,9 @@ _update () {
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f update-list.txt ]] || { ECHO2 Missing 'update-list.txt'.; exit; }
 
-  ECHO Checking for updates...
+  [[ $1 != SKIP ]] && ECHO Checking for updates...
 
-  git fetch
+  git fetch -q
   UPD=$(git diff --name-only ..origin/develop)
   [[ -z $UPD ]] && { ECHO Up to date.; exit; }
 
@@ -331,12 +341,12 @@ _update () {
 
     git checkout origin/develop -- $SRC
 
-    bash $0 update SKIP
+    $SHELL $0 update SKIP
     exit
   fi
 
-  ECHO Updating installed components...
-  git merge || exit
+  ECHO 'Updating installed components if any...'
+  git merge || exit 1
 
   for OBJ in $(echo $UPD | grep -v 'nvim'); do
     case ${OBJ##*/} in

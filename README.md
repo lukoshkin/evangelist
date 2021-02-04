@@ -20,10 +20,10 @@ and Jupyter Notebook extensions.
 ## Installation
 
 All settings related to console (including Vim commands that leverage the console)
-are fully-supported by Ubuntu and partially-supported by macOS. It worth to
+are fully-supported by Ubuntu and (almost by) macOS. It worth to
 mention that the settings themselves are not so platform dependent as
-the way they are installed. As the project grows, the both settings
-and their installation will become more universal and accessible.
+the way they are installed. As the project grows, the settings
+and their installation, both, will become more universal and accessible.
 
 
 ### Scripts
@@ -43,10 +43,10 @@ sudo cp -u anacron/anacrontab.young /etc/anacrontab
       in `zsh/.zshrc` file.  
 </br>
 3. Install minimal list of prerequisites (The full list depends on the set of plugins you have
-chosen in the previous step). For help run `bash evangelist.sh checkhealth`
+chosen in the previous step). For help, run `./evangelist.sh checkhealth`
 
-4. In a console, run from the project directory:
-    - `bash evangelist.sh install <configs>`  
+4. In your console, run from the project directory:
+    - `./evangelist.sh install <configs>`  
     where `<configs>` is `bash`, `zsh`, or `jupyter`  
 </br>
 5. Re-login in the shell.
