@@ -5,13 +5,19 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 PINK=$(tput setaf 219)
 CYAN=$(tput setaf 87)
+# 51,87 ~ cyan
 
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
 
 
 ECHO () {
-  echo -e "${BOLD}${PINK}EVANGELIST =>$RESET $@"
+  echo -e "${BOLD}${CYAN}EVANGELIST ~>$RESET $@"
+}
+
+NOTE () {
+  local COLOR=$(tput setaf $1)
+  echo -e "\n${BOLD}${COLOR}$2$RESET"
 }
 
 ECHO2 () {
@@ -20,10 +26,10 @@ ECHO2 () {
 
 
 print_further_instructions_about () {
-  locale -a | grep -qi utf-8
+  locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
   local es=$?
 
-  ECHO "\n${BOLD}${CYAN}FURTHER INSTRUCTIONS:$RESET"
+  NOTE 210 'FURTHER INSTRUCTIONS:'
   printf "TO FINISH THE INSTALLATION, "
   if [[ ${SHELL##*/} != $1 ]]
   then

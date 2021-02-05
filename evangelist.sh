@@ -25,9 +25,9 @@ main() {
 _checkhealth () {
   if [[ ! -f 'update-list.txt' ]]
   then
-    ECHO "\nNone of the listed configs is installed yet."
+    NOTE 147 "None of the listed configs is installed yet."
   else
-    ECHO "\nInstalled: $(tr '\n' ' ' < update-list.txt)"
+    NOTE 147 "Installed: $(tr '\n' ' ' < update-list.txt)"
   fi
 
   # modulecheck's syntaxis: MODIFIER:COMMAND[:PACKAGE]
@@ -452,9 +452,10 @@ _uninstall () {
   done
 
   rm update-list.txt
-  rm .bak -rf
+  rm -rf .bak
 
   ECHO Successfully uninstalled.
+  NOTE 210 'CLOSE YOUR CURRENT SHELL AND OPEN A NEW ONE.'
 }
 
 
