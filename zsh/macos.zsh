@@ -10,44 +10,66 @@ alias ll='ls -lAht'
 alias ls='ls -G'
 alias md='mkdir -p'
 
+## Folder stack navigation
+alias d='dirs -v'
+function gg() {
+  if [[ -z $1 ]]
+  then
+    pushd +1 2> /dev/null
+    [[ $? -ne 0 ]] && echo Singular dir stack
+    return
+  elif [[ $1 == '0' ]]
+  then
+    pushd -0
+    return
+  elif [[ $1 =~ '\+[0-9]+' ]]
+  then
+    pushd $1
+    return
+  elif [[ $1 =~ -[0-9]+ ]]
+  then
+    popd $1
+    return
+  else
+    echo Wrong args
+    return
+  fi
+
+  pushd +$1 > /dev/null
+  d
+}
+alias G='gg 0'
+
+## Open the last file closed
+# alias v="vim +'e #<1'"
+alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
+alias vv="vim +'browse filter !/__\|NERD_tree/ oldfiles'"
+
 alias fd='find . -type d -name'
 alias ff='find . -type f -name'
 alias grep='grep --color'
 
 function tree() {
-  #########################
-  # Draws the project tree.
-  #########################
   local w8
-  local threshold
-  local treesize
+  local hierarchy
 
-  [[ -n $1 ]] && threshold=$1 || threshold=100
-  [[ -n $2 ]] && w8=$2 || w8=1
+  [[ -n $1 ]] && w8=$1 || w8=.1
+  # 'script' preserves output colors (one of its assets)
+  #  Since script saves the output to a file, /dev/null is used to discard it
 
-  local hierarchy=$(timeout $w8 find . ! -path '*/\.*' -type d 2> /dev/null)
+  # -e - return exit code of the child process
+  # -q - don't write start-end timestamps
+  # -c - command to execute
+  hierarchy=$(script -eqc "timeout --preserve-status $w8 tree" /dev/null)
 
-  if [[ $? -ne 0 ]]
+  # 143 - SIGTERM (process was killed)
+  if [[ $? -eq 143 ]]
   then
-    treesize=$((threshold + 1))
-  else
-    treesize=$(echo $hierarchy | wc -l)
+    echo 'Try to run it in one of subfolders.'
+    return
   fi
 
-  # BUG: the following fails sometimes.
-  # treesize=$(wc -l < <(timeout $w8 \
-  #   find . ! -path '*/\.*' -type d 2> /dev/null))
-
-  if [[ $treesize -gt $threshold ]]
-  then
-    echo "The project tree is too large!"
-    echo "There are $treesize directories found in less than ${w8}s."
-    printf "Try to run the command in a subfolder "
-    printf "or relax the project traversing conditions.\n"
-  else
-    ls -R | grep ":$" | sed -e 's/:$//' \
-      -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
-  fi
+  echo $hierarchy
 }
 
 alias zshrc="vim $ZDOTDIR/.zshrc"
@@ -62,8 +84,7 @@ alias vimrc="vim ~/.config/nvim/init.vim"
 ### First line says: use vim bindings map
 bindkey -v
 bindkey -M viins 'jj' vi-cmd-mode
-bindkey -M viins '^U' backward-delete-char
-bindkey -M viins '^P' delete-char
+bindkey -M viins '^?' backward-delete-char
 bindkey -M vicmd 'k' history-substring-search-up
 bindkey -M vicmd 'j' history-substring-search-down
 bindkey -M vicmd '/' history-interactive-fuzzy-search
@@ -137,17 +158,23 @@ zstyle ':completion:*' matcher-list 'm:{[:lower:]-_}={[:upper:]_-}'
 ##  Highlight for the selected completion menu item.
 zstyle ':completion:*' menu select search
 
-## Except default completion (_complete), it enables alias expantion with 
-## TAB (_expand_alias), use of glob (_match) and ignored-patterns (_ignored).
-zstyle ':completion:*' completer _complete _expand_alias _match #_ignored
-# zstyle ':completion:*' ignored-patterns '<pattern-to-be-ignored>'
+## Except context-sensitive completion (_complete), it enables alias expansion
+## with TAB (_expand_alias), use of glob (_match), ignored-patterns (_ignored),
+## and checking whether the word is eligible for expansion (_expand - unused).
+## order: '_expand', then '_complete', then '_match' - according to ZSH guide
+zstyle ':completion:*' completer _expand_alias _complete _match #_ignored
+# zstyle ':completion:*' ignored-patterns '<pattern-to-ignore>'
 
 
 
 # CLEAN HISTORY LOOKUP
-# --------------
+# --------------------
 ## Exporting ignorecommon as HISTORY_IGNORE ruins everything (why?)
 ignorecommon="(\
+^v ?$|\
+^d ?$|\
+^gg ?[0-9-]*$|\
+^G ?$|\
 ^cd ?$|\
 ^l[las]? ?$|\
 ^vi[m]? ?$|\
@@ -155,16 +182,14 @@ ignorecommon="(\
 ^pwd ?$|\
 ^clear ?$|\
 ^man \S*$|\
-^tmux ?$|\
-^dirs -v$|\
-^pushd ?$|^pushd [+-][0-9]*$|\
-^popd ?$|^popd [+-][0-9]*$"
+^tmux ?$"
 
 ignorecommon+="|\
 ^vi[m]? [^/]*$|\
 ^l[las]? \S+$|\
 ^cd [^/]*$|\
-^mkdir .*$|\
+^mkdir .*|\
+^mv .*|\
 ^echo \S+$)"
 
 ## Zsh hook on appending lines to the history file. Note:
@@ -184,6 +209,8 @@ setopt pushdignoredups
 ## Option prefixed with 'no' is the inversion of the original.
 ## Same effect can be achieved with 'unsetopt' keyword.
 setopt nobeep
+setopt noflow_control
+## The last one is for unbinding flow control keys: C-s and C-q
 
 setopt histignorealldups
 setopt histreduceblanks
@@ -195,8 +222,3 @@ setopt extendedglob
 ## - approximate matching   ls (#a1)foobar  fobar, 
 ## - qualifiers             ls foo/*(#q@)   finds all symblic links (@) in foo 
 ## more info by googling article: 37-ZSH-Gem-2-Extended-globbing-and-expansion.html
-
-
-
-# AUTO CONDA ENV
-[[ -n $CONDA_EXE ]] && source $ZDOTDIR/conda_autoenv.sh || :
