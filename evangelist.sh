@@ -47,8 +47,8 @@ _checkhealth () {
   #         or
   #     'npm conda' (npm can be install via conda)
 
-  BASH_DEPS=(o:conda)
-  ZSH_DEPS=(r:zsh r:git o:conda o:fzf)
+  BASH_DEPS=(o:conda o:tree)
+  ZSH_DEPS=(r:zsh r:git o:conda o:fzf o:tree)
 
   [[ $(uname) != Darwin ]] \
     && ZSH_DEPS+=(o:transset:x11-apps)
@@ -100,7 +100,7 @@ _install () {
 
 install_vim () {
   # Check if neovim is available
-  { HAS nvim || HAS vim; } || { ECHO2 Missing: vim, neovim; return; }
+  ( HAS nvim || HAS vim ) || { ECHO2 Missing: vim, neovim; return; }
 
   ECHO Installing Vim configuration...
 
@@ -115,12 +115,14 @@ install_vim () {
 
   if HAS nvim
   then
-    (npm ls -g | grep neovim) &> /dev/null \
-      || npm install --silent -g neovim \
-      && echo Installed neovim-client.
-    pip show -qq pynvim \
-      || pip install -q pynvim \
-      && echo Installed pynvim.
+    ( npm ls -g | grep neovim \
+      || npm install -g neovim ) &> /dev/null \
+      && echo Installed neovim-client. \
+      || echo "Cannot execute: npm install -g neovim"
+    ( pip show -qq pynvim \
+      || pip install -q pynvim ) &> /dev/null \
+      && echo Installed pynvim. \
+      || echo "Cannot execute: pip install pynvim"
   fi
 
   # Back up original configs (just once)
@@ -254,7 +256,7 @@ install_bash () {
 
   local CONDA
   # Add conda init to .bashrc 
-  { HAS conda && conda &> /dev/null; } \
+  ( HAS conda && conda &> /dev/null ) \
     && { conda init bash > /dev/null && CONDA=A; } \
     || ECHO2 "conda doesn't seem to work"
 
@@ -309,7 +311,7 @@ install_zsh () {
 
   local CONDA
   # Add conda init to .zshrc
-  { HAS conda && conda &> /dev/null; } \
+  ( HAS conda && conda &> /dev/null ) \
     && { conda init zsh > /dev/null && CONDA=A; } \
     || ECHO2 "conda doesn't seem to work"
 
