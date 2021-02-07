@@ -1,9 +1,6 @@
 set editing-mode vi
 set keymap vi
 
-# bash >= 4.3
-set show-mode-in-prompt On
-
 set colored-stats On
 set completion-ignore-case On
 set completion-prefix-display-length 3
@@ -21,3 +18,8 @@ v: ''
 "k": history-search-backward
 "gg": beginning-of-history
 "G": end-of-history
+
+# bash >= 4.3
+set show-mode-in-prompt On
+set vi-ins-mode-string "+"
+set vi-cmd-mode-string ":"

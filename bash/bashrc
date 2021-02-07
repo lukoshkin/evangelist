@@ -10,10 +10,13 @@ then
 fi
 
 # Finish configuring locales.
-if [[ -z $LANG ]]; then
+if [[ -z $LANG ]] && locale -a | grep -qi 'en_us.utf8'
+then
   export LC_ALL=en_US.UTF-8
   export LANG=en_US.UTF-8
   export LANGUAGE=en_US.UTF-8
+else
+  echo "No utf8 locales found. See 'local-gen'"
 fi
 
 if which nvim &> /dev/null
@@ -52,7 +55,7 @@ shopt -s checkwinsize
 ## \\[\e[m\\] - color ends
 ## \u - username
 ## \W - current workdir
-export PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
+PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
 
 # Colored output for basic commands.
 alias ls='ls --color=auto'
@@ -66,6 +69,7 @@ alias ll='ls -lAht'
 alias fd='find . -type d -name'
 alias ff='find . -type f -name'
 alias md='mkdir -p'
+alias bashrc='vim ~/.bashrc'
 
 # if the system has both Vim and Neovim, use the latter
 which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
