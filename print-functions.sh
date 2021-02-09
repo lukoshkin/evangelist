@@ -31,7 +31,7 @@ ECHO2 () {
 
 instructions_after_install () {
   locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
-  local es=$?
+  local CODE=$?
 
   NOTE 210 "\nFURTHER INSTRUCTIONS:"
   printf 'TO FINISH THE INSTALLATION, '
@@ -39,7 +39,8 @@ instructions_after_install () {
   then
     printf "CHANGE THE CURRENT SHELL TO $(tr a-z A-Z <<< $1),\n\n"
     printf "\t${BOLD}${WHITE}chsh -s $(which $1)$RESET\n\n"
-  elif [[ $es -eq 1 ]]
+  fi
+  if [[ $CODE -eq 1 ]]
   then
     printf "GENERATE 'en_US' LOCALES,\n"
     printf '(You can choose another one)\n\n'
@@ -49,10 +50,10 @@ instructions_after_install () {
   printf 'THEN, LOG IN BACK.\n'
 }
 
-instructions_after_uninstall () {
+instructions_after_removal () {
   NOTE 210 "\nFURTHER INSTRUCTIONS:"
   printf 'TO FINISH THE REMOVAL, '
-  if [[ -z $1 ]]
+  if [[ -n $1 && ${SHELL##*/} != $1 ]]
   then
     printf 'RESTORE THE ORIGINAL VALUE OF THE LOGIN SHELL.'
     printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $1)$RESET\n\n"
@@ -68,6 +69,7 @@ prepend_text () {
 $2\\
 " $1
   else
+    [[ -z $2 ]] && { sed -i '1i\\' $1; return; }
     sed -i "1i $2" $1
   fi
 }

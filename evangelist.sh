@@ -84,7 +84,7 @@ _install () {
   touch update-list.txt
   if ! grep -q 'LOGIN-SHELL' update-list.txt
   then
-    echo LOGIN-SHELL:$SHELL >> update-list.txt
+    echo LOGIN-SHELL:${SHELL##*/} >> update-list.txt
     echo Installed components: >> update-list.txt
   fi
 
@@ -322,7 +322,7 @@ install_zsh () {
 
   # Deal with miniconda's bug
   grep -q '>>> conda init >>>' $ZDOTDIR/.zshrc \
-    || sed -n '/> conda init/,/< conda init/' ~/.zshrc >> $ZDOTDIR/.zshrc
+    || sed -n '/> conda init/,/< conda init/p' ~/.zshrc >> $ZDOTDIR/.zshrc
 
   add_entry_to_update_list zsh
 
@@ -471,7 +471,7 @@ _uninstall () {
   ECHO Successfully uninstalled.
 
   # Check if necessary to change the login shell
-  instructions_after_uninstall $LOGSHELL
+  instructions_after_removal $LOGSHELL
 }
 
 
