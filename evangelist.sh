@@ -81,6 +81,13 @@ _install () {
   mkdir -p $XDG_CACHE_HOME
   mkdir -p .bak
 
+  touch update-list.txt
+  if ! grep -q 'LOGIN-SHELL' update-list.txt
+  then
+    echo LOGIN-SHELL:$SHELL >> update-list.txt
+    echo Installed components: >> update-list.txt
+  fi
+
   if [[ $1 == bash ]]
   then
     install_vim
@@ -254,18 +261,17 @@ install_bash () {
 
   make_descriptor ~/.bashrc
 
-  local CONDA
   # Add conda init to .bashrc 
   ( HAS conda && conda &> /dev/null ) \
-    && { conda init bash > /dev/null && CONDA=A; } \
-    || ECHO2 "conda doesn't seem to work"
+    && conda init bash > /dev/null \
+    || ECHO2 "conda doesn't seem to work."
 
   add_entry_to_update_list bash
 
   ECHO Successfully installed: BASH configuration.
 
-  # Check if necessary to change the shell
-  print_further_instructions_about bash $CONDA
+  # Check if necessary to change the login shell
+  instructions_after_install bash
 }
 
 
@@ -309,18 +315,21 @@ install_zsh () {
     && git clone -q https://github.com/zplug/zplug $ZPLUG_HOME \
     && echo Installed zplug.
 
-  local CONDA
   # Add conda init to .zshrc
   ( HAS conda && conda &> /dev/null ) \
-    && { conda init zsh > /dev/null && CONDA=A; } \
+    && conda init zsh > /dev/null \
     || ECHO2 "conda doesn't seem to work"
+
+  # Deal with miniconda's bug
+  grep -q '>>> conda init >>>' $ZDOTDIR/.zshrc \
+    || sed -n '/> conda init/,/< conda init/' ~/.zshrc >> $ZDOTDIR/.zshrc
 
   add_entry_to_update_list zsh
 
   ECHO Successfully installed: ZSH configuration.
 
-  # Check if necessary to change the shell
-  print_further_instructions_about zsh $CONDA
+  # Check if necessary to change the login shell
+  instructions_after_install zsh
 }
 
 
@@ -337,6 +346,8 @@ _update () {
 
   SRC='evangelist.sh print-functions.sh'
 
+  # TODO: Add hook to handle updates that cannot be resolved
+  # ####  by the following code in the 'if'-statement.
   if [[ $1 != SKIP ]] && str_has_any "$UPD" $SRC
   then
     ECHO Self-updating...
@@ -353,12 +364,12 @@ _update () {
   for OBJ in $(echo $UPD | grep -v 'nvim'); do
     case ${OBJ##*/} in
       .bashrc | .inputrc)
-        [[ -n $(grep bash update-list.txt) ]] \
+        grep -q '^bash' update-list.txt \
           && cp $OBJ ~
         ;;
 
       .zshenv)
-        [[ -n $(grep zsh update-list.txt) ]] \
+        grep -q '^zsh' update-list.txt \
           && cp $OBJ ~/.zshenv
         ;;
 
@@ -370,18 +381,18 @@ _update () {
         ;;
 
       custom.js)
-        [[ -n $(grep notebook update-list.txt) ]] \
+        grep -q '^notebook' update-list.txt \
           && cp $OBJ $(jupyter --config-dir)/custom/custom.js
         ;;
 
       notebook.json)
-        [[ -n $(grep notebook update-list.txt) ]] \
+        grep -q '^notebook' update-list.txt \
           && cp $OBJ $(jupyter --config-dir)/nbconfig/notebook.json
         ;;
 
       *)
         ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
-        [[ $OBJ =~ zsh && -n $(grep zsh update-list.txt) ]] \
+        [[ $OBJ =~ zsh ]] && grep -q '^zsh' update-list.txt \
           && cp $OBJ $ZDOTDIR
         ;;
     esac
@@ -402,14 +413,14 @@ _uninstall () {
 
   ECHO Uninstalling...
 
-  [[ -n $(grep bash update-list.txt) ]] \
+  grep -q '^bash' update-list.txt \
     && rm ~/.{bashrc,inputrc}
 
   # Completely eradicate the possibility of removing '/'
-  [[ -n $(grep zsh update-list.txt) ]] \
-    && rm -f ~/.zshenv \
-    && ZDOTDIR=$(zsh -c 'echo $ZDOTDIR') \
-    && [[ -n $ZDOTDIR ]] && rm -rf $ZDOTDIR
+  grep -q '^zsh' update-list.txt \
+    && { rm -f ~/.zshenv;
+         ZDOTDIR=$(zsh -c 'echo $ZDOTDIR');
+         [[ -n $ZDOTDIR ]] && rm -rf $ZDOTDIR; }
 
   rm -rf $XDG_CONFIG_HOME/nvim
 
@@ -417,7 +428,7 @@ _uninstall () {
   [[ -n $XDG_CONFIG_HOME ]] \
     && rm -f $XDG_CONFIG_HOME/tmux/.tmux.conf
 
-  [[ -n $(grep notebook update-list.txt) ]] \
+  grep -q '^notebook' update-list.txt \
     && { JUPCONFDIR=$(jupyter --config-dir);
          rm $JUPCONFDIR/custom/custom.js;
          rm $JUPCONFDIR/nbconfig/notebook.json; }
@@ -453,11 +464,14 @@ _uninstall () {
     esac
   done
 
+  LOGSHELL=$(grep 'LOGIN-SHELL' update-list.txt | cut -d ':' -f2)
   rm update-list.txt
   rm -rf .bak
 
   ECHO Successfully uninstalled.
-  NOTE 210 'CLOSE YOUR CURRENT SHELL AND OPEN A NEW ONE.'
+
+  # Check if necessary to change the login shell
+  instructions_after_uninstall $LOGSHELL
 }
 
 

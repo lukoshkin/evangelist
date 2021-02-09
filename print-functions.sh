@@ -3,52 +3,62 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
-PINK=$(tput setaf 219)
-CYAN=$(tput setaf 87)
-PALE=$(tput setaf 153)
+WHITE=$(tput setaf 15)
 
+# NOTE: bold text modifier (below) doesn't affect
+# ####  colors defined as the first three above
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
 
 
-#ECHO () {
-#  echo -e "${BOLD}${CYAN}EVANGELIST ~>$RESET ${PALE}$@${RESET}"
-#}
-
 ECHO () {
-  echo -e "${BOLD}${CYAN}EVANGELIST ~>$RESET $@"
+  local RAIN=$(tput setaf 152)
+  local PURPLE=$(tput setaf 111)
+  echo -e "${BOLD}${PURPLE}EVANGELIST ~>$RESET ${RAIN}$@${RESET}"
 }
 
 NOTE () {
   local COLOR=$(tput setaf $1)
-  echo -e "\n\n${BOLD}${COLOR}$2$RESET"
+  echo -e "\n${BOLD}${COLOR}$2${RESET}"
 }
 
 ECHO2 () {
-  >&2 echo -e "${BOLD}${PINK}EVANGELIST:${RED}PROBLEM:$RESET $@"
+  local SALMON=$(tput setaf 210)
+  local BUFF=$(tput setaf 186)
+  >&2 echo -e "${BOLD}${SALMON}EVANGELIST:${RED}PROBLEM:$RESET ${BUFF}$@${RESET}"
 }
 
 
-print_further_instructions_about () {
+instructions_after_install () {
   locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
   local es=$?
 
-  NOTE 15 'FURTHER INSTRUCTIONS:'
-  printf "TO FINISH THE INSTALLATION, "
+  NOTE 210 "\nFURTHER INSTRUCTIONS:"
+  printf 'TO FINISH THE INSTALLATION, '
   if [[ ${SHELL##*/} != $1 ]]
   then
-    printf "CHANGE THE CURRENT SHELL TO $1,\n\n"
-    printf "\tchsh -s $(which $1)\n\n"
+    printf "CHANGE THE CURRENT SHELL TO $(tr a-z A-Z <<< $1),\n\n"
+    printf "\t${BOLD}${WHITE}chsh -s $(which $1)$RESET\n\n"
   elif [[ $es -eq 1 ]]
   then
     printf "GENERATE 'en_US' LOCALES,\n"
-    printf "(You can choose another one)\n\n"
-    printf "\tsudo locale-gen en_US.UTF-8\n\n"
+    printf '(You can choose another one)\n\n'
+    printf "\t${BOLD}${WHITE}sudo locale-gen en_US.UTF-8$RESET\n\n"
   fi
-  printf "LOG OUT FROM THE CURRENT ACCOUNT. "
-  printf "THEN, LOG IN BACK.\n"
+  printf 'LOG OUT FROM THE CURRENT ACCOUNT. '
+  printf 'THEN, LOG IN BACK.\n'
 }
 
+instructions_after_uninstall () {
+  NOTE 210 "\nFURTHER INSTRUCTIONS:"
+  printf 'TO FINISH THE REMOVAL, '
+  if [[ -z $1 ]]
+  then
+    printf 'RESTORE THE ORIGINAL VALUE OF THE LOGIN SHELL.'
+    printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $1)$RESET\n\n"
+  fi
+  printf 'CLOSE YOUR CURRENT SHELL AND OPEN A NEW ONE.\n'
+}
 
 
 prepend_text () {
@@ -71,6 +81,7 @@ make_descriptor () {
     prepend_text $1 '# ZSH'
   fi
 
+  prepend_text $1 ''
   prepend_text $1 "export XDG_CACHE_HOME=\"$XDG_CACHE_HOME\""
   prepend_text $1 "export XDG_DATA_HOME=\"$XDG_DATA_HOME\""
   prepend_text $1 "export XDG_CONFIG_HOME=\"$XDG_CONFIG_HOME\""
@@ -78,6 +89,7 @@ make_descriptor () {
 
   if [[ $1 =~ bash ]]
   then
+    prepend_text $1 ''
     prepend_text $1 '[ -z "$PS1" ] && return'
     prepend_text $1 '# If not running interactively, do not do anything.'
   fi
@@ -85,10 +97,9 @@ make_descriptor () {
 
 
 add_entry_to_update_list () {
-  [[ ! -f update-list.txt ]] || ! grep -q $1 update-list.txt \
-    && echo $1 >> update-list.txt
+  grep -q "^$1" update-list.txt \
+    || echo $1 >> update-list.txt
 }
-
 
 
 # NOTE: stderr-pipe redirection (|&) doesn't work on old shells
@@ -162,7 +173,6 @@ modulecheck () {
 }
 
 
-
 str_has_any () {
   local intersection=0
   local stringset=$1
@@ -176,7 +186,6 @@ str_has_any () {
   [[ $intersection -gt 0 ]] && return 0
   return 1
 }
-
 
 
 _help () {

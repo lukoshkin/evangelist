@@ -30,3 +30,4 @@ source $ZDOTDIR/extra.zsh
 
 # if the system has both Vim and Neovim, use the latter
 which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
+

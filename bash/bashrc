@@ -30,8 +30,6 @@ fi
 export VISUAL
 export EDITOR=$VISUAL
 
-# Don't go further if not running interactively
-[ -z "$PS1" ] && return
 
 # Standard bash settings
 ## Don't put duplicate lines in the history. See bash(1) for more options
