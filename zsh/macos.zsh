@@ -17,26 +17,18 @@ function gg() {
   then
     pushd +1 2> /dev/null
     [[ $? -ne 0 ]] && echo Singular dir stack
-    return
   elif [[ $1 == '0' ]]
   then
     pushd -0
-    return
-  elif [[ $1 =~ '\+[0-9]+' ]]
+  elif [[ $1 =~ ^[0-9]+ ]]
   then
-    pushd $1
-    return
-  elif [[ $1 =~ -[0-9]+ ]]
+    pushd +$1
+  elif [[ $1 =~ ^-[0-9]+ ]]
   then
     popd $1
-    return
   else
     echo Wrong args
-    return
   fi
-
-  pushd +$1 > /dev/null
-  d
 }
 alias G='gg 0'
 
@@ -88,11 +80,6 @@ bindkey -M viins '^?' backward-delete-char
 bindkey -M vicmd 'k' history-substring-search-up
 bindkey -M vicmd 'j' history-substring-search-down
 bindkey -M vicmd '/' history-interactive-fuzzy-search
-
-## Push input
-### unbind C-q and C-s
-stty start '^-' stop '^-'
-
 bindkey -M viins '^Q' push-input
 bindkey -M vicmd '^Q' push-input-from-cmd
 

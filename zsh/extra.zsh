@@ -17,26 +17,18 @@ function gg() {
   then
     pushd +1 2> /dev/null
     [[ $? -ne 0 ]] && echo Singular dir stack
-    return
   elif [[ $1 == '0' ]]
   then
     pushd -0
-    return
-  elif [[ $1 =~ '\+[0-9]+' ]]
+  elif [[ $1 =~ ^[0-9]+ ]]
   then
-    pushd $1
-    return
-  elif [[ $1 =~ -[0-9]+ ]]
+    pushd +$1
+  elif [[ $1 =~ ^-[0-9]+ ]]
   then
     popd $1
-    return
   else
     echo Wrong args
-    return
   fi
-
-  pushd +$1 > /dev/null
-  d
 }
 alias G='gg 0'
 
@@ -81,7 +73,7 @@ alias vimrc="vim ~/.config/nvim/init.vim"
 # CONSOLE INPUT
 # -------------
 ## Key repeat rate (to navigate faster with a key pressed)
-xset r rate 250 70
+xset r rate 250 70 2> /dev/null
 
 ## Some cozy bindings
 ### First line says: use vim bindings map
@@ -184,9 +176,6 @@ zle -N decr-transp
 ## <Alt - '-' > = increase transparency a bit
 bindkey -M vicmd '^[+' incr-transp
 bindkey -M vicmd '^[-' decr-transp
-
-## Set on startup transparency
-transset -a .9 > /dev/null
 
 
 
