@@ -1,6 +1,3 @@
-## Even if you don't care about your $HOME tidiness,
-## which is the primary goal of these variable definitions,
-## other files require them to be defined.
 
 # Set initialization file for Vim
 if ! which nvim &> /dev/null && which vim &> /dev/null
@@ -10,13 +7,16 @@ then
 fi
 
 # Finish configuring locales.
-if [[ -z $LANG ]] && locale -a | grep -qi 'en_us.utf8'
+if [[ -z $LANG ]]
 then
-  export LC_ALL=en_US.UTF-8
-  export LANG=en_US.UTF-8
-  export LANGUAGE=en_US.UTF-8
-else
-  echo "No utf8 locales found. See 'local-gen'"
+  if locale -a | grep -qi 'en_us.utf8'
+  then
+    export LC_ALL=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export LANGUAGE=en_US.UTF-8
+  else
+    echo "No utf8 locales found. See 'local-gen'."
+  fi
 fi
 
 if which nvim &> /dev/null
@@ -55,19 +55,53 @@ shopt -s checkwinsize
 ## \W - current workdir
 PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
 
-# Colored output for basic commands.
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'  # same as grep -F
-alias egrep='egrep --color=auto'  # same as grep -E
 
-# Handy aliases
-alias l='ls -lAh'
-alias ll='ls -lAht'
-alias fd='find . -type d -name'
-alias ff='find . -type f -name'
-alias md='mkdir -p'
-alias bashrc='vim ~/.bashrc'
+# Some bash specific aliases
+alias ls='ls --color=auto'
+alias _bashrc='vim ~/.bashrc'
+alias bashrc="vim $XDG_CONFIG_HOME/bash/custom.bash"
+
+alias cd=_autocd
+
+_autocd () {
+  local INDIR
+  if [[ -z $1 ]]
+  then
+    INDIR=~
+  elif [[ $1 == - ]]
+  then
+    [[ $(dirs -p | wc -l) -gt 1 ]] \
+      && pushd > /dev/null \
+      || pushd +0 > /dev/null
+    echo ${DIRSTACK[0]}
+    return
+  else
+    INDIR=$1
+  fi
+
+  local CNT=0
+  if [[ $(dirs -l) =~ $(readlink -f $INDIR) ]]
+  then
+    for DIR in $(dirs -l)
+    do
+      if [[ $DIR == $(readlink -f $INDIR) ]]
+      then
+        break
+      fi
+      (( CNT++ ))
+    done
+    pushd +$CNT > /dev/null
+  else
+    pushd $INDIR > /dev/null
+  fi
+}
+
+# Import more aliases
+source $XDG_CONFIG_HOME/bash/aliases-functions.sh
+
+# Import user-defined settings
+[[ -f $XDG_CONFIG_HOME/bash/custom.bash ]] \
+  && source $XDG_CONFIG_HOME/bash/custom.bash
 
 # if the system has both Vim and Neovim, use the latter
 which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
@@ -75,3 +109,4 @@ which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
 # Increase key repeat rate with xset if it is available.
 # Ignore "unable to open display" error that appears in docker.
 which xset &> /dev/null && xset r rate 250 70 2> /dev/null
+
