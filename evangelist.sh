@@ -1,4 +1,7 @@
 #!/bin/bash
+# TODO: keep configs in EVANGELIST_HOME,
+# ####  change only environment variables,
+# ####  and move a few files for which it don't work.
 
 source print-functions.sh
 
@@ -27,7 +30,7 @@ _checkhealth () {
   then
     NOTE 147 "None of the listed configs is installed yet."
   else
-    NOTE 147 "Installed: $(tr '\n' ' ' < update-list.txt)"
+    NOTE 147 "Installed: $(sed -n '3,$p' update-list.txt | tr '\n' ' ')"
   fi
 
   # modulecheck's syntaxis: MODIFIER:COMMAND[:PACKAGE]
@@ -57,16 +60,11 @@ _checkhealth () {
     && { BASH_DEPS+=(o:locale-gen:locales);
          ZSH_DEPS+=(r:locale-gen:locales); }
 
-  [[ -z $1 || $1 == bash ]] \
-    && modulecheck BASH ${BASH_DEPS[@]}
-  [[ -z $1 || $1 == zsh ]] \
-    && modulecheck ZSH ${ZSH_DEPS[@]}
-  [[ -z $1 || $1 == vim ]] \
-    && modulecheck VIM r:'nvim vim':neovim r:curl o:pip o:'npm conda'
-  [[ -z $1 || $1 == notebook ]] \
-    && modulecheck NOTEBOOK r:pip r:git
-  [[ -z $1 || $1 == tmux ]] \
-    && modulecheck TMUX r:tmux
+  modulecheck BASH ${BASH_DEPS[@]}
+  modulecheck ZSH ${ZSH_DEPS[@]}
+  modulecheck VIM r:'nvim vim':neovim r:curl o:pip o:'npm conda'
+  modulecheck NOTEBOOK r:pip r:git
+  modulecheck TMUX r:tmux
 }
 
 
@@ -237,10 +235,7 @@ install_tmux () {
   local XDG=$(awk -v V=$VER 'BEGIN{if (V <= 3.1) print "1"; else print "0"}')
 
   # Copy new configs
-  (( XDG )) \
-    && cp tmux.conf ~/.tmux.conf \
-    || { mkdir -p $XDG_CACHE_HOME/tmux; \
-         cp tmux.conf $XDG_CACHE_HOME/tmux/tmux.conf; }
+  (( XDG )) && cp tmux/tmux.conf ~/.tmux.conf || cp -R tmux $XDG_CONFIG_HOME
 
   add_entry_to_update_list tmux
 
@@ -258,6 +253,8 @@ install_bash () {
   # Copy new configs
   cp bash/bashrc ~/.bashrc
   cp bash/inputrc ~/.inputrc
+  mkdir -p $XDG_CONFIG_HOME/bash
+  cp bash/aliases-functions.sh $XDG_CONFIG_HOME/bash
 
   make_descriptor ~/.bashrc
 
@@ -297,6 +294,7 @@ install_zsh () {
   # Copy new configs
   cp zsh/zshrc $ZDOTDIR/.zshrc
   cp zsh/agkozakrc $ZDOTDIR
+  cp bash/aliases-functions.sh $ZDOTDIR
   cp zsh/zshenv ~/.zshenv
 
   HAS conda && cp zsh/conda_autoenv.sh $ZDOTDIR 
@@ -335,6 +333,7 @@ install_zsh () {
 
 _update () {
   # Check the requirements
+  # TODO: Print messages of pulled commits
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f update-list.txt ]] || { ECHO2 Missing 'update-list.txt'.; exit; }
 
@@ -348,6 +347,8 @@ _update () {
 
   # TODO: Add hook to handle updates that cannot be resolved
   # ####  by the following code in the 'if'-statement.
+  # E.g.: If the structure of 'update-list.txt' changes during development,
+  # ####  one must rewrite the file if it was generated with old installation scripts.
   if [[ $1 != SKIP ]] && str_has_any "$UPD" $SRC
   then
     ECHO Self-updating...
@@ -361,7 +362,8 @@ _update () {
   ECHO 'Updating installed components if any...'
   git merge || exit 1
 
-  for OBJ in $(echo $UPD | grep -v 'nvim'); do
+  for OBJ in $(echo $UPD | grep -v 'nvim')
+  do
     case ${OBJ##*/} in
       .bashrc | .inputrc)
         grep -q '^bash' update-list.txt \
@@ -371,6 +373,13 @@ _update () {
       .zshenv)
         grep -q '^zsh' update-list.txt \
           && cp $OBJ ~/.zshenv
+        ;;
+
+      aliases-functions.sh)
+        grep -q '^bash' update-list.txt \
+          && cp $OBJ $XDG_CONFIG_HOME/bash
+        grep -q '^zsh' update-list.txt \
+          && cp $OBJ $ZDOTDIR
         ;;
 
       tmux.conf)
@@ -407,20 +416,24 @@ _update () {
 
 
 _uninstall () {
-  [[ -d .bak ]] || { ECHO2 "\n\tIt seems like the bakup folder was removed." \
-    "\n\tIt also might have never been created on install."; exit; }
+  [[ -d .bak ]] || { ECHO2 Missing '.bak'; exit; }
   [[ -f update-list.txt ]] || { ECHO2 Missing 'update-list.txt'.; exit; }
 
   ECHO Uninstalling...
 
-  grep -q '^bash' update-list.txt \
-    && rm ~/.{bashrc,inputrc}
+  if grep -q '^bash' update-list.txt
+  then
+    rm $XDG_CONFIG_HOME/bash/aliases-functions.sh
+    rm ~/.{bashrc,inputrc}
+  fi
 
   # Completely eradicate the possibility of removing '/'
-  grep -q '^zsh' update-list.txt \
-    && { rm -f ~/.zshenv;
-         ZDOTDIR=$(zsh -c 'echo $ZDOTDIR');
-         [[ -n $ZDOTDIR ]] && rm -rf $ZDOTDIR; }
+  if grep -q '^zsh' update-list.txt
+  then
+    rm -f ~/.zshenv
+    ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
+    [[ -n $ZDOTDIR ]] && rm -rf $ZDOTDIR
+  fi
 
   rm -rf $XDG_CONFIG_HOME/nvim
 
@@ -428,12 +441,15 @@ _uninstall () {
   [[ -n $XDG_CONFIG_HOME ]] \
     && rm -f $XDG_CONFIG_HOME/tmux/.tmux.conf
 
-  grep -q '^notebook' update-list.txt \
-    && { JUPCONFDIR=$(jupyter --config-dir);
-         rm $JUPCONFDIR/custom/custom.js;
-         rm $JUPCONFDIR/nbconfig/notebook.json; }
+  if grep -q '^notebook' update-list.txt
+  then
+    JUPCONFDIR=$(jupyter --config-dir)
+    rm $JUPCONFDIR/nbconfig/notebook.json
+    rm $JUPCONFDIR/custom/custom.js
+  fi
 
-  for OBJ in .bak/* .bak/.*; do
+  for OBJ in .bak/{*,.*}
+  do
     case ${OBJ##*/} in
       .bashrc | .inputrc | .zshenv | .zshrc | .tmux.conf)
         cp $OBJ ~
