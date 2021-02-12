@@ -1,7 +1,6 @@
 ARG IMG_NAME
 FROM $IMG_NAME
 
-ARG BASH_REWRITE=true
 ENV XDG_CONFIG_HOME=$HOME/.config
 ENV XDG_CACHE_HOME=$HOME/.cache
 ENV XDG_DATA_HOME=$HOME/.local/share
@@ -16,8 +15,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get -qq update \
     && apt-get install -yq \
         python3 python3-dev python3-pip \
-        git neovim tmux curl npm \
-        ruby-full locales x11-xserver-utils nodejs \
+        git neovim tmux curl npm nodejs \
+        ruby-full locales x11-xserver-utils tree \
     && npm install -g neovim \
     && gem install neovim \
     && locale-gen en_US.UTF-8 \
@@ -38,12 +37,9 @@ USER $USER
 # Download configs and distribute them to their locations.
 RUN cd ~ && git clone -b develop https://github.com/lukoshkin/dotfiles.git \
     && cd dotfiles \
-    && if [ BASH_REWRITE ]; \
-       then \
-         mv bash/bashrc ~/.bashrc; \
-       else \
-         cat bash/bashrc >> ~/.bashrc; \
-       fi \
+    && sed -n '> RESERVED-CONFS/,/< RESERVED-CONFS/{//!p}' \
+       ~/.bashrc >> bash/bashrc \
+    && mv bash/bashrc ~/.bashrc \
     && mv tmux.conf ~/.tmux.conf \
     && mv bash/inputrc ~/.inputrc \
     && mv nvim $XDG_CONFIG_HOME/ \
