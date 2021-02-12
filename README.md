@@ -44,14 +44,16 @@ and their installation, both, will become more universal and accessible.
       is about.
     - If the console you are going to work in is `zsh`, check also zsh-plugins
       in `zsh/.zshrc` file.  
-</br>
+<br>
+
 3. **Install minimal list of prerequisites** (The full list depends on the set of plugins you have
 chosen in the previous step). For help, run `./evangelist.sh checkhealth`
 
 4. In your console, **run from the project directory**:
     - `./evangelist.sh install <configs>`  
     where `<configs>` is `bash`, `zsh`, or `jupyter`  
-</br>
+<br>
+
 5. **Re-login in the shell.**
 
 Since Vim keeps all changes made to files with its help, one might consider
@@ -133,8 +135,8 @@ Before to get into it, let's get familiar with the imposed notation:
   | mode | shortcut | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
   |:----:|:--------:|:----------|
   | ins | `jj` | exit insert mode |
-  | cmd | `(j|k)` | go to the (next \| previous) matching substring in cmd history <br> _provided no substring,_ go to the (next \| previous) cmd |
-  | any | `<M-(j|k)>` | go to the (next \| previous) cmd matching the current buffer from the beginning |
+  | cmd | `(j\|k)` | go to the (next \| previous) matching substring in cmd history <br> _provided no substring,_ go to the (next \| previous) cmd |
+  | any | `<M-(j\|k)>` | go to the (next \| previous) cmd matching the current buffer from the beginning |
   | any | `<C-q>` | deletes the current buffer, so one can execute another cmd, <br> after which the original one would be restored |
   | cmd | `/` | start interactive fuzzy search over cmds in the history file |
 
@@ -142,7 +144,7 @@ Before to get into it, let's get familiar with the imposed notation:
   (It means that they will not work or be active on such as macOS or the one with Wayland protocol)
   |      |          |           |
   |:----:|:--------:|:----------|
-  | any | `<M-(+|-)>` | (in \| de)crease terminal window transparency a bit |
+  | any | `<M-(+\|-)>` | (in \| de)crease terminal window transparency a bit |
   </details>
 
 * <details>
@@ -154,7 +156,7 @@ Before to get into it, let's get familiar with the imposed notation:
   | `v` | open the last file closed (in Vim) |
   | `vv` | start Vim from the list of recently edited files |
   | `d` | show directories visited by user (autocd zsh option) |
-  | `(gg|G)` | go through the dir stack in (forward \| backward) direction |
+  | `(gg\|G)` | go through the dir stack in (forward \| backward) direction |
   | `gg n` | go to n-th directory in the list obtained with `d` <br> &emsp;&emsp;&emsp;&emsp;&emsp; (starting from 0) |
 
   </details>
@@ -175,7 +177,7 @@ Before to get into it, let's get familiar with the imposed notation:
   | visual | `<leader>y` | yank selected text |
   | normal | `<leader>t` | paste date and time before the cursor |
   | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss message in the cmd line below |
-  | normal | `<M-(m|M)>` | insert empty line (below \| above) |
+  | normal | `<M-(m\|M)>` | insert empty line (below \| above) |
   | any | `<F12>` | toggle mouse |
   </details>
 
@@ -191,7 +193,7 @@ Before to get into it, let's get familiar with the imposed notation:
   | normal | `<C-p>` | open CtrlP (file navigation) |
   | normal | `<Space>sy` | show yanks |
   | normal | `<Space>cy` | clear yanks (note: the last one is always kept) |
-  | normal | `<M-(n|p)>` | change inserted text with the (next \| previous) yank in the yank buffer |
+  | normal | `<M-(n\|p)>` | change inserted text with the (next \| previous) yank in the yank buffer |
   <!---
   | ctrlP | `<C-j>`, `<C-k>` | navigation keys |
   | ctrlP | `<C-r>` | enable regex |
@@ -230,9 +232,9 @@ Before to get into it, let's get familiar with the imposed notation:
 | Jupyter | `00` | restart the kernel without confirmation |
 | Jupyter | `i` | enter Vim mode |
 | Vim | `<M-j>` | exit from Vim mode (enables Jupyter mode) |
-| Jupyter | `h(j|k)` | (un- \| \<blank\> )collapse the selected heading cell's section |
-| Jupyter | `<C-(j|k)>` | move selected cells (down \| up) |
-| Jupyter | `(J|K)` | extend selected cells (below \| above) |
+| Jupyter | `h(j\|k)` | (un- \| \<blank\> )collapse the selected heading cell's section |
+| Jupyter | `<C-(j\|k)>` | move selected cells (down \| up) |
+| Jupyter | `(J\|K)` | extend selected cells (below \| above) |
 
 Check the rest settings with `<F1>` or `H` (`<Shift-h>`) while running Jupyter session.
 </details>
@@ -243,9 +245,9 @@ Check the rest settings with `<F1>` or `H` (`<Shift-h>`) while running Jupyter s
 
 | shortcut | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
 |:--------:|:-----------|
-| `<C-b> + (h|j|k|l)` | go to the window (on the left \| below \| above \| on the right) |
-| `<M-S-(h|j|k|l)>` | resize pane moving the border (to the left \| down \| up \| to the right) |
-| `<C-b> + (H|J|K|L)` | swap the window that has input focus with <br> the one (on the left \| below \| above \| on the right) |
+| `<C-b> + (h\|j\|k\|l)` | go to the window (on the left \| below \| above \| on the right) |
+| `<M-S-(h\|j\|k\|l)>` | resize pane moving the border (to the left \| down \| up \| to the right) |
+| `<C-b> + (H\|J\|K\|L)` | swap the window that has input focus with <br> the one (on the left \| below \| above \| on the right) |
 | `<C-b>y` | toggle synchronous input in all panes |
 | `<C-b>m` | toggle mouse support |
 
