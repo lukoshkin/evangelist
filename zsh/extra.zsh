@@ -168,6 +168,7 @@ setopt nobeep
 setopt noflow_control
 ## The last one is for unbinding flow control keys: C-s and C-q
 
+setopt hist_ignore_space
 setopt histignorealldups
 setopt histreduceblanks
 

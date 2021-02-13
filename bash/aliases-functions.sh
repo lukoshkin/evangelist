@@ -16,13 +16,13 @@ gg () {
   then
     pushd +1 &> /dev/null
     [[ $? -ne 0 ]] && echo Singular dir stack || :
-  elif [[ $1 == '0' ]]
+  elif [[ $1 == 0 ]]
   then
     pushd -0 > /dev/null
-  elif [[ $1 =~ ^[0-9]+ ]]
+  elif [[ $1 =~ ^[0-9]+$ ]]
   then
     pushd +$1 > /dev/null
-  elif [[ $1 =~ ^-[0-9]+ ]]
+  elif [[ $1 =~ ^-[0-9]+$ ]]
   then
     popd +${1:1}
   else
