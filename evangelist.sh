@@ -231,11 +231,12 @@ install_tmux () {
     && cp -n $XDG_CONFIG_HOME/tmux/tmux.conf .bak
 
   # Version of tmux determines where to put tmux configs
-  local VER=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
-  local XDG=$(awk -v V=$VER 'BEGIN{if (V <= 3.1) print "1"; else print "0"}')
+  local VERSION=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
 
   # Copy new configs
-  (( XDG )) && cp tmux/tmux.conf ~/.tmux.conf || cp -R tmux $XDG_CONFIG_HOME
+  dummy_v1_gt_v2 $VERSION 3.1 \
+    && cp -R tmux $XDG_CONFIG_HOME \
+    || cp tmux/tmux.conf ~/.tmux.conf
 
   add_entry_to_update_list tmux
 
@@ -384,9 +385,9 @@ _update () {
 
       tmux.conf)
         TMUXV=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
-        [[ $TMUXV -le 3.1 ]] \
-          && cp $OBJ ~/.${OBJ##*/} \
-          || cp $OBJ $XDG_CONFIG_HOME/tmux
+        dummy_v1_gt_v2 $TMUXV 3.1 \
+          && cp $OBJ $XDG_CONFIG_HOME/tmux \
+          || cp $OBJ ~/.${OBJ##*/}
         ;;
 
       custom.js)
@@ -432,7 +433,7 @@ _uninstall () {
   then
     rm -f ~/.zshenv
     ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
-    [[ -n $ZDOTDIR ]] && rm -rf $ZDOTDIR
+    [[ -n $ZDOTDIR ]] && zsh -c 'rm $ZDOTDIR/^custrom.zsh'
   fi
 
   rm -rf $XDG_CONFIG_HOME/nvim
@@ -456,7 +457,7 @@ _uninstall () {
         ;;
 
       zdotdir)
-        cp -a $OBJ/. $ZDOTDIR
+        ls -A $OBJ | sed '/custom.zsh/d' | xargs -I{} cp $OBJ/{} $ZDOTDIR
         ;;
 
       nvim)

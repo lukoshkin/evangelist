@@ -200,3 +200,41 @@ _help () {
   printf "  %-20s Roll back to the original settings.\n" 'uninstall'
   printf "  %-20s Show this message and quit.\n" 'help'
 }
+
+
+dummy_v1_gt_v2 () {
+  declare -a version1 version2
+  if [[ $(readlink /proc/$$/exe) == *bash ]]
+  then
+    IFS='.' read -r -a version1 <<< $1
+    IFS='.' read -r -a version2 <<< $2
+    local shear=0
+  elif [[ $(readlink /proc/$$/exe) == *zsh ]]
+  then
+    IFS='.' read -r -A version1 <<< $1
+    IFS='.' read -r -A version2 <<< $2
+    local shear=1
+  else
+    ECHO2 "Don't support this shell."
+    exit
+  fi
+
+  for ((i=shear; i<3+shear; ++i ))
+  do
+    if [[ ${version1[$i]} == ${version2[$i]} ]]
+    then
+      continue
+    fi
+
+    if [[ ${version1[$i]} =~ ^[0-9]+$ && ${version2[$i]} =~ ^[0-9]+$ ]]
+    then
+      [[ ${version1[$i]} -gt ${version2[$i]} ]] && return 0
+    else
+      [[ ${version1[$i]} > ${version2[$i]} ]] && return 0
+    fi
+
+    break
+  done
+  return 1
+}
+
