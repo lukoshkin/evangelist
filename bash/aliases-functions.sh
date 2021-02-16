@@ -1,7 +1,8 @@
 #!/bin/bash
 
 alias l='ls -lAh'
-alias ll='ls -lAht'
+alias ll='ls -lh'
+alias lt='ls -lAht'
 alias md='mkdir -p'
 
 alias _vimrc="vim $MYVIMRC"

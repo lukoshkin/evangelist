@@ -53,3 +53,9 @@ endif
 " source $XDG_CONFIG_HOME/nvim/conf/md-preview.vim
 " source $XDG_CONFIG_HOME/nvim/conf/tex.vim
 " source $XDG_CONFIG_HOME/nvim/conf/ycm.vim
+
+
+" Import user-defined settings
+if filereadable($XDG_CONFIG_HOME."/evangelist/custom/custom.vim")
+  source $XDG_CONFIG_HOME/evangelist/custom/custom.vim
+endif

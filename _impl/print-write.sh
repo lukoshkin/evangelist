@@ -98,12 +98,6 @@ make_descriptor () {
 }
 
 
-add_entry_to_update_list () {
-  grep -q "^$1" update-list.txt \
-    || echo $1 >> update-list.txt
-}
-
-
 # NOTE: stderr-pipe redirection (|&) doesn't work on old shells
 HAS () {
   [[ $(type $@ 2>&1 | grep -c 'not found') -lt $# ]] && return 0
@@ -120,11 +114,12 @@ modulecheck () {
   local required=()
   local optional=()
 
+  local m v n
   while [[ -n $1 ]]
   do
-    local m=$(cut -d ':' -f1 <<< $1)
-    local v=$(cut -d ':' -f2 <<< $1)
-    local n=$(cut -d ':' -f3 <<< $1)
+    m=$(cut -d ':' -f1 <<< $1)
+    v=$(cut -d ':' -f2 <<< $1)
+    n=$(cut -d ':' -f3 <<< $1)
 
     if [[ $m == r ]]
     then
@@ -172,69 +167,5 @@ modulecheck () {
     echo -e "  $p"
   done
   echo
-}
-
-
-str_has_any () {
-  local intersection=0
-  local stringset=$1
-
-  while [[ -n $2 ]]
-  do
-    [[ $stringset =~ $2 ]] && (( intersection+=1))
-    shift
-  done
-
-  [[ $intersection -gt 0 ]] && return 0
-  return 1
-}
-
-
-_help () {
-  echo -e "Usage: ./evangelist.sh [cmd] [args]\n"
-  echo -e "Commands:\n"
-
-  printf "  %-20s Update the repository and installed configs.\n" 'update'
-  printf "  %-20s Install one of the specified setups: bash zsh notebook.\n" 'install'
-  printf "  %-20s Show the installation status or readiness to install.\n" 'checkhealth'
-  printf "  %-20s Roll back to the original settings.\n" 'uninstall'
-  printf "  %-20s Show this message and quit.\n" 'help'
-}
-
-
-dummy_v1_gt_v2 () {
-  declare -a version1 version2
-  if [[ $(readlink /proc/$$/exe) == *bash ]]
-  then
-    IFS='.' read -r -a version1 <<< $1
-    IFS='.' read -r -a version2 <<< $2
-    local shear=0
-  elif [[ $(readlink /proc/$$/exe) == *zsh ]]
-  then
-    IFS='.' read -r -A version1 <<< $1
-    IFS='.' read -r -A version2 <<< $2
-    local shear=1
-  else
-    ECHO2 "Don't support this shell."
-    exit
-  fi
-
-  for ((i=shear; i<3+shear; ++i ))
-  do
-    if [[ ${version1[$i]} == ${version2[$i]} ]]
-    then
-      continue
-    fi
-
-    if [[ ${version1[$i]} =~ ^[0-9]+$ && ${version2[$i]} =~ ^[0-9]+$ ]]
-    then
-      [[ ${version1[$i]} -gt ${version2[$i]} ]] && return 0
-    else
-      [[ ${version1[$i]} > ${version2[$i]} ]] && return 0
-    fi
-
-    break
-  done
-  return 1
 }
 

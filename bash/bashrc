@@ -97,11 +97,11 @@ _autocd () {
 }
 
 # Import more aliases
-source $XDG_CONFIG_HOME/bash/aliases-functions.sh
+source $XDG_CONFIG_HOME/evangelist/bash/aliases-functions.sh
 
 # Import user-defined settings
-[[ -f $XDG_CONFIG_HOME/bash/custom.bash ]] \
-  && source $XDG_CONFIG_HOME/bash/custom.bash
+[[ -f $XDG_CONFIG_HOME/evangelist/custom/custom.bash ]] \
+  && source $XDG_CONFIG_HOME/evangelist/custom/custom.bash
 
 # if the system has both Vim and Neovim, use the latter
 which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
