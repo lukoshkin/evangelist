@@ -12,12 +12,15 @@ back_up_original_configs () {
       m=$(cut -d ':' -f1 <<< $arg) 
       v=$(cut -d ':' -f2 <<< $arg)
       n=$(cut -d ':' -f3 <<< $arg)
+
+      v=$(eval echo $v)
+      n=$(eval echo $n)
       case $m in 
         f)
-          [[ -f $v ]] && cp $v .bak/$n
+          [[ -f "$v" ]] && cp "$v" ".bak/$n"
           ;;
         d)
-          [[ -d $v ]] && cp -R $v .bak/$n
+          [[ -d "$v" ]] && cp -R "$v" ".bak/$n"
           ;;
         *)
           echo Wrong argument
@@ -26,7 +29,6 @@ back_up_original_configs () {
       esac
     done
   fi
-
 }
 
 

@@ -59,7 +59,7 @@ PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
 # Some bash specific aliases
 alias ls='ls --color=auto'
 alias _bashrc='vim ~/.bashrc'
-alias bashrc="vim $XDG_CONFIG_HOME/bash/custom.bash"
+alias bashrc="vim $XDG_CONFIG_HOME/evangelist/custom/custom.bash"
 
 alias cd=_autocd
 

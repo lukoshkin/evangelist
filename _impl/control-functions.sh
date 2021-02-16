@@ -193,7 +193,7 @@ _uninstall () {
   then
     rm -f ~/.zshenv
     ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
-    [[ -n $ZDOTDIR ]] && zsh -c 'rm $ZDOTDIR/^custrom.zsh'
+    [[ -n $ZDOTDIR ]] && rm -rf $ZDOTDIR
   fi
 
   rm -rf $XDG_CONFIG_HOME/nvim

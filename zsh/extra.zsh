@@ -7,7 +7,7 @@ alias -g ......=../../../../..
 alias ls='ls --color=tty'
 
 alias _zshrc="vim $ZDOTDIR/.zshrc"
-alias zshrc="vim $ZDOTDIR/custom.zsh"
+alias zshrc="vim $XDG_CONFIG_HOME/evangelist/custom/custom.zsh"
 ## To list all active aliases, run `alias`
 
 

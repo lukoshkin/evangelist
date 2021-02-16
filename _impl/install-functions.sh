@@ -141,7 +141,6 @@ install_bash () {
   # Copy new configs
   cp bash/bashrc ~/.bashrc
   cp bash/inputrc ~/.inputrc
-  mkdir -p $XDG_CONFIG_HOME/bash
   cp -n bash/aliases-functions.sh $XDG_CONFIG_HOME/evangelist/bash
 
   make_descriptor ~/.bashrc

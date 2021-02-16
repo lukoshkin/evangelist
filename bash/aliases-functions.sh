@@ -6,7 +6,7 @@ alias lt='ls -lAht'
 alias md='mkdir -p'
 
 alias _vimrc="vim $MYVIMRC"
-alias vimrc="vim $XDG_CONFIG_HOME/nvim/custom.vim"
+alias vimrc="vim $XDG_CONFIG_HOME/evangelist/custom/custom.vim"
 
 ## Folder stack navigation
 alias d='dirs -v'
