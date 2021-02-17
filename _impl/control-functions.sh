@@ -108,7 +108,7 @@ _update () {
 
   git fetch -q
   UPD=$(git diff --name-only ..origin/develop)
-  [[ -z $UPD ]] && { ECHO Up to date.; exit; }
+  [[ -z "$UPD" ]] && { ECHO Up to date.; exit; }
 
   SRC='evangelist.sh _impl/*'
 
@@ -129,7 +129,7 @@ _update () {
   ECHO 'Updating installed components if any...'
   git merge || exit 1
 
-  for OBJ in $(echo $UPD | grep -v 'nvim')
+  for OBJ in $(sed '/nvim/d' <<< "$UPD")
   do
     case ${OBJ##*/} in
       .bashrc | .inputrc)
@@ -172,7 +172,8 @@ _update () {
     esac
   done
 
-  for OBJ in $(echo $UPD | grep nvim); do
+  for OBJ in $(sed -n '/nvim/p' <<< "$UPD")
+  do
     cp $OBJ $XDG_CONFIG_HOME/$OBJ
   done
 
