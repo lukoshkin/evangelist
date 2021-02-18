@@ -80,33 +80,38 @@ _autocd () {
   fi
 
   local CNT=0
-  if [[ $(dirs -l) =~ $(readlink -f $INDIR) ]]
+  for DIR in $(dirs -l)
+  do
+    if [[ $DIR == $(readlink -f $INDIR) ]]
+    then
+      break
+    fi
+    (( CNT++ ))
+  done
+
+  if [[ $CNT -lt $(dirs -p | wc -l) ]]
   then
-    for DIR in $(dirs -l)
-    do
-      if [[ $DIR == $(readlink -f $INDIR) ]]
-      then
-        break
-      fi
-      (( CNT++ ))
-    done
     pushd +$CNT > /dev/null
-  else
-    pushd $INDIR > /dev/null
+    return
   fi
+
+  pushd $INDIR > /dev/null
 }
 
-# Import more aliases
+## if the system has both Vim and Neovim, use the latter
+which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
+
+# Static imports
+## Import more aliases
 source $XDG_CONFIG_HOME/evangelist/bash/aliases-functions.sh
 
-# Import user-defined settings
+## Import user-defined settings
 [[ -f $XDG_CONFIG_HOME/evangelist/custom/custom.bash ]] \
   && source $XDG_CONFIG_HOME/evangelist/custom/custom.bash
 
-# if the system has both Vim and Neovim, use the latter
-which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
 
-# Increase key repeat rate with xset if it is available.
-# Ignore "unable to open display" error that appears in docker.
+# Misc
+## Increase key repeat rate with xset if it is available.
+## Ignore "unable to open display" error that appears in docker.
 which xset &> /dev/null && xset r rate 250 70 2> /dev/null
 
