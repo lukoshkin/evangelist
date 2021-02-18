@@ -1,4 +1,6 @@
 
+# .:!:. >SED-UPDATE .:!:.
+
 # Set initialization file for Vim
 if ! which nvim &> /dev/null && which vim &> /dev/null
 then
@@ -114,4 +116,6 @@ source $XDG_CONFIG_HOME/evangelist/bash/aliases-functions.sh
 ## Increase key repeat rate with xset if it is available.
 ## Ignore "unable to open display" error that appears in docker.
 which xset &> /dev/null && xset r rate 250 70 2> /dev/null
+
+# .:!:. <SED-UPDATE .:!:.
 

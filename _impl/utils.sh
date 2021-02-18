@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This function should only be called once
+# This function should be called only once
 # within the body of an installation function
 back_up_original_configs () {
   if ! grep -q "^$1" update-list.txt

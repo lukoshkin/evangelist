@@ -107,7 +107,9 @@ _update () {
   [[ $1 != SKIP ]] && ECHO Checking for updates...
 
   git fetch -q
-  UPD=$(git diff --name-only ..origin/develop)
+  local BRANCH UPD
+  BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  UPD=$(git diff --name-only ..origin/$BRANCH)
   [[ -z "$UPD" ]] && { ECHO Up to date.; exit; }
 
   SRC='evangelist.sh _impl/*'
@@ -120,7 +122,7 @@ _update () {
   then
     ECHO Self-updating...
 
-    git checkout origin/develop -- $SRC
+    git checkout origin/$BRANCH -- $SRC
 
     $SHELL $0 update SKIP
     exit
@@ -132,14 +134,27 @@ _update () {
   for OBJ in $(sed '/nvim/d' <<< "$UPD")
   do
     case ${OBJ##*/} in
-      .bashrc | .inputrc)
+      inputrc)
         grep -q '^bash' update-list.txt \
           && cp $OBJ ~
         ;;
 
-      .zshenv)
-        grep -q '^zsh' update-list.txt \
-          && cp $OBJ ~/.zshenv
+      bashrc)
+        if grep -q '^bash' update-list.txt
+        then
+          sed -e "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/{p; r $OBJ
+            }; /<SED-UPDATE/p; d }" ~/.bashrc > /tmp/evangelist-bashrc
+          mv /tmp/evangelist-bashrc ~/.bashrc
+        fi
+        ;;
+
+      zshenv)
+        if grep -q '^zsh' update-list.txt
+        then
+          sed -e "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/{p; r $OBJ
+            }; /<SED-UPDATE/p; d }" ~/.zshenv > /tmp/evangelist-zshenv
+          mv /tmp/evangelist-zshenv ~/.zshenv
+        fi
         ;;
 
       aliases-functions.sh)
@@ -147,8 +162,13 @@ _update () {
           && cp $OBJ "$XDG_CONFIG_HOME/evangelist/bash"
         ;;
 
+      ps1.bash)
+        grep -q '^bash' update-list.txt \
+          && cp $OBJ "$XDG_CONFIG_HOME/evangelist/bash"
+        ::
+
       tmux.conf)
-        TMUXV=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
+        local TMUXV=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
         dummy_v1_gt_v2 $TMUXV 3.1 \
           && cp $OBJ "$XDG_CONFIG_HOME/tmux" \
           || cp $OBJ ~/.${OBJ##*/}
@@ -205,7 +225,7 @@ _uninstall () {
 
   if grep -q '^notebook' update-list.txt
   then
-    JUPCONFDIR=$(jupyter --config-dir)
+    local JUPCONFDIR=$(jupyter --config-dir)
     rm "$JUPCONFDIR/nbconfig/notebook.json"
     rm "$JUPCONFDIR/custom/custom.js"
   fi
@@ -242,7 +262,9 @@ _uninstall () {
     esac
   done
 
+  local LOGSHELL
   LOGSHELL=$(grep 'LOGIN-SHELL' update-list.txt | cut -d ':' -f2)
+
   rm update-list.txt
   rm -rf .bak
 

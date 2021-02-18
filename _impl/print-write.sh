@@ -8,7 +8,7 @@ WHITE=$(tput setaf 15)
 # NOTE: bold text modifier (below) doesn't affect
 # ####  colors defined not with tput
 BOLD=$(tput bold)
-RESET="\\[\e[m\\]"
+RESET=$(tput sgr0)
 
 
 ECHO () {
@@ -29,6 +29,7 @@ ECHO2 () {
 }
 
 
+# Takes one argument - shell for which to install settings: bash or zsh
 instructions_after_install () {
   locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
   local CODE=$?
@@ -50,6 +51,8 @@ instructions_after_install () {
   printf 'THEN, LOG IN BACK.\n'
 }
 
+# Takes one argument - the shell thath was before
+# the settings installation: bash or zsh
 instructions_after_removal () {
   NOTE 210 "\nFURTHER INSTRUCTIONS:"
   printf 'TO FINISH THE REMOVAL, '
@@ -74,6 +77,7 @@ $2\\
   fi
 }
 
+# Takes one argument - shell for which to install settings: bash or zsh
 make_descriptor () {
   if [[ $1 =~ zsh ]]
   then
