@@ -1,14 +1,14 @@
 #!/bin/bash
 
 RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
+GREEN=$(tput setaf 2)
+YELLOW=$(tput setaf 3)
 WHITE=$(tput setaf 15)
 
 # NOTE: bold text modifier (below) doesn't affect
-# ####  colors defined as the first three above
+# ####  colors defined not with tput
 BOLD=$(tput bold)
-RESET=$(tput sgr0)
+RESET="\\[\e[m\\]"
 
 
 ECHO () {

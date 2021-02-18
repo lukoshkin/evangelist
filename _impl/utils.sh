@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This function should only be called once
+# within the body of an installation function
 back_up_original_configs () {
   if ! grep -q "^$1" update-list.txt
   then
@@ -51,13 +53,13 @@ dummy_v1_gt_v2 () {
   declare -a version1 version2
   if [[ $(readlink /proc/$$/exe) == *bash ]]
   then
-    IFS='.' read -r -a version1 <<< $1
-    IFS='.' read -r -a version2 <<< $2
+    IFS='.' read -ra version1 <<< $1
+    IFS='.' read -ra version2 <<< $2
     local shear=0
   elif [[ $(readlink /proc/$$/exe) == *zsh ]]
   then
-    IFS='.' read -r -A version1 <<< $1
-    IFS='.' read -r -A version2 <<< $2
+    IFS='.' read -rA version1 <<< $1
+    IFS='.' read -rA version2 <<< $2
     local shear=1
   else
     ECHO2 "Don't support this shell."

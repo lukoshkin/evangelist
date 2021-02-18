@@ -4,6 +4,9 @@
 # - print-write.sh
 # - utils.sh
 
+# NOTE: better to surround expansions with double quotes
+# ####  if they might contain spaces.
+
 install_vim () {
   # Check if neovim is available
   ( HAS nvim || HAS vim ) || { ECHO2 Missing: vim, neovim; return; }
@@ -38,23 +41,23 @@ install_vim () {
   if HAS nvim
   then
     VIM=nvim
-    VIMPLUG=$XDG_DATA_HOME/nvim/site/autoload/plug.vim
+    VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
   elif HAS vim
   then
     VIM=vim
     VIMPLUG=~/.vim/autoload/plug.vim
-    mkdir -p $XDG_DATA_HOME/nvim/site/undo
-    export MYVIMRC=$XDG_CONFIG_HOME/nvim/init.vim
+    mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
+    export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
     export VIMINIT=":source $MYVIMRC"
   fi
 
-  back_up_original_configs $VIM d:$XDG_CONFIG_HOME/nvim
+  back_up_original_configs $VIM d:"$XDG_CONFIG_HOME/nvim"
 
   # Copy new configs
-  cp -R nvim $XDG_CONFIG_HOME
+  cp -R nvim "$XDG_CONFIG_HOME"
 
   # Install vim-plug if it is not there yet
-  if [[ ! -f $VIMPLUG ]]; then
+  if [[ ! -f "$VIMPLUG" ]]; then
     sh -c "curl -sS -fLo $VIMPLUG --create-dirs \
       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
   fi
@@ -82,8 +85,8 @@ install_jupyter () {
   local JUPCONFDIR=$(jupyter --config-dir)
 
   back_up_original_configs notebook \
-    f:$JUPCONFDIR/custom/custom.js \
-    f:$JUPCONFDIR/nbconfig/notebook.json
+    f:"$JUPCONFDIR/custom/custom.js" \
+    f:"$JUPCONFDIR/nbconfig/notebook.json"
 
   # Install nbextensions
   pip show -qq jupyter_contrib_nbextensions \
@@ -97,16 +100,16 @@ install_jupyter () {
 
   # Install Vim for Jupyter Notebook
   git clone -q https://github.com/lambdalisue/jupyter-vim-binding \
-    $(jupyter --data-dir)/nbextensions/vim_binding
+    "$(jupyter --data-dir)/nbextensions/vim_binding"
   jupyter nbextension enable vim_binding/vim_binding
   jupyter contrib nbextension install --user --JupyterApp.log_level='WARN'
   echo Enabled notebook extensions
 
   # Copy new configs
-  mkdir -p $JUPCONFDIR/custom
-  mkdir -p $JUPCONFDIR/nbconfig
-  cp jupyter/custom.js $JUPCONFDIR/custom
-  cp jupyter/notebook.json $JUPCONFDIR/nbconfig
+  mkdir -p "$JUPCONFDIR/custom"
+  mkdir -p "$JUPCONFDIR/nbconfig"
+  cp jupyter/custom.js "$JUPCONFDIR/custom"
+  cp jupyter/notebook.json "$JUPCONFDIR/nbconfig"
 
   ECHO Successfully installed: Jupyter configuration.
 }
@@ -119,14 +122,14 @@ install_tmux () {
   ECHO Installing tmux configuration...
 
   back_up_original_configs tmux \
-    f:~/.tmux.conf f:$XDG_CONFIG_HOME/tmux/tmux.conf
+    f:~/.tmux.conf f:"$XDG_CONFIG_HOME/tmux/tmux.conf"
 
   # Version of tmux determines where to put tmux configs
   local VERSION=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
 
   # Copy new configs
   dummy_v1_gt_v2 $VERSION 3.1 \
-    && cp -R tmux $XDG_CONFIG_HOME \
+    && cp -R tmux "$XDG_CONFIG_HOME" \
     || cp tmux/tmux.conf ~/.tmux.conf
 
   ECHO Successfully installed: Tmux configuration.
@@ -136,19 +139,26 @@ install_tmux () {
 install_bash () {
   ECHO Installing BASH configuration...
 
-  back_up_original_configs bash f:~/.bashrc f:~/.inputrc
+  back_up_original_configs bash f:~/.bashrc f:~/.inputrc f:~/.condarc
 
   # Copy new configs
   cp bash/bashrc ~/.bashrc
   cp bash/inputrc ~/.inputrc
-  cp -n bash/aliases-functions.sh $XDG_CONFIG_HOME/evangelist/bash
+  cp bash/{aliases-functions.sh,ps1.bash} "$XDG_CONFIG_HOME/evangelist/bash"
 
   make_descriptor ~/.bashrc
 
   # Add conda init to .bashrc 
-  ( HAS conda && conda &> /dev/null ) \
-    && conda init bash > /dev/null \
+  conda &> /dev/null \
+    && (conda init bash > /dev/null; conda config --set changeps1 False) \
     || ECHO2 "conda doesn't seem to work."
+
+  # Add prompt customization
+  if ! grep -q 'source .*/bash/ps1.bash' ~/.bashrc
+  then
+    echo '# Dynamic (on-install) imports' >> ~/.bashrc
+    echo 'source "$XDG_CONFIG_HOME/evangelist/bash/ps1.bash"'
+  fi
 
   ECHO Successfully installed: BASH configuration.
 
@@ -165,28 +175,28 @@ install_zsh () {
   ECHO Installing ZSH configuration...
 
   # Set ZPLUG env vars
-  [[ -z $ZDOTDIR ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
-  [[ -z $ZPLUG_HOME ]] && export ZPLUG_HOME="$XDG_DATA_HOME/zplug"
+  [[ -z "$ZDOTDIR" ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+  [[ -z "$ZPLUG_HOME" ]] && export ZPLUG_HOME="$XDG_DATA_HOME/zplug"
 
-  mkdir -p $ZDOTDIR
-  mkdir -p $ZPLUG_HOME
+  mkdir -p "$ZDOTDIR"
+  mkdir -p "$ZPLUG_HOME"
 
   back_up_original_configs zsh \
-    f:~/.zshenv f:~/.zshrc d:$ZDOTDIR:zdotdir
+    f:~/.zshenv f:~/.zshrc d:"$ZDOTDIR:zdotdir"
 
   # Copy new configs
-  cp zsh/zshrc $ZDOTDIR/.zshrc
-  cp zsh/agkozakrc $ZDOTDIR
-  cp -n bash/aliases-functions.sh $XDG_CONFIG_HOME/evangelist/bash
+  cp zsh/zshrc "$ZDOTDIR/.zshrc"
+  cp zsh/agkozakrc "$ZDOTDIR"
+  cp -n bash/aliases-functions.sh "$XDG_CONFIG_HOME/evangelist/bash"
   cp zsh/zshenv ~/.zshenv
 
-  HAS conda && cp zsh/conda_autoenv.sh $ZDOTDIR 
+  HAS conda && cp zsh/conda_autoenv.sh "$ZDOTDIR"
 
   if [[ $(uname) == Darwin ]]
   then
-    cp zsh/macos.zsh $ZDOTDIR/extra.zsh
+    cp zsh/macos.zsh "$ZDOTDIR/extra.zsh"
   else
-    cp zsh/extra.zsh $ZDOTDIR
+    cp zsh/extra.zsh "$ZDOTDIR"
   fi
 
   make_descriptor ~/.zshenv
@@ -202,11 +212,12 @@ install_zsh () {
     || ECHO2 "conda doesn't seem to work"
 
   # Deal with miniconda's bug
-  grep -q '>>> conda init >>>' $ZDOTDIR/.zshrc \
-    || sed -n '/> conda init/,/< conda init/p' ~/.zshrc >> $ZDOTDIR/.zshrc
+  grep -q '>>> conda init >>>' "$ZDOTDIR/.zshrc" \
+    || sed -n '/> conda init/,/< conda init/p' ~/.zshrc >> "$ZDOTDIR/.zshrc"
 
   ECHO Successfully installed: ZSH configuration.
 
   # Check if necessary to change the login shell
   instructions_after_install zsh
 }
+

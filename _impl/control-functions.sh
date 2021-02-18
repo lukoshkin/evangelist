@@ -63,16 +63,16 @@ _checkhealth () {
 
 _install () {
   # XDG specification
-  [[ -z $XDG_CONFIG_HOME ]] && export XDG_CONFIG_HOME="$HOME/.config"
-  [[ -z $XDG_DATA_HOME ]] && export XDG_DATA_HOME="$HOME/.local/share"
-  [[ -z $XDG_CACHE_HOME ]] && export XDG_CACHE_HOME="$HOME/.cache"
+  [[ -z "$XDG_CONFIG_HOME" ]] && export XDG_CONFIG_HOME="$HOME/.config"
+  [[ -z "$XDG_DATA_HOME" ]] && export XDG_DATA_HOME="$HOME/.local/share"
+  [[ -z "$XDG_CACHE_HOME" ]] && export XDG_CACHE_HOME="$HOME/.cache"
 
-  mkdir -p $XDG_CONFIG_HOME
-  mkdir -p $XDG_DATA_HOME
-  mkdir -p $XDG_CACHE_HOME
+  mkdir -p "$XDG_CONFIG_HOME"
+  mkdir -p "$XDG_DATA_HOME"
+  mkdir -p "$XDG_CACHE_HOME"
 
   mkdir -p .bak
-  mkdir -p $XDG_CONFIG_HOME/evangelist/{bash,custom}
+  mkdir -p "$XDG_CONFIG_HOME"/evangelist/{bash,custom}
 
   touch update-list.txt
   if ! grep -q 'LOGIN-SHELL' update-list.txt
@@ -144,13 +144,13 @@ _update () {
 
       aliases-functions.sh)
         grep -qE '^(ba|z)sh' update-list.txt \
-          && cp $OBJ $XDG_CONFIG_HOME/evangelist/bash
+          && cp $OBJ "$XDG_CONFIG_HOME/evangelist/bash"
         ;;
 
       tmux.conf)
         TMUXV=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
         dummy_v1_gt_v2 $TMUXV 3.1 \
-          && cp $OBJ $XDG_CONFIG_HOME/tmux \
+          && cp $OBJ "$XDG_CONFIG_HOME/tmux" \
           || cp $OBJ ~/.${OBJ##*/}
         ;;
 
@@ -167,14 +167,14 @@ _update () {
       *)
         ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
         [[ $OBJ =~ zsh ]] && grep -q '^zsh' update-list.txt \
-          && cp $OBJ $ZDOTDIR
+          && cp $OBJ "$ZDOTDIR"
         ;;
     esac
   done
 
   for OBJ in $(sed -n '/nvim/p' <<< "$UPD")
   do
-    cp $OBJ $XDG_CONFIG_HOME/$OBJ
+    cp $OBJ "$XDG_CONFIG_HOME/$OBJ"
   done
 
   ECHO Successfully updated.
@@ -194,47 +194,47 @@ _uninstall () {
   then
     rm -f ~/.zshenv
     ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
-    [[ -n $ZDOTDIR ]] && rm -rf $ZDOTDIR
+    [[ -n "$ZDOTDIR" ]] && rm -rf "$ZDOTDIR"
   fi
 
-  rm -rf $XDG_CONFIG_HOME/nvim
-
+  rm -rf "$XDG_CONFIG_HOME/nvim"
+  rm -f ~/.condarc
   rm -f ~/.tmux.conf
-  [[ -n $XDG_CONFIG_HOME ]] \
-    && rm -f $XDG_CONFIG_HOME/tmux/.tmux.conf
+  [[ -n "$XDG_CONFIG_HOME" ]] \
+    && rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
 
   if grep -q '^notebook' update-list.txt
   then
     JUPCONFDIR=$(jupyter --config-dir)
-    rm $JUPCONFDIR/nbconfig/notebook.json
-    rm $JUPCONFDIR/custom/custom.js
+    rm "$JUPCONFDIR/nbconfig/notebook.json"
+    rm "$JUPCONFDIR/custom/custom.js"
   fi
 
   for OBJ in .bak/{*,.*}
   do
     case ${OBJ##*/} in
-      .bashrc | .inputrc | .zshenv | .zshrc | .tmux.conf)
+      .bashrc | .inputrc | .condarc | .zshenv | .zshrc | .tmux.conf)
         cp $OBJ ~
         ;;
 
       zdotdir)
-        cp -R $OBJ/. $ZDOTDIR
+        cp -R $OBJ/. "$ZDOTDIR"
         ;;
 
       nvim)
-        cp -R $OBJ $XDG_CONFIG_HOME
+        cp -R $OBJ "$XDG_CONFIG_HOME"
         ;;
 
       tmux.conf)
-        cp $OBJ $XDG_CONFIG_HOME/tmux
+        cp $OBJ "$XDG_CONFIG_HOME/tmux"
         ;;
 
       custom.js)
-        cp $OBJ $JUPCONFDIR/custom/custom.js
+        cp $OBJ "$JUPCONFDIR/custom/custom.js"
         ;;
 
       notebook.json)
-        cp $OBJ $JUPCONFDIR/nbconfig/notebook.json
+        cp $OBJ "$JUPCONFDIR/nbconfig/notebook.json"
         ;;
 
       *) :
