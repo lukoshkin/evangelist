@@ -38,6 +38,7 @@ function push-input-from-cmd() {
 
 ## Requires installed fuzzy finder (fzf)
 function history-interactive-fuzzy-search() {
+  type fzf &> /dev/null || return
   local _buffer=$BUFFER
   BUFFER=$(cat $XDG_DATA_HOME/zsh_history | fzf)
   [[ -z $BUFFER ]] && BUFFER=$_buffer
@@ -104,10 +105,12 @@ zstyle ':completion:*' completer _expand_alias _complete _match #_ignored
 ## the value by which transparency is changed with functions below is relative,
 ## not absolute.
 function incr-transp() {
+  type transset &> /dev/null || return
   transset -a --inc .02 > /dev/null
 }
 
 function decr-transp() {
+  type transset &> /dev/null || return
   transset -a --dec .02 > /dev/null
 }
 

@@ -42,6 +42,8 @@ alias ff='find . -type f -name'
 alias grep='grep --color'
 
 tree () {
+  command tree &> /dev/null || return
+
   local w8
   local hierarchy
 

@@ -165,7 +165,7 @@ _update () {
       ps1.bash)
         grep -q '^bash' update-list.txt \
           && cp $OBJ "$XDG_CONFIG_HOME/evangelist/bash"
-        ::
+        ;;
 
       tmux.conf)
         local TMUXV=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')

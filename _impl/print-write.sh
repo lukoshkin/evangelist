@@ -41,17 +41,24 @@ instructions_after_install () {
     printf "CHANGE THE CURRENT SHELL TO $(tr a-z A-Z <<< $1),\n\n"
     printf "\t${BOLD}${WHITE}chsh -s $(which $1)$RESET\n\n"
   fi
+
   if [[ $CODE -eq 1 ]]
   then
     printf "GENERATE 'en_US' LOCALES,\n"
     printf '(You can choose another one)\n\n'
     printf "\t${BOLD}${WHITE}sudo locale-gen en_US.UTF-8$RESET\n\n"
   fi
-  printf 'LOG OUT FROM THE CURRENT ACCOUNT. '
-  printf 'THEN, LOG IN BACK.\n'
+
+  if [[ ${SHELL##*/} != $1 ]]
+  then
+    printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
+  else
+    printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.\n'
+    printf "\n\n\t${BOLD}${WHITE}exec $1${RESET}\n\n"
+  fi
 }
 
-# Takes one argument - the shell thath was before
+# Takes one argument - the shell that was before
 # the settings installation: bash or zsh
 instructions_after_removal () {
   NOTE 210 "\nFURTHER INSTRUCTIONS:"
@@ -59,9 +66,12 @@ instructions_after_removal () {
   if [[ -n $1 && ${SHELL##*/} != $1 ]]
   then
     printf 'RESTORE THE ORIGINAL VALUE OF THE LOGIN SHELL.'
-    printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $1)$RESET\n\n"
+    printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $1)${RESET}\n\n"
+    printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
+  else
+    printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.\n'
+    printf "\n\n\t${BOLD}${WHITE}exec $1${RESET}\n\n"
   fi
-  printf 'CLOSE YOUR CURRENT SHELL AND OPEN A NEW ONE.\n'
 }
 
 

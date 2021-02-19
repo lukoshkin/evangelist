@@ -157,7 +157,7 @@ install_bash () {
   if ! grep -q 'source .*/bash/ps1.bash' ~/.bashrc
   then
     echo '# Dynamic (on-install) imports' >> ~/.bashrc
-    echo 'source "$XDG_CONFIG_HOME/evangelist/bash/ps1.bash"'
+    echo 'source "$XDG_CONFIG_HOME/evangelist/bash/ps1.bash"' >> ~/.bashrc
   fi
 
   ECHO Successfully installed: BASH configuration.
@@ -178,16 +178,21 @@ install_zsh () {
   [[ -z "$ZDOTDIR" ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
   [[ -z "$ZPLUG_HOME" ]] && export ZPLUG_HOME="$XDG_DATA_HOME/zplug"
 
+  back_up_original_configs zsh \
+    f:~/.zshenv f:~/.zshrc d:"$ZDOTDIR:zdotdir"
+
   mkdir -p "$ZDOTDIR"
   mkdir -p "$ZPLUG_HOME"
 
-  back_up_original_configs zsh \
-    f:~/.zshenv f:~/.zshrc d:"$ZDOTDIR:zdotdir"
+  # If there was no ~/.zshrc, remove it later
+  # (BUG: conda init generates dummy .zshrc in $HOME ignoring $ZDOTDIR)
+  ls ~/.zshrc &> /dev/null
+  local CODE=$?
 
   # Copy new configs
   cp zsh/zshrc "$ZDOTDIR/.zshrc"
   cp zsh/agkozakrc "$ZDOTDIR"
-  cp -n bash/aliases-functions.sh "$XDG_CONFIG_HOME/evangelist/bash"
+  cp bash/aliases-functions.sh "$XDG_CONFIG_HOME/evangelist/bash"
   cp zsh/zshenv ~/.zshenv
 
   HAS conda && cp zsh/conda_autoenv.sh "$ZDOTDIR"
@@ -214,6 +219,8 @@ install_zsh () {
   # Deal with miniconda's bug
   grep -q '>>> conda init >>>' "$ZDOTDIR/.zshrc" \
     || sed -n '/> conda init/,/< conda init/p' ~/.zshrc >> "$ZDOTDIR/.zshrc"
+
+  [[ $CODE -gt 0 ]] && rm -f ~/.zshrc
 
   ECHO Successfully installed: ZSH configuration.
 
