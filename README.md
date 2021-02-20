@@ -37,6 +37,12 @@ and their installation, both, will become more universal and accessible.
 ### Evangelist
 
 1. **Clone the repository.**
+<!--
+    ```bash
+    git clone https://github.com/lukoshkin/evangelist.git ~/.config/evangelist
+    ```
+-->
+
 2. **Adjust for yourself** (optional):
     - Go to `nvim` directory, look through the plugins to be installed
       and their configs to be sourced. Comment out those lines you do not
@@ -55,6 +61,8 @@ chosen in the previous step). For help, run `./evangelist.sh checkhealth`
 <br>
 
 5. **Re-login in the shell.**
+
+6. **Confirm installation of zsh-plugins** (if selected zsh in step 4).
 
 Since Vim keeps all changes made to files with its help, one might consider
 adding anacron job (or its equivalent on macOS) to remove old undofiles (check `anacron/anacrontab.young`)
@@ -97,6 +105,14 @@ You can keep some of your settings by wrapping them with delimiting comments:
       && ... appending required configs to ~/.bashrc ... \
       && echo "# <<< RESERVED-CONFS <<<" >> ~/.bashrc \
       && other commands
+  ```
+
+If installing zsh-settings with the **evangelist** inside a docker container,
+run the latter with `-e TERM=xterm-256color` option. Otherwise, you will end up
+with broken colors during the process of both the installation and exploitation.
+
+  ```
+  docker run --name <container_name> -e TERM=xterm-256color -ti <name_you_gave_in_build_command>
   ```
 
 <br>
@@ -158,6 +174,12 @@ Before to get into it, let's get familiar with the imposed notation:
   | `d` | show directories visited by user (autocd zsh option) |
   | `(gg\|G)` | go through the dir stack in (forward \| backward) direction |
   | `gg n` | go to n-th directory in the list obtained with `d` <br> &emsp;&emsp;&emsp;&emsp;&emsp; (starting from 0) |
+  | `gg -n` | remove n-th directory from the dir stack |
+  | `(bash\|zsh\|vim)rc`\* | edit user-defined settings for the specified target |
+  | `_(bash\|zsh\|vim)rc` | open main config file for the specified target |
+
+  \* Note, priority is given to custom settings. Also, they will not be overwritten by
+  updates or new installations.
 
   </details>
 </details>
@@ -175,6 +197,8 @@ Before to get into it, let's get familiar with the imposed notation:
   | command | Trim | remove all trailing spaces in the file |
   | normal | `<leader>y` | yank current buffer |
   | visual | `<leader>y` | yank selected text |
+  | normal <br> <span style="color:saddlebrown">(.py extension)</span> | `<leader>P` | run the current buffer in python <br> **note:**  _capital P (Shift + p) in shortcut_ |
+  | visual <br> <span style="color:saddlebrown">(.py extension)</span> | `<leader>p` | run the selected block of code in python |
   | normal | `<leader>t` | paste date and time before the cursor |
   | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss message in the cmd line below |
   | normal | `<M-(m\|M)>` | insert empty line (below \| above) |
@@ -194,12 +218,12 @@ Before to get into it, let's get familiar with the imposed notation:
   | normal | `<Space>sy` | show yanks |
   | normal | `<Space>cy` | clear yanks (note: the last one is always kept) |
   | normal | `<M-(n\|p)>` | change inserted text with the (next \| previous) yank in the yank buffer |
-  <!---
+  <!--
   | ctrlP | `<C-j>`, `<C-k>` | navigation keys |
   | ctrlP | `<C-r>` | enable regex |
   | ctrlP | `<C-f>`, `<C-d>` | switch search mode <br> ('recently opened', 'in the current directory', and etc.) |
   | ctrlP | `<C-c>` | close ctrlP buffer |
-  --->
+  -->
   </details>
 
 * <details>
@@ -279,6 +303,26 @@ the ones defined by ***evangelist***.
   But some plugins may produce errors in its old versions. For example,
   in Vim 7.4 `enter` for opening a file or expanding a folder does not work.
   Instead, you should use `o` key.
+
+* **Ctrl-C**
+
+  Currently, pressing `<C-c>` during evangelist's execution kills the process group.
+  Since there is no clean-up procedure that would revert actions of unfinished command,
+  you may try to call the latter again or go from scratch with `uninstall`.
+
+<!--
+* **Command history in docker container**
+
+  If you log out, and your container is still running, you may sometime
+  encounter the problem that your command history is deleted every time you exit.
+  In this case, it can be resolved with `docker stop` + `docker start`:
+
+  ```
+  docker stop <your_container_name>
+  docker start <your_container_name>
+  docker exec -ti <your_container_name> <shell_name>
+  ```
+-->
 
 <br>
 
