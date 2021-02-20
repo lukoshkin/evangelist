@@ -42,10 +42,13 @@ install_vim () {
   then
     VIM=nvim
     VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
+    VIMFLAGS=--headless
   elif HAS vim
   then
     VIM=vim
     VIMPLUG=~/.vim/autoload/plug.vim
+    VIMFLAGS='-E -s'
+
     mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
     export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
     export VIMINIT=":source $MYVIMRC"
@@ -62,8 +65,11 @@ install_vim () {
       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
   fi
 
-  # Install Vim plugins
-  $VIM +PlugInstall +qall
+  # Install Vim plugins silently (save installation summary)
+  $VIM $VIMFLAGS +PlugInstall +'%w /tmp/vim-plug.log' +qa 2> /dev/null
+
+  echo Vim plugin installation summary:
+  cat /tmp/vim-plug.log && rm -f /tmp/vim-plug.log
 
   ECHO Successfully installed: Vim configuration.
 }
@@ -89,21 +95,22 @@ install_jupyter () {
     f:"$JUPCONFDIR/nbconfig/notebook.json"
 
   # Install nbextensions
-  pip show -qq jupyter_contrib_nbextensions \
-    || pip install -q jupyter_contrib_nbextensions \
+  ( pip show -qq jupyter_contrib_nbextensions \
+    || pip install -q jupyter_contrib_nbextensions ) \
     && echo Installed jupyter_contrib_nbextensions
 
   # Add extension tab in Jupyter Notebook 
-  pip show -qq jupyter_nbextensions_configurator \
-    || pip install -q jupyter_nbextensions_configurator \
+  ( pip show -qq jupyter_nbextensions_configurator \
+    || pip install -q jupyter_nbextensions_configurator ) \
     && echo Installed jupyter_nbextensions_configurator
 
+  local JUPVIM="$(jupyter --data-dir)/nbextensions/vim_binding"
+  [[ -d "$JUPVIM" ]] && rm -rf "$JUPVIM"
+
   # Install Vim for Jupyter Notebook
-  git clone -q https://github.com/lambdalisue/jupyter-vim-binding \
-    "$(jupyter --data-dir)/nbextensions/vim_binding"
+  git clone -q https://github.com/lambdalisue/jupyter-vim-binding "$JUPVIM"
   jupyter nbextension enable vim_binding/vim_binding
   jupyter contrib nbextension install --user --JupyterApp.log_level='WARN'
-  echo Enabled notebook extensions
 
   # Copy new configs
   mkdir -p "$JUPCONFDIR/custom"
@@ -218,7 +225,8 @@ install_zsh () {
 
   # Deal with miniconda's bug
   grep -q '>>> conda init >>>' "$ZDOTDIR/.zshrc" \
-    || sed -n '/> conda init/,/< conda init/p' ~/.zshrc >> "$ZDOTDIR/.zshrc"
+    || sed -n '/> conda init/,/< conda init/p' \
+         ~/.zshrc >> "$ZDOTDIR/.zshrc" 2> /dev/null
 
   [[ $CODE -gt 0 ]] && rm -f ~/.zshrc
 

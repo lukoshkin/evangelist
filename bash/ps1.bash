@@ -2,7 +2,7 @@
 # Customize cmd prompt
 GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)
-WHITE=$(tput setaf 15)
+WHITE=$(tput setaf 7)
 BLUE="\\[\e[0;34m\\]"
 
 BOLD=$(tput bold)

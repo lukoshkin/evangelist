@@ -1,4 +1,3 @@
-#!/bin/bash
 
 alias l='ls -lAh'
 alias ll='ls -lh'
@@ -66,3 +65,4 @@ tree () {
   # double quotes are required in bash
   echo "$hierarchy"
 }
+

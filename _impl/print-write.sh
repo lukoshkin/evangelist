@@ -53,7 +53,7 @@ instructions_after_install () {
   then
     printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
   else
-    printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.\n'
+    printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.'
     printf "\n\n\t${BOLD}${WHITE}exec $1${RESET}\n\n"
   fi
 }
@@ -69,7 +69,7 @@ instructions_after_removal () {
     printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $1)${RESET}\n\n"
     printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
   else
-    printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.\n'
+    printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.'
     printf "\n\n\t${BOLD}${WHITE}exec $1${RESET}\n\n"
   fi
 }
@@ -119,7 +119,7 @@ HAS () {
 }
 
 modulecheck () {
-  echo -e "${BOLD}\n$1$RESET"
+  echo -e "${BOLD}${WHITE}\n$1$RESET"
   local delim=$(printf "%${#1}s")
   echo -e "${BOLD}${delim// /-}$RESET"
 

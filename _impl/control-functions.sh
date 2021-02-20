@@ -23,7 +23,12 @@ _checkhealth () {
   then
     NOTE 147 "None of the listed configs is installed yet."
   else
-    NOTE 147 "Installed: $(sed -n '3,$p' update-list.txt | tr '\n' ' ')"
+    if [[ $(wc -l < update-list.txt) -gt 2 ]]
+    then
+      NOTE 147 "Installed: $(sed -n '3,$p' update-list.txt | tr '\n' ' ')"
+    else
+      NOTE 147 "None of the listed configs is installed yet."
+    fi
   fi
 
   # modulecheck's syntaxis: MODIFIER:COMMAND[:PACKAGE]
