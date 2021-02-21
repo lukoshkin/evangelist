@@ -34,7 +34,8 @@ gg () {
 ## Open the last file closed
 # alias v="vim +'e #<1'"
 alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
-alias vv="vim +'browse filter !/__\|NERD_tree/ oldfiles'"
+type nvim &> /dev/null \
+  && alias vv="vim +'browse filter !/__\|NERD_tree/ oldfiles'"
 
 alias fd='find . -type d -name'
 alias ff='find . -type f -name'

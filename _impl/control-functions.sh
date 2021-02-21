@@ -11,7 +11,7 @@ _help () {
   echo -e "Commands:\n"
 
   printf "  %-20s Update the repository and installed configs.\n" 'update'
-  printf "  %-20s Install one of the specified setups: bash zsh notebook.\n" 'install'
+  printf "  %-20s Install one of the specified setups: bash zsh jupyter.\n" 'install'
   printf "  %-20s Show the installation status or readiness to install.\n" 'checkhealth'
   printf "  %-20s Roll back to the original settings.\n" 'uninstall'
   printf "  %-20s Show this message and quit.\n" 'help'
@@ -61,7 +61,7 @@ _checkhealth () {
   modulecheck BASH ${BASH_DEPS[@]}
   modulecheck ZSH ${ZSH_DEPS[@]}
   modulecheck VIM r:'nvim vim':neovim r:curl o:pip o:'npm conda'
-  modulecheck NOTEBOOK r:pip r:git
+  modulecheck JUPYTER r:pip r:git
   modulecheck TMUX r:tmux
 }
 
@@ -109,7 +109,7 @@ _update () {
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f update-list.txt ]] || { ECHO2 Missing 'update-list.txt'.; exit; }
 
-  [[ $1 != SKIP ]] && ECHO Checking for updates...
+  [[ $1 != SKIP ]] && ECHO Checking for updates..
 
   git fetch -q
   local BRANCH UPD
@@ -125,7 +125,7 @@ _update () {
   # ####  one must rewrite the file if it was generated with old installation scripts.
   if [[ $1 != SKIP ]] && str_has_any "$UPD" $SRC
   then
-    ECHO Self-updating...
+    ECHO Self-updating..
 
     git checkout origin/$BRANCH -- $SRC
 
@@ -133,7 +133,7 @@ _update () {
     exit
   fi
 
-  ECHO 'Updating installed components if any...'
+  ECHO 'Updating installed components if any..'
   git merge || exit 1
 
   for OBJ in $(sed '/nvim/d' <<< "$UPD")
@@ -180,12 +180,12 @@ _update () {
         ;;
 
       custom.js)
-        grep -q '^notebook' update-list.txt \
+        grep -q '^jupyter' update-list.txt \
           && cp $OBJ $(jupyter --config-dir)/custom/custom.js
         ;;
 
       notebook.json)
-        grep -q '^notebook' update-list.txt \
+        grep -q '^jupyter' update-list.txt \
           && cp $OBJ $(jupyter --config-dir)/nbconfig/notebook.json
         ;;
 
@@ -210,7 +210,7 @@ _uninstall () {
   [[ -d .bak ]] || { ECHO2 Missing '.bak'; exit; }
   [[ -f update-list.txt ]] || { ECHO2 Missing 'update-list.txt'.; exit; }
 
-  ECHO Uninstalling...
+  ECHO Uninstalling..
 
   grep -q '^bash' update-list.txt && rm ~/.{bashrc,inputrc}
 
@@ -228,7 +228,7 @@ _uninstall () {
   [[ -n "$XDG_CONFIG_HOME" ]] \
     && rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
 
-  if grep -q '^notebook' update-list.txt
+  if grep -q '^jupyter' update-list.txt
   then
     local JUPCONFDIR=$(jupyter --config-dir)
     rm "$JUPCONFDIR/nbconfig/notebook.json"

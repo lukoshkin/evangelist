@@ -11,7 +11,7 @@ install_vim () {
   # Check if neovim is available
   ( HAS nvim || HAS vim ) || { ECHO2 Missing: vim, neovim; return; }
 
-  ECHO Installing Vim configuration...
+  ECHO Installing Vim configuration..
 
   # Optional:
   # - npm (for some plugins and Neovim)
@@ -68,8 +68,11 @@ install_vim () {
   # Install Vim plugins silently (save installation summary)
   $VIM $VIMFLAGS +PlugInstall +'%w /tmp/vim-plug.log' +qa 2> /dev/null
 
-  echo Vim plugin installation summary:
-  cat /tmp/vim-plug.log && rm -f /tmp/vim-plug.log
+  if [[ -s /tmp/vim-plug.log ]]
+  then
+    echo Vim plugin installation summary:
+    cat /tmp/vim-plug.log && rm -f /tmp/vim-plug.log
+  fi
 
   ECHO Successfully installed: Vim configuration.
 }
@@ -80,7 +83,7 @@ install_jupyter () {
   HAS pip || { ECHO2 Missing pip; exit; }
   HAS git || { ECHO2 Missing git; exit; }
 
-  ECHO Installing Jupyter configuration...
+  ECHO Installing Jupyter configuration..
 
   # Install Jupyter if necessary
   HAS jupyter \
@@ -90,7 +93,7 @@ install_jupyter () {
 
   local JUPCONFDIR=$(jupyter --config-dir)
 
-  back_up_original_configs notebook \
+  back_up_original_configs jupyter \
     f:"$JUPCONFDIR/custom/custom.js" \
     f:"$JUPCONFDIR/nbconfig/notebook.json"
 
@@ -126,7 +129,7 @@ install_tmux () {
   # Check if tmux is available
   HAS tmux || { ECHO2 Missing tmux; return; }
 
-  ECHO Installing tmux configuration...
+  ECHO Installing tmux configuration..
 
   back_up_original_configs tmux \
     f:~/.tmux.conf f:"$XDG_CONFIG_HOME/tmux/tmux.conf"
@@ -144,7 +147,7 @@ install_tmux () {
 
 
 install_bash () {
-  ECHO Installing BASH configuration...
+  ECHO Installing BASH configuration..
 
   back_up_original_configs bash f:~/.bashrc f:~/.inputrc f:~/.condarc
 
@@ -179,7 +182,7 @@ install_zsh () {
   HAS zsh || { ECHO2 Missing zsh; exit; }
   HAS git || { ECHO2 Missing git; exit; }
 
-  ECHO Installing ZSH configuration...
+  ECHO Installing ZSH configuration..
 
   # Set ZPLUG env vars
   [[ -z "$ZDOTDIR" ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"

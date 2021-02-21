@@ -62,7 +62,7 @@ chosen in the previous step). For help, run `./evangelist.sh checkhealth`
 
 5. **Re-login in the shell.**
 
-6. **Confirm installation of zsh-plugins** (if selected zsh in step 4).
+6. **Confirm the installation of zsh-plugins** (if selected zsh in step 4).
 
 Since Vim keeps all changes made to files with its help, one might consider
 adding anacron job (or its equivalent on macOS) to remove old undofiles (check `anacron/anacrontab.young`)
@@ -304,12 +304,6 @@ the ones defined by ***evangelist***.
   in Vim 7.4 `enter` for opening a file or expanding a folder does not work.
   Instead, you should use `o` key.
 
-* **Ctrl-C**
-
-  Currently, pressing `<C-c>` during evangelist's execution kills the process group.
-  Since there is no clean-up procedure that would revert actions of unfinished command,
-  you may try to call the latter again or go from scratch with `uninstall`.
-
 <!--
 * **Command history in docker container**
 
@@ -323,6 +317,19 @@ the ones defined by ***evangelist***.
   docker exec -ti <your_container_name> <shell_name>
   ```
 -->
+
+* **Ctrl-C**
+
+  Currently, pressing `<C-c>` during evangelist's execution kills the process group.
+  Since there is no clean-up procedure that would revert actions of unfinished command,
+  you may try to call the latter again or go from scratch with `uninstall`.
+
+
+* **zsh `ignorecommon`**
+
+  If some of your commands are not saved during zsh-session,
+  and you find this behavior undesirable, then you can remove
+  these commands from `ignorecommon` string in your `$ZDOTDIR/extra.zsh`
 
 <br>
 
