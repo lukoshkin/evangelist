@@ -1,7 +1,6 @@
 ARG IMG_NAME
 FROM $IMG_NAME
 
-ARG BASH_REWRITE=true
 ENV XDG_CONFIG_HOME=$HOME/.config
 ENV XDG_CACHE_HOME=$HOME/.cache
 ENV XDG_DATA_HOME=$HOME/.local/share
@@ -16,8 +15,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get -qq update \
     && apt-get install -yq \
         python3 python3-dev python3-pip \
-        git neovim tmux curl npm \
-        ruby-full locales x11-xserver-utils nodejs \
+        git neovim tmux curl npm nodejs \
+        ruby-full locales x11-xserver-utils tree \
     && npm install -g neovim \
     && gem install neovim \
     && locale-gen en_US.UTF-8 \
@@ -38,21 +37,22 @@ USER $USER
 # Download configs and distribute them to their locations.
 RUN cd ~ && git clone https://github.com/lukoshkin/dotfiles.git \
     && cd dotfiles \
-    && if [ BASH_REWRITE ]; \
-       then \
-         mv bash/bashrc ~/.bashrc; \
-       else \
-         cat bash/bashrc >> ~/.bashrc; \
-       fi \
-    && mv tmux.conf ~/.tmux.conf \
+    && sed -n '/> RESERVED-CONFS/,/< RESERVED-CONFS/{//!p}' \
+         ~/.bashrc >> bash/bashrc \
+    && mv bash/bashrc ~/.bashrc \
+    && mv tmux/tmux.conf ~/.tmux.conf \
     && mv bash/inputrc ~/.inputrc \
-    && mv nvim $XDG_CONFIG_HOME/ \
+    && cp -R nvim $XDG_CONFIG_HOME/ \
+    && sed -e '/^source .*\/bash\/aliases-functions\.sh/ \
+         {r bash/aliases-functions.sh' -e 'd}' -i ~/.bashrc \
+    && cat bash/ps1.bash >> ~/.bashrc \
     && echo "source ~/.bashrc" > ~/.profile \
     && sed -i '1i set-option -g default-shell /bin/bash' ~/.tmux.conf \
     && curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim \
-    && git clone https://github.com/lambdalisue/jupyter-vim-binding \
-       ~/.local/share/jupyter/nbextensions/vim_binding \
+         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim \
+    && JUPVIM="$(jupyter --data-dir)/nbextensions/vim_binding" \
+    && if [ -d $JUPVIM ]; then rm -rf $JUPVIM; fi \
+    && git clone https://github.com/lambdalisue/jupyter-vim-binding $JUPVIM \
     && jupyter nbextension enable vim_binding/vim_binding \
     && jupyter contrib nbextension install --user \
     && mkdir -p ~/.jupyter/custom \

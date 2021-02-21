@@ -21,6 +21,11 @@ augroup END
 " Add line below and above with <Alt-m> <Alt-Shift-m>, respectively.
 " Instead of 'A' letter one can use 'M' for mappings, which stands for Meta
 " and is equivalent to Alt on Dell laptops.
+if !has('nvim')
+  execute "set <A-m>=\em"
+  execute "set <A-M>=\eM"
+endif
+
 nnoremap <A-m> o<Esc>
 nnoremap <A-M> <S-o><Esc>
 

@@ -1,4 +1,9 @@
-nnoremap <leader>u :MundoToggle<CR>
+if has('python3')
+  nnoremap <leader>u :MundoToggle<CR>
+else
+  " written in pure Vimscript
+  nnoremap <leader>u :UndotreeToggle<CR>
+endif
 
 " Undo history is persistent across different vim sessions.
 set undofile

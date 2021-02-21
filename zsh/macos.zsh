@@ -1,57 +1,13 @@
-# ALIASES
+# ZSH ALIASES
 # -------
 alias -g ...=../..
 alias -g ....=../../..
 alias -g .....=../../../..
 alias -g ......=../../../../..
-
-alias l='ls -lAh'
-alias ll='ls -lAht'
 alias ls='ls -G'
-alias md='mkdir -p'
 
-alias fd='find . -type d -name'
-alias ff='find . -type f -name'
-alias grep='grep --color'
-
-function tree() {
-  #########################
-  # Draws the project tree.
-  #########################
-  local w8
-  local threshold
-  local treesize
-
-  [[ -n $1 ]] && threshold=$1 || threshold=100
-  [[ -n $2 ]] && w8=$2 || w8=1
-
-  local hierarchy=$(timeout $w8 find . ! -path '*/\.*' -type d 2> /dev/null)
-
-  if [[ $? -ne 0 ]]
-  then
-    treesize=$((threshold + 1))
-  else
-    treesize=$(echo $hierarchy | wc -l)
-  fi
-
-  # BUG: the following fails sometimes.
-  # treesize=$(wc -l < <(timeout $w8 \
-  #   find . ! -path '*/\.*' -type d 2> /dev/null))
-
-  if [[ $treesize -gt $threshold ]]
-  then
-    echo "The project tree is too large!"
-    echo "There are $treesize directories found in less than ${w8}s."
-    printf "Try to run the command in a subfolder "
-    printf "or relax the project traversing conditions.\n"
-  else
-    ls -R | grep ":$" | sed -e 's/:$//' \
-      -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
-  fi
-}
-
-alias zshrc="vim $ZDOTDIR/.zshrc"
-alias vimrc="vim ~/.config/nvim/init.vim"
+alias _zshrc="vim $ZDOTDIR/.zshrc"
+alias zshrc="vim $XDG_CONFIG_HOME/evangelist/custom/custom.zsh"
 ## To list all active aliases, run `alias`
 
 
@@ -62,16 +18,10 @@ alias vimrc="vim ~/.config/nvim/init.vim"
 ### First line says: use vim bindings map
 bindkey -v
 bindkey -M viins 'jj' vi-cmd-mode
-bindkey -M viins '^U' backward-delete-char
-bindkey -M viins '^P' delete-char
+bindkey -M viins '^?' backward-delete-char
 bindkey -M vicmd 'k' history-substring-search-up
 bindkey -M vicmd 'j' history-substring-search-down
 bindkey -M vicmd '/' history-interactive-fuzzy-search
-
-## Push input
-### unbind C-q and C-s
-stty start '^-' stop '^-'
-
 bindkey -M viins '^Q' push-input
 bindkey -M vicmd '^Q' push-input-from-cmd
 
@@ -137,17 +87,23 @@ zstyle ':completion:*' matcher-list 'm:{[:lower:]-_}={[:upper:]_-}'
 ##  Highlight for the selected completion menu item.
 zstyle ':completion:*' menu select search
 
-## Except default completion (_complete), it enables alias expantion with 
-## TAB (_expand_alias), use of glob (_match) and ignored-patterns (_ignored).
-zstyle ':completion:*' completer _complete _expand_alias _match #_ignored
-# zstyle ':completion:*' ignored-patterns '<pattern-to-be-ignored>'
+## Except context-sensitive completion (_complete), it enables alias expansion
+## with TAB (_expand_alias), use of glob (_match), ignored-patterns (_ignored),
+## and checking whether the word is eligible for expansion (_expand - unused).
+## order: '_expand', then '_complete', then '_match' - according to ZSH guide
+zstyle ':completion:*' completer _expand_alias _complete _match #_ignored
+# zstyle ':completion:*' ignored-patterns '<pattern-to-ignore>'
 
 
 
 # CLEAN HISTORY LOOKUP
-# --------------
+# --------------------
 ## Exporting ignorecommon as HISTORY_IGNORE ruins everything (why?)
 ignorecommon="(\
+^v ?$|\
+^d ?$|\
+^gg ?[0-9-]*$|\
+^G ?$|\
 ^cd ?$|\
 ^l[las]? ?$|\
 ^vi[m]? ?$|\
@@ -155,16 +111,14 @@ ignorecommon="(\
 ^pwd ?$|\
 ^clear ?$|\
 ^man \S*$|\
-^tmux ?$|\
-^dirs -v$|\
-^pushd ?$|^pushd [+-][0-9]*$|\
-^popd ?$|^popd [+-][0-9]*$"
+^tmux ?$"
 
 ignorecommon+="|\
 ^vi[m]? [^/]*$|\
 ^l[las]? \S+$|\
 ^cd [^/]*$|\
-^mkdir .*$|\
+^mkdir .*|\
+^mv .*|\
 ^echo \S+$)"
 
 ## Zsh hook on appending lines to the history file. Note:
@@ -184,7 +138,10 @@ setopt pushdignoredups
 ## Option prefixed with 'no' is the inversion of the original.
 ## Same effect can be achieved with 'unsetopt' keyword.
 setopt nobeep
+setopt noflow_control
+## The last one is for unbinding flow control keys: C-s and C-q
 
+setopt hist_ignore_space
 setopt histignorealldups
 setopt histreduceblanks
 
@@ -195,8 +152,3 @@ setopt extendedglob
 ## - approximate matching   ls (#a1)foobar  fobar, 
 ## - qualifiers             ls foo/*(#q@)   finds all symblic links (@) in foo 
 ## more info by googling article: 37-ZSH-Gem-2-Extended-globbing-and-expansion.html
-
-
-
-# AUTO CONDA ENV
-[[ -n $CONDA_EXE ]] && source $ZDOTDIR/conda_autoenv.sh || :

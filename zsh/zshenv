@@ -1,12 +1,6 @@
-# XDG base directory setup
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_CACHE_HOME="$HOME/.cache"
-export XDG_DATA_HOME="$HOME/.local/share"
 
-# ZSH
-export ZDOTDIR="$HOME/.config/zsh"
-export ZPLUG_HOME="$XDG_DATA_HOME/zplug"
-export ZPLUG_CACHE_DIR="$XDG_CACHE_HOME/zplug"
+# .:!:. >SED-UPDATE .:!:.
+
 export HISTFILE="$XDG_DATA_HOME/zsh_history"
 export HISTSIZE=100000
 export SAVEHIST=$HISTSIZE
@@ -17,8 +11,26 @@ export ASPELL_CONF="per-conf $XDG_CONFIG_HOME/aspell/aspell.conf; \
     repl $XDG_CONFIG_HOME/aspell/en.prepl"
 
 # nvim
-export VISUAL=nvim
-export EDITOR="$VISUAL"
+if which nvim &> /dev/null
+then
+  VISUAL=nvim
+elif which vim &> /dev/null
+then
+  VISUAL=vim
+fi
+
+export VISUAL
+export EDITOR=$VISUAL
+
+# locales
+if [[ -z $LANG ]] && locale -a | grep -qi 'en_us.utf8'
+then
+  export LC_ALL="en_US.UTF-8"
+  export LANG="en_US.UTF-8"
+  export LANGUAGE="en_US.UTF-8"
+else
+  echo "No utf8 locales found. See 'local-gen'"
+fi
 
 # locales
 if [[ -z $LANG ]]; then
@@ -32,3 +44,12 @@ fi
 ## fn=33 (default is 35); 33 is better visible on a white background of
 ## transparent dark terminal window.
 export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=33:ln=32:bn=32:se=36'
+
+# Set initialization file for Vim
+if ! which nvim &> /dev/null && which vim &> /dev/null
+then
+  export MYVIMRC=$XDG_CONFIG_HOME/nvim/init.vim
+  export VIMINIT=":source $MYVIMRC"
+fi
+
+# .:!:. <SED-UPDATE .:!:.

@@ -11,7 +11,7 @@ hi SpellLocal ctermfg=black ctermbg=cyan cterm=none
 " -----------------
 "  Rare words = MAGENTA
 "  Lower-case words after full stop = GREEN
-"  Misspelled  ones = DARK RED
+"  Misspelled ones = DARK RED
 "  spellchecker is US, word is British = CYAN
 
 set tabstop=2
@@ -30,3 +30,8 @@ set lazyredraw
 " Pattern searching (highlighting and search before <Enter> hit)
 set hlsearch
 set incsearch
+
+" Incremental hl-search when replacing (for Neovim)
+if has('nvim')
+  set inccommand=nosplit
+endif

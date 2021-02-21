@@ -1,7 +1,39 @@
-# Standard bash settings
-## If not running interactively, don't do anything.
-[ -z "$PS1" ] && return
 
+# .:!:. >SED-UPDATE .:!:.
+
+# Set initialization file for Vim
+if ! which nvim &> /dev/null && which vim &> /dev/null
+then
+  export MYVIMRC=$XDG_CONFIG_HOME/nvim/init.vim
+  export VIMINIT=":source $MYVIMRC"
+fi
+
+# Finish configuring locales.
+if [[ -z $LANG ]]
+then
+  if locale -a | grep -qi 'en_us.utf8'
+  then
+    export LC_ALL=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export LANGUAGE=en_US.UTF-8
+  else
+    echo "No utf8 locales found. See 'local-gen'."
+  fi
+fi
+
+if which nvim &> /dev/null
+then
+  VISUAL=nvim
+elif which vim &> /dev/null
+then
+  VISUAL=vim
+fi
+
+export VISUAL
+export EDITOR=$VISUAL
+
+
+# Standard bash settings
 ## Don't put duplicate lines in the history. See bash(1) for more options
 ## ... or force ignoredups and ignorespace.
 HISTCONTROL=ignoredups:ignorespace
@@ -18,41 +50,72 @@ HISTFILESIZE=2000
 shopt -s checkwinsize
 
 
-
-# XDG base directory specification.
-## Even if you don't care about your $HOME neat,
-## which is the primary goal of these variable definitions,
-## other files require them to be defined.
-[[ -z $XDG_CONFIG_HOME ]] && export XDG_CONFIG_HOME="$HOME/.config"
-[[ -z $XDG_DATA_HOME ]] && export XDG_DATA_HOME="$HOME/.local/share"
-[[ -z $XDG_CACHE_HOME ]] && export XDG_CACHE_HOME="$HOME/.cache"
-
 # Set minimalist prompt.
 ## \\[\e[1;32m\\] - color begins (1;32 - bold green)
 ## \\[\e[m\\] - color ends
 ## \u - username
 ## \W - current workdir
-export PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
+PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
 
-# Colored output for basic commands.
+
+# Some bash specific aliases
 alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'  # same as grep -F
-alias egrep='egrep --color=auto'  # same as grep -E
+alias _bashrc='vim ~/.bashrc'
+alias bashrc="vim $XDG_CONFIG_HOME/evangelist/custom/custom.bash"
 
-# Handy aliases
-alias l='ls -lAh'
-alias ll='ls -lAht'
-alias fd='find . -type d -name'
-alias ff='find . -type f -name'
-alias md='mkdir -p'
+alias cd=_autocd
 
-# Finish configuring locales.
-if [[ -z $LANG ]]; then
-  export LC_ALL="en_US.UTF-8"
-  export LANG="en_US.UTF-8"
-  export LANGUAGE="en_US.UTF-8"
-fi
+_autocd () {
+  local INDIR
+  if [[ -z $1 ]]
+  then
+    INDIR=~
+  elif [[ $1 == - ]]
+  then
+    [[ $(dirs -p | wc -l) -gt 1 ]] \
+      && pushd > /dev/null \
+      || pushd +0 > /dev/null
+    echo ${DIRSTACK[0]}
+    return
+  else
+    INDIR=$1
+  fi
 
-# Ignore "unable to open display" error that appears in docker.
-xset r rate 250 70 2> /dev/null
+  local CNT=0
+  for DIR in $(dirs -l)
+  do
+    if [[ $DIR == $(readlink -f $INDIR) ]]
+    then
+      break
+    fi
+    (( CNT++ ))
+  done
+
+  if [[ $CNT -lt $(dirs -p | wc -l) ]]
+  then
+    pushd +$CNT > /dev/null
+    return
+  fi
+
+  pushd $INDIR > /dev/null
+}
+
+## if the system has both Vim and Neovim, use the latter
+which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
+
+# Static imports
+## Import more aliases
+source $XDG_CONFIG_HOME/evangelist/bash/aliases-functions.sh
+
+## Import user-defined settings
+[[ -f $XDG_CONFIG_HOME/evangelist/custom/custom.bash ]] \
+  && source $XDG_CONFIG_HOME/evangelist/custom/custom.bash
+
+
+# Misc
+## Increase key repeat rate with xset if it is available.
+## Ignore "unable to open display" error that appears in docker.
+which xset &> /dev/null && xset r rate 250 70 2> /dev/null
+
+# .:!:. <SED-UPDATE .:!:.
+
