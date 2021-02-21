@@ -32,13 +32,6 @@ else
   echo "No utf8 locales found. See 'local-gen'"
 fi
 
-# locales
-if [[ -z $LANG ]]; then
-  export LC_ALL="en_US.UTF-8"
-  export LANG="en_US.UTF-8"
-  export LANGUAGE="en_US.UTF-8"
-fi
-
 # grep
 ## set the color of 'file name' section in grep's output
 ## fn=33 (default is 35); 33 is better visible on a white background of
