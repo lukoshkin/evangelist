@@ -1,15 +1,16 @@
 # Vim Proliferation
 
-General console and Jupyter settings empowered by Vim!  
-It includes bash- and zsh-plugins, contemporary Vim configurations,
+General settings of console and Jupyter that are empowered by Vim!
+The package includes bash- and zsh-plugins, up-to-date Vim configurations,
 and Jupyter Notebook extensions.
 
-***A quick and easy way to set up your every working place!***  
-Laptop, remote server, docker container - from now on, they all exploit the same settings\*.  
-No need to manually restore you configs every time you buy a new laptop or reinstall the OS.
+***A quick and easy way to configure all your workstations!***  
+Your laptop, the remote server you use, a docker container -
+from now on, a couple of commands and they all have the same settings<sup>\*</sup>.
+No need to manually restore your configs each time you buy a new laptop or reinstall the OS.
 
 ---
-\* the settings shipped by **evangelist**. How similar they are on different machines  
+<sup>\*</sup> the settings shipped by **evangelist**. Their similarity on different machines  
 &ensp;will depend on the similarity of installed components among those machines.
 
 <br>
@@ -27,11 +28,11 @@ No need to manually restore you configs every time you buy a new laptop or reins
 
 ## Installation
 
-All settings related to console (including Vim commands that leverage the console)
-are fully-supported by Ubuntu and (almost by) macOS. It worth to
-mention that the settings themselves are not so platform dependent as
-the way they are installed. As the project grows, the settings
-and their installation, both, will become more universal and accessible.
+All settings made to the console (including Vim commands that rely on the console)
+are fully supported by Ubuntu and (almost completely) by macOS. It is worth to
+mention that the settings themselves are not as platform dependent as
+the way of their installation. As the project grows, the settings
+and the setup script will become more universal and cross-platform.
 
 
 ### Evangelist
