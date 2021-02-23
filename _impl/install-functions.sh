@@ -22,6 +22,9 @@ install_vim () {
     echo Installed nodejs.
   fi
 
+  # Make an "alias" for pip3
+  (! HAS pip && HAS pip3) && pip () { pip3 $@; }
+
   if HAS nvim
   then
     ( npm ls -g | grep neovim \
@@ -80,8 +83,11 @@ install_vim () {
 
 install_jupyter () {
   # Check if pip and git are available
-  HAS pip || { ECHO2 Missing pip; exit; }
+  (HAS pip || HAS pip3) || { ECHO2 Missing pip3; exit; }
   HAS git || { ECHO2 Missing git; exit; }
+
+  # Make an "alias" for pip3
+  (! HAS pip && HAS pip3) && pip () { pip3 $@; }
 
   ECHO Installing Jupyter configuration..
 

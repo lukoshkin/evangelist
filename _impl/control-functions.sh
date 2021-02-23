@@ -34,7 +34,7 @@ _checkhealth () {
   # modulecheck's syntaxis: MODIFIER:COMMAND[:PACKAGE]
   # - MODIFIER is either 'r' (required) or 'o' (optional).
   #
-  # - COMMAND is a shell command thah can be passed to
+  # - COMMAND is a shell command that can be passed to
   # which/whence/type commands as argument.
   #
   # - PACKAGE is the name of an installation package
@@ -46,7 +46,7 @@ _checkhealth () {
   # in a single-quoted space-separated string:
   #     'nvim vim' (precedence to the 1st)
   #         or
-  #     'npm conda' (npm can be install via conda)
+  #     'npm conda' (npm can be installed via conda)
 
   BASH_DEPS=(o:conda o:tree)
   ZSH_DEPS=(r:zsh r:git o:conda o:fzf o:tree)
@@ -60,8 +60,10 @@ _checkhealth () {
 
   modulecheck BASH ${BASH_DEPS[@]}
   modulecheck ZSH ${ZSH_DEPS[@]}
-  modulecheck VIM r:'nvim vim':neovim r:curl o:pip o:'npm conda'
-  modulecheck JUPYTER r:pip r:git
+  modulecheck VIM \
+    r:'nvim vim':neovim r:curl \
+    o:'pip pip3':pip3 o:'npm conda':npm
+  modulecheck JUPYTER r:'pip pip3':pip3 r:git
   modulecheck TMUX r:tmux
 }
 

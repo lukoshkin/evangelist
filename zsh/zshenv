@@ -22,14 +22,17 @@ fi
 export VISUAL
 export EDITOR=$VISUAL
 
-# locales
-if [[ -z $LANG ]] && locale -a | grep -qi 'en_us.utf8'
+# Finish configuring locales.
+if [[ -z $LANG ]]
 then
-  export LC_ALL="en_US.UTF-8"
-  export LANG="en_US.UTF-8"
-  export LANGUAGE="en_US.UTF-8"
-else
-  echo "No utf8 locales found. See 'local-gen'"
+  if locale -a | grep -qi 'en_us.utf8'
+  then
+    export LC_ALL=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export LANGUAGE=en_US.UTF-8
+  else
+    echo "No utf8 locales found. See 'local-gen'."
+  fi
 fi
 
 # grep

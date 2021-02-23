@@ -1,6 +1,6 @@
 # Vim Proliferation
 
-General settings of console and Jupyter that are empowered by Vim!
+General settings of console and Jupyter that are empowered by Vim!  
 The package includes bash- and zsh-plugins, up-to-date Vim configurations,
 and Jupyter Notebook extensions.
 
@@ -331,6 +331,12 @@ the ones defined by ***evangelist***.
   If some of your commands are not saved during zsh-session,
   and you find this behavior undesirable, then you can remove
   these commands from `ignorecommon` string in your `$ZDOTDIR/extra.zsh`
+
+* **Cannot enter insert mode**
+
+  If you get stuck in vi-cmd mode in the shell, what happens infrequently,
+  you can handle this by hitting `Enter`, `I` (`<S-i>`), `a`, or any
+  other key combination that may be considered as an alternative to `i`.
 
 <br>
 
