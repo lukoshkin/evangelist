@@ -45,12 +45,10 @@ install_vim () {
   then
     VIM=nvim
     VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
-    VIMFLAGS=--headless
   elif HAS vim
   then
     VIM=vim
     VIMPLUG=~/.vim/autoload/plug.vim
-    VIMFLAGS='-E -s'
 
     mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
     export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
@@ -69,7 +67,7 @@ install_vim () {
   fi
 
   # Install Vim plugins silently (save installation summary)
-  $VIM $VIMFLAGS +PlugInstall +'%w /tmp/vim-plug.log' +qa 2> /dev/null
+  $VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
 
   if [[ -s /tmp/vim-plug.log ]]
   then

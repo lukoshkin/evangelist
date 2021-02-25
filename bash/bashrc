@@ -58,6 +58,10 @@ shopt -s checkwinsize
 PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
 
 
+# Export color settings
+eval "$(dircolors)"
+
+
 # Some bash specific aliases
 alias ls='ls --color=auto'
 alias _bashrc='vim ~/.bashrc'

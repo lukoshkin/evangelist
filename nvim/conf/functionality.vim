@@ -5,6 +5,8 @@ set path+=**
 " Display all matching files when tab complete
 set wildmenu
 
+" Buffer updates instead of updating all the time
+set lazyredraw
 
 " Mouse support
 noremap <F9> :call ToggleMouse()<CR>
