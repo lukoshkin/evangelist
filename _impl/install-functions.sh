@@ -174,6 +174,10 @@ install_bash () {
     echo 'source "$XDG_CONFIG_HOME/evangelist/bash/ps1.bash"' >> ~/.bashrc
   fi
 
+  # Transfer the old history
+  local NEWHISTFILE='~/.bash_history'
+  [[ "$HISTFILE" != "$NEWHISTFILE" ]] && cp "$HISTFILE" "$NEWHISTFILE"
+
   ECHO Successfully installed: BASH configuration.
 
   # Check if necessary to change the login shell
@@ -236,6 +240,10 @@ install_zsh () {
          ~/.zshrc >> "$ZDOTDIR/.zshrc" 2> /dev/null
 
   [[ $CODE -gt 0 ]] && rm -f ~/.zshrc
+
+  # Transfer the old history
+  local NEWHISTFILE="$XDG_DATA_HOME/zsh_history"
+  [[ "$HISTFILE" != "$NEWHISTFILE" ]] && cp "$HISTFILE" "$NEWHISTFILE"
 
   ECHO Successfully installed: ZSH configuration.
 

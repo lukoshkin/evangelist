@@ -1,6 +1,6 @@
 " Colors
 set background=dark
-set colorscheme=ron
+colorscheme ron
 
 " 80 character width marker
 set colorcolumn=80

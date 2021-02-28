@@ -4,7 +4,7 @@
 # Set initialization file for Vim
 if ! which nvim &> /dev/null && which vim &> /dev/null
 then
-  export MYVIMRC=$XDG_CONFIG_HOME/nvim/init.vim
+  export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
   export VIMINIT=":source $MYVIMRC"
 fi
 
@@ -34,31 +34,36 @@ export EDITOR=$VISUAL
 
 
 # Standard bash settings
-## Don't put duplicate lines in the history. See bash(1) for more options
-## ... or force ignoredups and ignorespace.
-HISTCONTROL=ignoredups:ignorespace
+## For setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=10000
+HISTFILESIZE=20000
+export HISTFILE=~/.bash_history
+
+## ignoredups  - don't put immediate duplicates in the history list.
+## ignorespace - don't append to the history list cmds that start with a space.
+## erasedups   - don't store dups in the history list completely.
+## ignoreboth  = ignoredups + ignorespace
+HISTCONTROL=ignorespace:erasedups
+## Don't store easy and frequently used commands
+HISTIGNORE="v:d:l:G:cd:ll:ls:pwd:tmux:clear \
+  :gg*:md*:mv*:man*:echo*:mkdir*:type*:which*"
 
 ## Append to the history file, don't overwrite it.
 shopt -s histappend
 
-## For setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-HISTSIZE=1000
-HISTFILESIZE=2000
+## erasedups prevents adding dups encountered during a single bash session.
+## Still, cmds run across several sessions may duplicate each other
+## in the HISTFILE. So, the correct history merge is needed:
+_historymerge () {
+    history -n; history -w; history -c; history -r
+}
+trap _historymerge EXIT
 
 ## Check the window size after each command and, if necessary,
 ## Update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-
-# Set minimalist prompt.
-## \\[\e[1;32m\\] - color begins (1;32 - bold green)
-## \\[\e[m\\] - color ends
-## \u - username
-## \W - current workdir
-PS1="\\[\e[1;32m\\]\u \\[\e[1;37m\\]\W\\[\e[m\\]$ "
-
-
-# Export color settings
+## Export "default" color settings
 eval "$(dircolors)"
 
 
@@ -67,9 +72,10 @@ alias ls='ls --color=auto'
 alias _bashrc='vim ~/.bashrc'
 alias bashrc="vim $XDG_CONFIG_HOME/evangelist/custom/custom.bash"
 
-alias cd=_autocd
+# Add visited dirs to the dir stack
+alias cd=_autopushd
 
-_autocd () {
+_autopushd () {
   local INDIR
   if [[ -z $1 ]]
   then
@@ -109,11 +115,11 @@ which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
 
 # Static imports
 ## Import more aliases
-source $XDG_CONFIG_HOME/evangelist/bash/aliases-functions.sh
+source "$XDG_CONFIG_HOME/evangelist/bash/aliases-functions.sh"
 
 ## Import user-defined settings
-[[ -f $XDG_CONFIG_HOME/evangelist/custom/custom.bash ]] \
-  && source $XDG_CONFIG_HOME/evangelist/custom/custom.bash
+[[ -f "$XDG_CONFIG_HOME/evangelist/custom/custom.bash" ]] \
+  && source "$XDG_CONFIG_HOME/evangelist/custom/custom.bash"
 
 
 # Misc

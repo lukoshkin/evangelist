@@ -136,7 +136,7 @@ _update () {
   fi
 
   ECHO 'Updating installed components if any..'
-  git merge || exit 1
+  git merge origin/$BRANCH || exit 1
 
   for OBJ in $(sed '/nvim/d' <<< "$UPD")
   do

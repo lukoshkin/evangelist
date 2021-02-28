@@ -128,8 +128,10 @@ bindkey -M viins '^[-' decr-transp
 
 # CLEAN HISTORY LOOKUP
 # --------------------
-## Exporting ignorecommon as HISTORY_IGNORE ruins everything (why?)
-ignorecommon="(\
+## Not able to set up the functionality of this section with HISTORY_IGNORE
+## Exporting HISTORY_IGNORE ruins everything (why?)
+
+_ignorecommon="(\
 ^v ?$|\
 ^d ?$|\
 ^gg ?[0-9-]*$|\
@@ -143,19 +145,22 @@ ignorecommon="(\
 ^man \S*$|\
 ^tmux ?$"
 
-ignorecommon+="|\
+_ignorecommon+="|\
 ^vi[m]? [^/]*$|\
 ^l[las]? \S+$|\
-^cd [^/]*$|\
+^cd \/?[^/]*$|\
 ^mkdir .*|\
 ^mv .*|\
+^type .*|\
+^which .*|\
+^whence .*|\
 ^echo \S+$)"
 
 ## Zsh hook on appending lines to the history file. Note:
 ## a command is added to history before being executed.
 zshaddhistory() {
   emulate -L zsh
-  ! [[ $(tr -s ' ' <<< ${1%%$'\n'}) =~ $ignorecommon ]];
+  ! [[ $(tr -s ' ' <<< ${1%%$'\n'}) =~ $_ignorecommon ]];
 }
 
 
