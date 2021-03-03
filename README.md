@@ -58,7 +58,14 @@ chosen in the previous step). For help, run `./evangelist.sh checkhealth`
 
 4. In your console, **run from the project directory**:
     - `./evangelist.sh install <configs>`  
-    where `<configs>` is `bash`, `zsh`, or `jupyter`  
+    where `<configs>` is `bash`, `zsh`, or `jupyter`
+
+    <br>
+
+    - To ensure the command history transfer, you may run instead:  
+    `export HISTFILE; ./evangelist.sh install <shell>`  
+    where `<shell>` is `bash` or `zsh`
+
 <br>
 
 5. **Re-login in the shell.**
@@ -319,24 +326,37 @@ the ones defined by ***evangelist***.
   ```
 -->
 
-* **Ctrl-C**
+* **Ctrl-c**
 
   Currently, pressing `<C-c>` during evangelist's execution kills the process group.
   Since there is no clean-up procedure that would revert actions of unfinished command,
   you may try to call the latter again or go from scratch with `uninstall`.
 
 
-* **zsh `ignorecommon`**
+* **`_ignorecommon` in zsh**
 
   If some of your commands are not saved during zsh-session,
   and you find this behavior undesirable, then you can remove
-  these commands from `ignorecommon` string in your `$ZDOTDIR/extra.zsh`
+  these commands from `_ignorecommon` string in your `$ZDOTDIR/extra.zsh`
 
 * **Cannot enter insert mode**
 
   If you get stuck in vi-cmd mode in the shell, what happens infrequently,
   you can handle this by hitting `Enter`, `I` (`<S-i>`), `a`, or any
   other key combination that may be considered as an alternative to `i`.
+
+* **Meta key on macOS**
+
+  To use shortcuts involving `Meta` key on macOS, you need to check out
+  the Meta key option in iTerm2 preferences. Also, you may need to make
+  sure that there are no overlapping Meta key bindings with the ones
+  the system uses.
+
+* **Tmux outputs errors on startup**
+
+  If this is the case, one needs to comment out the lines/blocks
+  (they marked in `tmux.conf`) that use the syntax of newer Tmux versions,
+  than the installed one. This will be fixed in the next patches.
 
 <br>
 

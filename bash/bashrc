@@ -34,10 +34,12 @@ export EDITOR=$VISUAL
 
 
 # Standard bash settings
-## For setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+## No need to export these variables since
+## - unlikely you will use them in your scripts
+## - a different shell (spawned as child process) will use its own history settings
 HISTSIZE=10000
 HISTFILESIZE=20000
-export HISTFILE=~/.bash_history
+HISTFILE=~/.bash_history
 
 ## ignoredups  - don't put immediate duplicates in the history list.
 ## ignorespace - don't append to the history list cmds that start with a space.
@@ -64,7 +66,13 @@ trap _historymerge EXIT
 shopt -s checkwinsize
 
 ## Export "default" color settings
-eval "$(dircolors)"
+type dircolors &> /dev/null && eval "$(dircolors -b)"
+
+## Better grep colors
+### set the color of 'file name' section in grep's output
+### fn=33 (default is 35); 33 is more visible on a white background of
+### transparent dark terminal window.
+export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=33:ln=32:bn=32:se=36'
 
 
 # Some bash specific aliases

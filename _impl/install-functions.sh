@@ -175,8 +175,9 @@ install_bash () {
   fi
 
   # Transfer the old history
-  local NEWHISTFILE='~/.bash_history'
-  [[ "$HISTFILE" != "$NEWHISTFILE" ]] && cp "$HISTFILE" "$NEWHISTFILE"
+  local NEWHISTFILE="$HOME/.bash_history"
+  [[ -n "$HISTFILE" && "$HISTFILE" != "$NEWHISTFILE" ]] \
+    && cp "$HISTFILE" "$NEWHISTFILE"
 
   ECHO Successfully installed: BASH configuration.
 
@@ -243,7 +244,8 @@ install_zsh () {
 
   # Transfer the old history
   local NEWHISTFILE="$XDG_DATA_HOME/zsh_history"
-  [[ "$HISTFILE" != "$NEWHISTFILE" ]] && cp "$HISTFILE" "$NEWHISTFILE"
+  [[ -n "$HISTFILE" && "$HISTFILE" != "$NEWHISTFILE" ]] \
+    && cp "$HISTFILE" "$NEWHISTFILE"
 
   ECHO Successfully installed: ZSH configuration.
 
