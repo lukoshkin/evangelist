@@ -7,14 +7,17 @@
 
 
 _help () {
-  echo -e "Usage: ./evangelist.sh [cmd] [args]\n"
-  echo -e "Commands:\n"
+  echo -e "Usage: ./evangelist.sh [opts] [<cmd> [<args>]]"
+  echo An incorrect option or command will result in showing this message.
+  echo -e "\nOptions:\n"
+  printf "  %-20s Get the current version info.\n" '--version'
 
+  echo -e "\nCommands:\n"
   printf "  %-20s Update the repository and installed configs.\n" 'update'
   printf "  %-20s Install one of the specified setups: bash zsh jupyter.\n" 'install'
   printf "  %-20s Show the installation status or readiness to install.\n" 'checkhealth'
   printf "  %-20s Roll back to the original settings.\n" 'uninstall'
-  printf "  %-20s Show this message and quit.\n" 'help'
+  echo
 }
 
 

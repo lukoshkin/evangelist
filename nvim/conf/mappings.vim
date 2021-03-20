@@ -34,10 +34,10 @@ nnoremap <A-M> <S-o><Esc>
 augroup PyExecutor
   autocmd!
   autocmd FileType python
-        \ xnoremap <buffer><silent><leader>p
+        \ xnoremap <buffer><silent><leader>py
         \ :call PySelect() <bar> call PyExec()<CR>
   autocmd FileType python
-        \ nnoremap <buffer><silent><leader><S-p> :w !python<CR>
+        \ nnoremap <buffer><silent><leader>py :w !python<CR>
 augroup END
 " <silent> prevents the command defined on the RHS of a mapping to be printed.
 " With <buffer>, one cannot call python in tmp buffers like Mundo or NERDtree.
@@ -94,3 +94,6 @@ noremap <silent><A--> :silent !transset -a --dec .02<CR>
 
 " Remove all extra spaces at the end of lines
 command! Trim %s/\s*$//g
+
+" Search for visually selected text
+vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>

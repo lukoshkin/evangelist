@@ -19,6 +19,10 @@ main() {
   elif [[ $1 == checkhealth ]]
   then
     _checkhealth
+  elif [[ $1 == --version ]]
+  then
+    echo evangelist $(git describe --abbrev=0)
+    sed -n '3p' LICENSE
   else
     _help
   fi

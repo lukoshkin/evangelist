@@ -37,8 +37,11 @@ USER $USER
 # Download configs and distribute them to their locations.
 RUN cd ~ && git clone https://github.com/lukoshkin/dotfiles.git \
     && cd dotfiles \
-    && sed -n '/> RESERVED-CONFS/,/< RESERVED-CONFS/{//!p}' \
-         ~/.bashrc >> bash/bashrc \
+    && if [ -f ~/.bashrc ]; \
+       then \
+         sed -n '/> RESERVED-CONFS/,/< RESERVED-CONFS/{//!p}' \
+         ~/.bashrc >> bash/bashrc; \
+       fi \
     && mv bash/bashrc ~/.bashrc \
     && mv tmux/tmux.conf ~/.tmux.conf \
     && mv bash/inputrc ~/.inputrc \
@@ -60,5 +63,3 @@ RUN cd ~ && git clone https://github.com/lukoshkin/dotfiles.git \
     && mv jupyter/notebook.json ~/.jupyter/nbconfig \
     && nvim --headless +PlugInstall +qall \
     && rm -rf ~/dotfiles
-
-ENTRYPOINT ["/bin/bash"]

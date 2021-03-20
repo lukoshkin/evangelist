@@ -40,4 +40,8 @@ set smartcase
 " 'smartcase' option switches from insensitive to sensitive search mode
 " whenever there is a capital letter in a pattern. One can use '\C' or \c'
 " escape sequences anywhere in the pattern to make the search case-sensitive
-" or -insensitive, respectively, regardless of these two options
+" or -insensitive, respectively, regardless of these two options.
+
+
+" Don't insert two spaces after a '.', '?' and '!' with a join command.
+set nojoinspaces

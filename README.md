@@ -51,7 +51,6 @@ and the setup script will become more universal and cross-platform.
       is about.
     - If the console you are going to work in is `zsh`, check also zsh-plugins
       in `zsh/.zshrc` file.  
-<br>
 
 3. **Install minimal list of prerequisites** (The full list depends on the set of plugins you have
 chosen in the previous step). For help, run `./evangelist.sh checkhealth`
@@ -60,28 +59,28 @@ chosen in the previous step). For help, run `./evangelist.sh checkhealth`
     - `./evangelist.sh install <configs>`  
     where `<configs>` is `bash`, `zsh`, or `jupyter`
 
-    <br>
-
     - To ensure the command history transfer, you may run instead:  
     `export HISTFILE; ./evangelist.sh install <shell>`  
     where `<shell>` is `bash` or `zsh`
-
-<br>
 
 5. **Re-login in the shell.**
 
 6. **Confirm the installation of zsh-plugins** (if selected zsh in step 4).
 
-Since Vim keeps all changes made to files with its help, one might consider
-adding anacron job (or its equivalent on macOS) to remove old undofiles (check `anacron/anacrontab.young`)
-or those undofiles which counterparts no longer exist
-(check `anacron/anacrontab.alive` and `anacron/purgeVimUndo`).  
+<br>
 
-For instance, on Linux you can run:
+Since Vim keeps all changes made to files with its help, on Linux, one might consider
+adding anacron job (or its equivalent on macOS) by running the following command
+in `evangelist/anacron` folder
 
-```
-sudo cp anacron/anacrontab.young /etc/anacrontab
-```
+* to remove old undofiles  
+`./anacron.sh old @monthly`
+
+* or those undofiles which counterparts no longer exist  
+`./anacron.sh dead 30`
+
+Note, if you are a user of a different OS, you will have to set up 'auto-purge' of the undodir manually.  
+To get more information about what arguments `anacron.sh` takes, type `./anacron.sh`.
 
 
 ### Docker
@@ -205,11 +204,12 @@ Before to get into it, let's get familiar with the imposed notation:
   | command | Trim | remove all trailing spaces in the file |
   | normal | `<leader>y` | yank current buffer |
   | visual | `<leader>y` | yank selected text |
-  | normal <br> <span style="color:saddlebrown">(.py extension)</span> | `<leader>P` | run the current buffer in python <br> **note:**  _capital P (Shift + p) in shortcut_ |
-  | visual <br> <span style="color:saddlebrown">(.py extension)</span> | `<leader>p` | run the selected block of code in python |
+  | normal <br> (.py extension) | `<leader>py` | run the current buffer in python |
+  | visual <br> (.py extension) | `<leader>py` | run the selected block of code in python |
   | normal | `<leader>t` | paste date and time before the cursor |
   | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss message in the cmd line below |
   | normal | `<M-(m\|M)>` | insert empty line (below \| above) |
+  | visual | `//` | search for selected text |
   | any | `<F12>` | toggle mouse |
   </details>
 

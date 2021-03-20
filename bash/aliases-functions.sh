@@ -35,7 +35,7 @@ gg () {
 # alias v="vim +'e #<1'"
 alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
 type nvim &> /dev/null \
-  && alias vv="vim +'browse filter !/__\|NERD_tree/ oldfiles'"
+  && alias vv="vim +'browse filter !/__\|NERD_tree\|ControlP/ oldfiles'"
 
 alias fd='find . -type d -name'
 alias ff='find . -type f -name'
