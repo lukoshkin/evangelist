@@ -30,7 +30,7 @@ main() {
 
 
 ctrl_c () {
-  NOTE 210 "\nInterrupted by user. Aborting..."
+  NOTE 210 '\nInterrupted by user. Aborting..'
   echo You may need to do a manual clean-up.
   kill -9 $$
 }

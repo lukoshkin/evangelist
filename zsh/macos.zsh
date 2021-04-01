@@ -116,7 +116,7 @@ _ignorecommon="(\
 ^tmux ?$"
 
 _ignorecommon+="|\
-^vi[m]? [^/]*$|\
+^vi[m]? ~?\/?[^/-]*$|\
 ^l[las]? \S+$|\
 ^cd \/?[^/]*$|\
 ^mkdir .*|\

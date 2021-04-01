@@ -3,9 +3,9 @@
 # This function should be called only once
 # within the body of an installation function
 back_up_original_configs () {
-  if ! grep -q "^$1" update-list.txt
+  if ! grep -q "^$1" .update-list
   then
-    echo $1 >> update-list.txt
+    echo $1 >> .update-list
     shift
 
     local m v n

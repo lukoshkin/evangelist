@@ -9,8 +9,12 @@ set wildmenu
 set lazyredraw
 
 " Mouse support
-noremap <F9> :call ToggleMouse()<CR>
-inoremap <F9> <Esc>:call ToggleMouse()<CR>a
+if !has('nvim')
+  execute "set <A-m>=\em"
+endif
+
+noremap <A-m> :call ToggleMouse()<CR>
+inoremap <A-m> <Esc>:call ToggleMouse()<CR>a
 
 " https://unix.stackexchange.com/questions/156707
 function! ToggleMouse()

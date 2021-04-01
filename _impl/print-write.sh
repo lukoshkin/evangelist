@@ -34,7 +34,7 @@ instructions_after_install () {
   locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
   local CODE=$?
 
-  NOTE 210 "\nFURTHER INSTRUCTIONS:"
+  NOTE 210 '\nFURTHER INSTRUCTIONS:'
   printf 'TO FINISH THE INSTALLATION, '
   if [[ ${SHELL##*/} != $1 ]]
   then
@@ -61,7 +61,7 @@ instructions_after_install () {
 # Takes one argument - the shell that was before
 # the settings installation: bash or zsh
 instructions_after_removal () {
-  NOTE 210 "\nFURTHER INSTRUCTIONS:"
+  NOTE 210 '\nFURTHER INSTRUCTIONS:'
   printf 'TO FINISH THE REMOVAL, '
   if [[ -n $1 && ${SHELL##*/} != $1 ]]
   then

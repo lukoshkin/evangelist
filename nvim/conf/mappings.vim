@@ -18,16 +18,20 @@ augroup END
 " with autogroup, you also get namespacing, order and flexibility.
 
 
-" Add line below and above with <Alt-m> <Alt-Shift-m>, respectively.
-" Instead of 'A' letter one can use 'M' for mappings, which stands for Meta
-" and is equivalent to Alt on Dell laptops.
+" Add empty an empty line or space in the direction
+" which a movement key specifies. Instead of 'A' letter one can use 'M'
+" for mappings, which stands for Meta and is equivalent to Alt on Dell laptops.
 if !has('nvim')
-  execute "set <A-m>=\em"
-  execute "set <A-M>=\eM"
+  execute "set <A-j>=\ej"
+  execute "set <A-k>=\ek"
+  execute "set <A-h>=\eh"
+  execute "set <A-l>=\el"
 endif
 
-nnoremap <A-m> o<Esc>
-nnoremap <A-M> <S-o><Esc>
+nnoremap <A-j> o<Esc>
+nnoremap <A-k> <S-o><Esc>
+nnoremap <A-h> i<Space><Esc>
+nnoremap <A-l> a<Space><Esc>
 
 
 " Run the currently edited file (or selected lines) with python.
@@ -93,7 +97,7 @@ noremap <silent><A--> :silent !transset -a --dec .02<CR>
 
 
 " Remove all extra spaces at the end of lines
-command! Trim %s/\s*$//g
+command! Trim %s/\s\+$//e | :nohlsearch | normal <C-o>
 
 " Search for visually selected text
 vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>

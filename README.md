@@ -9,6 +9,9 @@ Your laptop, the remote server you use, a docker container -
 from now on, a couple of commands and they all have the same settings<sup>\*</sup>.
 No need to manually restore your configs each time you buy a new laptop or reinstall the OS.
 
+Give it a shot! And if you don't like `evangelist`, you can always revert to
+your previous settings with its uninstall command.
+
 ---
 <sup>\*</sup> the settings shipped by **evangelist**. Their similarity on different machines  
 &ensp;will depend on the similarity of installed components among those machines.
@@ -24,6 +27,7 @@ No need to manually restore your configs each time you buy a new laptop or reins
 - [Features](#features)
 - [Troubleshooting](#troubleshooting)
 - [References](#references)
+- [TODO list](#todo-list)
 
 
 ## Installation
@@ -148,6 +152,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
+Patch 1.0.6 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -208,9 +213,9 @@ Before to get into it, let's get familiar with the imposed notation:
   | visual <br> (.py extension) | `<leader>py` | run the selected block of code in python |
   | normal | `<leader>t` | paste date and time before the cursor |
   | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss message in the cmd line below |
-  | normal | `<M-(m\|M)>` | insert empty line (below \| above) |
+  | normal | `<M-(h\|j\|k\|l)>` | insert an empty line or space in the direction which a movement key specifies |
   | visual | `//` | search for selected text |
-  | any | `<F12>` | toggle mouse |
+  | any | `<A-m>` | toggle mouse |
   </details>
 
 * <details>
@@ -223,9 +228,6 @@ Before to get into it, let's get familiar with the imposed notation:
   | normal | `<leader>md` | open/close markdown preview |
   | normal | `<leader>u` | open undo-tree |
   | normal | `<C-p>` | open CtrlP (file navigation) |
-  | normal | `<Space>sy` | show yanks |
-  | normal | `<Space>cy` | clear yanks (note: the last one is always kept) |
-  | normal | `<M-(n\|p)>` | change inserted text with the (next \| previous) yank in the yank buffer |
   <!--
   | ctrlP | `<C-j>`, `<C-k>` | navigation keys |
   | ctrlP | `<C-r>` | enable regex |
@@ -350,7 +352,8 @@ the ones defined by ***evangelist***.
   To use shortcuts involving `Meta` key on macOS, you need to check out
   the Meta key option in iTerm2 preferences. Also, you may need to make
   sure that there are no overlapping Meta key bindings with the ones
-  the system uses.
+  the system uses. In Neovim, you can try alternative bindings
+  involding command key (`<D-...>` instead of `<A-...>` and `<M-...>`).
 
 * **Tmux outputs errors on startup**
 
@@ -381,3 +384,12 @@ This work is based primarily on leveraging the following projects.
     <td> Vim extension for Jupyter Notebook </td>
   </tr>
 </table>
+
+
+## TODO list
+
+ - [x] Write Dockerfile
+ - [x] Write `install`, `uninstall`, `update` control functions
+ - [ ] Write bash/zsh completions
+ - [ ] Add `EVANGELIST_HOME` environment variable
+ - [ ] Add [Vim-tutor](https://github.com/lukoshkin/vim-tutor) to evangelist as a submodule

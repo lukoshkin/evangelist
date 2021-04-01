@@ -7,30 +7,30 @@
 
 
 _help () {
-  echo -e "Usage: ./evangelist.sh [opts] [<cmd> [<args>]]"
+  echo -e 'Usage: ./evangelist.sh [opts] [<cmd> [<args>]]'
   echo An incorrect option or command will result in showing this message.
-  echo -e "\nOptions:\n"
-  printf "  %-20s Get the current version info.\n" '--version'
+  echo -e '\nOptions:\n'
+  printf '  %-18s Get the current version info.\n' '--version'
 
-  echo -e "\nCommands:\n"
-  printf "  %-20s Update the repository and installed configs.\n" 'update'
-  printf "  %-20s Install one of the specified setups: bash zsh jupyter.\n" 'install'
-  printf "  %-20s Show the installation status or readiness to install.\n" 'checkhealth'
-  printf "  %-20s Roll back to the original settings.\n" 'uninstall'
+  echo -e '\nCommands:\n'
+  printf '  %-18s Update the repository and installed configs.\n' 'update'
+  printf '  %-18s Install one of the specified setups: bash zsh jupyter.\n' 'install'
+  printf '  %-18s Show the installation status or readiness to install.\n' 'checkhealth'
+  printf '  %-18s Roll back to the original settings.\n' 'uninstall'
   echo
 }
 
 
 _checkhealth () {
-  if [[ ! -f 'update-list.txt' ]]
+  if [[ ! -f '.update-list' ]]
   then
-    NOTE 147 "None of the listed configs is installed yet."
+    NOTE 147 'None of the listed configs is installed yet.'
   else
-    if [[ $(wc -l < update-list.txt) -gt 2 ]]
+    if [[ $(wc -l < .update-list) -gt 2 ]]
     then
-      NOTE 147 "Installed: $(sed -n '3,$p' update-list.txt | tr '\n' ' ')"
+      NOTE 147 "Installed: $(sed -n '3,$p' .update-list | tr '\n' ' ')"
     else
-      NOTE 147 "None of the listed configs is installed yet."
+      NOTE 147 'None of the listed configs is installed yet.'
     fi
   fi
 
@@ -84,11 +84,11 @@ _install () {
   mkdir -p .bak
   mkdir -p "$XDG_CONFIG_HOME"/evangelist/{bash,custom}
 
-  touch update-list.txt
-  if ! grep -q 'LOGIN-SHELL' update-list.txt
+  touch .update-list
+  if ! grep -q 'LOGIN-SHELL' .update-list
   then
-    echo LOGIN-SHELL:${SHELL##*/} >> update-list.txt
-    echo Installed components: >> update-list.txt
+    echo LOGIN-SHELL:${SHELL##*/} >> .update-list
+    echo Installed components: >> .update-list
   fi
 
   if [[ $1 == bash ]]
@@ -112,7 +112,7 @@ _update () {
   # Check the requirements
   # TODO: Print messages of pulled commits
   HAS git || { ECHO2 Missing git; exit; }
-  [[ -f update-list.txt ]] || { ECHO2 Missing 'update-list.txt'.; exit; }
+  [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
 
   [[ $1 != SKIP ]] && ECHO Checking for updates..
 
@@ -126,7 +126,7 @@ _update () {
 
   # TODO: Add hook to handle updates that cannot be resolved
   # ####  by the following code in the 'if'-statement.
-  # E.g.: If the structure of 'update-list.txt' changes during development,
+  # E.g.: If the structure of '.update-list' changes during development,
   # ####  one must rewrite the file if it was generated with old installation scripts.
   if [[ $1 != SKIP ]] && str_has_any "$UPD" $SRC
   then
@@ -145,12 +145,12 @@ _update () {
   do
     case ${OBJ##*/} in
       inputrc)
-        grep -q '^bash' update-list.txt \
+        grep -q '^bash' .update-list \
           && cp $OBJ ~
         ;;
 
       bashrc)
-        if grep -q '^bash' update-list.txt
+        if grep -q '^bash' .update-list
         then
           sed -e "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/{p; r $OBJ
             }; /<SED-UPDATE/p; d }" ~/.bashrc > /tmp/evangelist-bashrc
@@ -159,7 +159,7 @@ _update () {
         ;;
 
       zshenv)
-        if grep -q '^zsh' update-list.txt
+        if grep -q '^zsh' .update-list
         then
           sed -e "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/{p; r $OBJ
             }; /<SED-UPDATE/p; d }" ~/.zshenv > /tmp/evangelist-zshenv
@@ -168,12 +168,12 @@ _update () {
         ;;
 
       aliases-functions.sh)
-        grep -qE '^(ba|z)sh' update-list.txt \
+        grep -qE '^(ba|z)sh' .update-list \
           && cp $OBJ "$XDG_CONFIG_HOME/evangelist/bash"
         ;;
 
       ps1.bash)
-        grep -q '^bash' update-list.txt \
+        grep -q '^bash' .update-list \
           && cp $OBJ "$XDG_CONFIG_HOME/evangelist/bash"
         ;;
 
@@ -185,18 +185,18 @@ _update () {
         ;;
 
       custom.js)
-        grep -q '^jupyter' update-list.txt \
+        grep -q '^jupyter' .update-list \
           && cp $OBJ $(jupyter --config-dir)/custom/custom.js
         ;;
 
       notebook.json)
-        grep -q '^jupyter' update-list.txt \
+        grep -q '^jupyter' .update-list \
           && cp $OBJ $(jupyter --config-dir)/nbconfig/notebook.json
         ;;
 
       *)
         ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
-        [[ $OBJ =~ zsh ]] && grep -q '^zsh' update-list.txt \
+        [[ $OBJ =~ zsh ]] && grep -q '^zsh' .update-list \
           && cp $OBJ "$ZDOTDIR"
         ;;
     esac
@@ -213,14 +213,14 @@ _update () {
 
 _uninstall () {
   [[ -d .bak ]] || { ECHO2 Missing '.bak'; exit; }
-  [[ -f update-list.txt ]] || { ECHO2 Missing 'update-list.txt'.; exit; }
+  [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
 
   ECHO Uninstalling..
 
-  grep -q '^bash' update-list.txt && rm ~/.{bashrc,inputrc}
+  grep -q '^bash' .update-list && rm ~/.{bashrc,inputrc}
 
   # Completely eradicate the possibility of removing '/'
-  if grep -q '^zsh' update-list.txt
+  if grep -q '^zsh' .update-list
   then
     rm -f ~/.zshenv
     ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
@@ -233,7 +233,7 @@ _uninstall () {
   [[ -n "$XDG_CONFIG_HOME" ]] \
     && rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
 
-  if grep -q '^jupyter' update-list.txt
+  if grep -q '^jupyter' .update-list
   then
     local JUPCONFDIR=$(jupyter --config-dir)
     rm "$JUPCONFDIR/nbconfig/notebook.json"
@@ -273,9 +273,9 @@ _uninstall () {
   done
 
   local LOGSHELL
-  LOGSHELL=$(grep 'LOGIN-SHELL' update-list.txt | cut -d ':' -f2)
+  LOGSHELL=$(grep 'LOGIN-SHELL' .update-list | cut -d ':' -f2)
 
-  rm update-list.txt
+  rm .update-list
   rm -rf .bak
 
   ECHO Successfully uninstalled.
