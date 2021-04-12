@@ -1,4 +1,3 @@
-let mapleader=","
 inoremap jj <Esc>
 " 'autocmd' helps you make commands executed on some event.
 " The two lines below mean: set timeout for all keystroke sequences
@@ -97,7 +96,7 @@ noremap <silent><A--> :silent !transset -a --dec .02<CR>
 
 
 " Remove all extra spaces at the end of lines
-command! Trim %s/\s\+$//e | :nohlsearch | normal <C-o>
+command Trim %s/\s\+$//e | :nohlsearch
 
 " Search for visually selected text
 vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>

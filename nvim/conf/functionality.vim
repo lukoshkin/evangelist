@@ -33,7 +33,7 @@ endfunc
 " Change the symbols inserted (ru or en) with <C-^>.
 " A good alternative would be 'lyokha/vim-xkbswitch' plugin.
 set keymap=russian-jcukenwin
-" start from en 
+" start from 'en'
 set iminsert=0
 set imsearch=0
 

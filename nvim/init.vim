@@ -42,6 +42,6 @@ source $XDG_CONFIG_HOME/nvim/conf/ctrlp.vim
 
 
 " Import user-defined settings
-if filereadable($XDG_CONFIG_HOME."/evangelist/custom/custom.vim")
-  source $XDG_CONFIG_HOME/evangelist/custom/custom.vim
+if filereadable($EVANGELIST."/custom/custom.vim")
+  source $EVANGELIST/custom/custom.vim
 endif

@@ -1,13 +1,13 @@
 #!/usr/bin/zsh
 
-# conda-autoenv automatically 
-#  (1) activates a conda environment per the environment.yml file in 
+# conda-autoenv automatically
+#  (1) activates a conda environment per the environment.yml file in
 #      a directory, when you enter it
 #  (2) updates the file and deactivates the environment, when you
 #      leave the directory
-#  (3) installs and updates your pip requirements per the 
+#  (3) installs and updates your pip requirements per the
 #      requirements.txt in the directory as well
-# 
+#
 # To install, add this line to your .zshrc/.bashrc or .bash-profile:
 #
 #       source /path/to/conda_autoenv.sh

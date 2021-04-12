@@ -7,7 +7,7 @@ alias -g ......=../../../../..
 alias ls='ls -G'
 
 alias _zshrc="vim $ZDOTDIR/.zshrc"
-alias zshrc="vim $XDG_CONFIG_HOME/evangelist/custom/custom.zsh"
+alias zshrc="vim $EVANGELIST/custom/custom.zsh"
 ## To list all active aliases, run `alias`
 
 
@@ -154,6 +154,6 @@ setopt extendedglob
 ## quite powerful option which enables:
 ## - recursive globbing     ls **/foo       foo, dir1/foo, dir1/dir2/foo
 ## - negation               ls ^foo         all except foo
-## - approximate matching   ls (#a1)foobar  fobar, 
-## - qualifiers             ls foo/*(#q@)   finds all symblic links (@) in foo 
+## - approximate matching   ls (#a1)foobar  fobar,
+## - qualifiers             ls foo/*(#q@)   finds all symblic links (@) in foo
 ## more info by googling article: 37-ZSH-Gem-2-Extended-globbing-and-expansion.html

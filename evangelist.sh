@@ -1,37 +1,34 @@
 #!/bin/bash
 
-source _impl/control-functions.sh
-source _impl/install-functions.sh
-source _impl/print-write.sh
-source _impl/utils.sh
+EVANGELIST=${EVANGELIST:-.}
+XDG_CACHE_HOME=${XDG_CACHE_HOME:-"$HOME/.cache"}
+XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
+XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
+
+source $EVANGELIST/_impl/control-functions.sh
+source $EVANGELIST/_impl/install-functions.sh
+source $EVANGELIST/_impl/print-write.sh
+source $EVANGELIST/_impl/utils.sh
 
 
 main() {
-  if [[ $1 == install ]]
-  then
-    _install $2
-  elif [[ $1 == update ]]
-  then
-    _update $2
-  elif [[ $1 == uninstall ]]
-  then
-    _uninstall
-  elif [[ $1 == checkhealth ]]
-  then
-    _checkhealth
-  elif [[ $1 == --version ]]
-  then
-    echo evangelist $(git describe --abbrev=0)
-    sed -n '3p' LICENSE
-  else
-    _help
-  fi
+  cd $EVANGELIST
+  case $1 in
+    install)        shift; _install $@ ;;
+    update)         _update $2 ;;
+    uninstall)      _uninstall ;;
+    checkhealth)    _checkhealth ;;
+    --version)      _version ;;
+    *) _help ;;
+  esac
+  cd - > /dev/null
 }
 
 
 ctrl_c () {
   NOTE 210 '\nInterrupted by user. Aborting..'
   echo You may need to do a manual clean-up.
+  cd - > /dev/null
   kill -9 $$
 }
 

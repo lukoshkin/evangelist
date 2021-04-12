@@ -9,7 +9,7 @@
 #
 # # Purge undodir every week at 8:05AM
 # 5 8 * * 1 /path/to/purgeVimUndo.sh /path/to/undo
-# 
+#
 # Do not forget about the newline at the end of crontab file!
 
 undodir="$1"
@@ -32,7 +32,7 @@ for undofile in *
 do
   filepath=`echo -n "$undofile" | sed 's#%#/#g'`
   if [ ! -e "$filepath" ]
-  then 
+  then
     rm -f "$undofile"
   fi
 done

@@ -103,6 +103,9 @@ make_descriptor () {
   prepend_text $1 "export XDG_CONFIG_HOME=\"$XDG_CONFIG_HOME\""
   prepend_text $1 '# XDG bash directory specification'
 
+  prepend_text $1 ''
+  prepend_text $1 "export EVANGELIST=\"$PWD\""
+
   if [[ $1 =~ bash ]]
   then
     prepend_text $1 ''
@@ -152,7 +155,7 @@ modulecheck () {
   [[ ${#required[@]} -ne 0 ]] && (( ok+=2 ))
   [[ ${#optional[@]} -ne 0 ]] && (( ok+=1 ))
 
-  case $ok in 
+  case $ok in
     0)
       echo -e "${GREEN}All dependencies are satisfied!$RESET"
       ;;
@@ -183,3 +186,12 @@ modulecheck () {
   echo
 }
 
+
+# 1 commit -> full message
+# more than 1 -> only title
+print_commit_messages () {
+  local nrows format branch=$1
+  nrows=$(git rev-list HEAD..origin/$branch | wc -l)
+  [[ $nrows == 1 ]] && format=%B || format=%s
+  git log HEAD..origin/$branch --format=$format
+}

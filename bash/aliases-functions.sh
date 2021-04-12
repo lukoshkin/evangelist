@@ -1,3 +1,4 @@
+alias evangelist="$EVANGELIST/evangelist.sh"
 
 alias l='ls -lAh'
 alias ll='ls -lh'
@@ -5,7 +6,7 @@ alias lt='ls -lAht'
 alias md='mkdir -p'
 
 alias _vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
-alias vimrc="vim $XDG_CONFIG_HOME/evangelist/custom/custom.vim"
+alias vimrc="vim $EVANGELIST/custom/custom.vim"
 
 ## Folder stack navigation
 alias d='dirs -v'

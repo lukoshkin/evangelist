@@ -7,6 +7,31 @@
 # NOTE: better to surround expansions with double quotes
 # ####  if they might contain spaces.
 
+check_arguments () {
+  local allowed='bash+/zsh+, bash/zsh, vim, tmux, jupyter'
+
+  if [[ $# -ne 0 ]]
+  then
+    local ok=true
+
+    for arg in $@
+    do
+      [[ " $(tr ,/ ' ' <<< $allowed)" =~ " $arg" ]] || { ok=false; break; }
+    done
+
+    $ok && return
+    echo -e "Invalid argument: $arg\n"
+  fi
+
+  echo 'Usage: ./evangelist.sh install <args>'
+  echo Arguments: $allowed.
+  echo
+  echo zsh+ includes all settings except for bash and jupyter.
+  echo Similarly, bash+ implies all but zsh and jupyter.
+  exit
+}
+
+
 install_vim () {
   # Check if neovim is available
   ( HAS nvim || HAS vim ) || { ECHO2 Missing: vim, neovim; return; }
@@ -60,6 +85,14 @@ install_vim () {
   # Copy new configs
   cp -R nvim "$XDG_CONFIG_HOME"
 
+  # Check if need to expand $EVANGELIST
+  if ! grep -qE '^(ba|z)sh' .update-list
+  then
+    sed -ri 's;\$EVANGELIST[.\"]*;'"$PWD"';' "$XDG_CONFIG_HOME/nvim/init.vim"
+    sed -ri 's;(filereadable\()(.+\));\1"\2;' "$XDG_CONFIG_HOME/nvim/init.vim"
+    sed -ri 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' "$XDG_CONFIG_HOME/nvim/init.vim"
+  fi
+
   # Install vim-plug if it is not there yet
   if [[ ! -f "$VIMPLUG" ]]; then
     sh -c "curl -sS -fLo $VIMPLUG --create-dirs \
@@ -106,7 +139,7 @@ install_jupyter () {
     || pip install -q jupyter_contrib_nbextensions ) \
     && echo Installed jupyter_contrib_nbextensions
 
-  # Add extension tab in Jupyter Notebook 
+  # Add extension tab in Jupyter Notebook
   ( pip show -qq jupyter_nbextensions_configurator \
     || pip install -q jupyter_nbextensions_configurator ) \
     && echo Installed jupyter_nbextensions_configurator
@@ -158,11 +191,10 @@ install_bash () {
   # Copy new configs
   cp bash/bashrc ~/.bashrc
   cp bash/inputrc ~/.inputrc
-  cp bash/{aliases-functions.sh,ps1.bash} "$XDG_CONFIG_HOME/evangelist/bash"
 
   make_descriptor ~/.bashrc
 
-  # Add conda init to .bashrc 
+  # Add conda init to .bashrc
   conda &> /dev/null \
     && (conda init bash > /dev/null; conda config --set changeps1 False) \
     || ECHO2 "conda doesn't seem to work."
@@ -171,7 +203,7 @@ install_bash () {
   if ! grep -q 'source .*/bash/ps1.bash' ~/.bashrc
   then
     echo '# Dynamic (on-install) imports' >> ~/.bashrc
-    echo 'source "$XDG_CONFIG_HOME/evangelist/bash/ps1.bash"' >> ~/.bashrc
+    echo 'source "$EVANGELIST/bash/ps1.bash"' >> ~/.bashrc
   fi
 
   # Transfer the old history
@@ -180,9 +212,6 @@ install_bash () {
     && cp "$HISTFILE" "$NEWHISTFILE"
 
   ECHO Successfully installed: BASH configuration.
-
-  # Check if necessary to change the login shell
-  instructions_after_install bash
 }
 
 
@@ -211,7 +240,6 @@ install_zsh () {
   # Copy new configs
   cp zsh/zshrc "$ZDOTDIR/.zshrc"
   cp zsh/agkozakrc "$ZDOTDIR"
-  cp bash/aliases-functions.sh "$XDG_CONFIG_HOME/evangelist/bash"
   cp zsh/zshenv ~/.zshenv
 
   HAS conda && cp zsh/conda_autoenv.sh "$ZDOTDIR"
@@ -226,8 +254,8 @@ install_zsh () {
   make_descriptor ~/.zshenv
 
   # Install zplug
-  [[ ! -d $ZPLUG_HOME/.git ]] \
-    && git clone -q https://github.com/zplug/zplug $ZPLUG_HOME \
+  [[ ! -d "$ZPLUG_HOME/.git" ]] \
+    && git clone -q https://github.com/zplug/zplug "$ZPLUG_HOME" \
     && echo Installed zplug.
 
   # Add conda init to .zshrc
@@ -248,8 +276,5 @@ install_zsh () {
     && cp "$HISTFILE" "$NEWHISTFILE"
 
   ECHO Successfully installed: ZSH configuration.
-
-  # Check if necessary to change the login shell
-  instructions_after_install zsh
 }
 

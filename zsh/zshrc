@@ -26,12 +26,12 @@ fi
 
 zplug load
 source $ZDOTDIR/extra.zsh
-source $XDG_CONFIG_HOME/evangelist/bash/aliases-functions.sh
+source $EVANGELIST/bash/aliases-functions.sh
 [[ -n $CONDA_EXE ]] && source $ZDOTDIR/conda_autoenv.sh
 
 # Import user-defined settings
-[[ -f $XDG_CONFIG_HOME/evangelist/custom/custom.zsh ]] \
-  && source $XDG_CONFIG_HOME/evangelist/custom/custom.zsh
+[[ -f $EVANGELIST/custom/custom.zsh ]] \
+  && source $EVANGELIST/custom/custom.zsh
 
 # if the system has both Vim and Neovim, use the latter
 which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim

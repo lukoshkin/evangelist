@@ -47,29 +47,29 @@ and the setup script will become more universal and cross-platform.
     git clone https://github.com/lukoshkin/evangelist.git ~/.config/evangelist
     ```
 -->
+2. **Install minimal list of prerequisites** (The full list depends on the set of plugins you have
+chosen in the previous step). For help, run `./evangelist.sh checkhealth`
 
-2. **Adjust for yourself** (optional):
+3. In your console, **run from the project directory**:
+    - `./evangelist.sh install <configs>`  
+    where `<configs>` can be `bash`, `zsh`, `vim`, `tmux`, `jupyter`  
+    (you can specify more than one argument)
+
+    - To ensure the command history transfer, you may run instead:  
+    `export HISTFILE; ./evangelist.sh install <shell> <other args>`  
+    where `<shell>` is `bash` or `zsh`
+
+4. **Re-login in the shell.**
+
+5. **Confirm the installation of zsh-plugins** (if selected zsh in step 4).
+
+6. **Adjust for yourself** (optional):
     - Go to `nvim` directory, look through the plugins to be installed
       and their configs to be sourced. Comment out those lines you do not
       agree with. Probably, you will have to google first what each plugin
       is about.
     - If the console you are going to work in is `zsh`, check also zsh-plugins
-      in `zsh/.zshrc` file.  
-
-3. **Install minimal list of prerequisites** (The full list depends on the set of plugins you have
-chosen in the previous step). For help, run `./evangelist.sh checkhealth`
-
-4. In your console, **run from the project directory**:
-    - `./evangelist.sh install <configs>`  
-    where `<configs>` is `bash`, `zsh`, or `jupyter`
-
-    - To ensure the command history transfer, you may run instead:  
-    `export HISTFILE; ./evangelist.sh install <shell>`  
-    where `<shell>` is `bash` or `zsh`
-
-5. **Re-login in the shell.**
-
-6. **Confirm the installation of zsh-plugins** (if selected zsh in step 4).
+      in `zsh/.zshrc` file.
 
 <br>
 
@@ -147,12 +147,13 @@ Before to get into it, let's get familiar with the imposed notation:
   `M` is for `Meta`, which is `Alt` or `command`, depending on the keyboard layout.  
   `<*-*>` is a combination of keys where first ones are modifier of the last one.  
   `(a|b)` means the use of either a or b key in the given combination.  
-  `leader` is chosen to be `,` in Vim, and `localleader` is `\`.  
+  By default, `leader` is mapped to `\` in Vim, as well as `localleader`.  
+  But you can change both values in your `custom/custom.vim`.
 
 ---
 
 
-Patch 1.0.6 (!)
+Patch 1.1.0 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -390,6 +391,6 @@ This work is based primarily on leveraging the following projects.
 
  - [x] Write Dockerfile
  - [x] Write `install`, `uninstall`, `update` control functions
+ - [x] Add `EVANGELIST` environment variable
  - [ ] Write bash/zsh completions
- - [ ] Add `EVANGELIST_HOME` environment variable
  - [ ] Add [Vim-tutor](https://github.com/lukoshkin/vim-tutor) to evangelist as a submodule

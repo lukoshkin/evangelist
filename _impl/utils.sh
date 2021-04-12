@@ -11,13 +11,13 @@ back_up_original_configs () {
     local m v n
     for arg in $@
     do
-      m=$(cut -d ':' -f1 <<< $arg) 
+      m=$(cut -d ':' -f1 <<< $arg)
       v=$(cut -d ':' -f2 <<< $arg)
       n=$(cut -d ':' -f3 <<< $arg)
 
       v=$(eval echo $v)
       n=$(eval echo $n)
-      case $m in 
+      case $m in
         f)
           [[ -f "$v" ]] && cp "$v" ".bak/$n"
           ;;

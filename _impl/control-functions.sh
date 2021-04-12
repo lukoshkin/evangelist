@@ -1,20 +1,25 @@
 #!/bin/bash
 
-# exploits: 
+# exploits:
 # - install-functions.sh
 # - print-write.sh
 # - utils.sh
 
+_version () {
+  echo evangelist $(git describe --abbrev=0)
+  sed -n '3p' LICENSE
+}
+
 
 _help () {
-  echo -e 'Usage: ./evangelist.sh [opts] [<cmd> [<args>]]'
+  echo 'Usage: ./evangelist.sh [opts] [<cmd> [<args>]]'
   echo An incorrect option or command will result in showing this message.
   echo -e '\nOptions:\n'
   printf '  %-18s Get the current version info.\n' '--version'
 
   echo -e '\nCommands:\n'
   printf '  %-18s Update the repository and installed configs.\n' 'update'
-  printf '  %-18s Install one of the specified setups: bash zsh jupyter.\n' 'install'
+  printf '  %-18s Install one or all of the specified setups: bash zsh vim tmux jupyter.\n' 'install'
   printf '  %-18s Show the installation status or readiness to install.\n' 'checkhealth'
   printf '  %-18s Roll back to the original settings.\n' 'uninstall'
   echo
@@ -72,17 +77,14 @@ _checkhealth () {
 
 
 _install () {
-  # XDG specification
-  [[ -z "$XDG_CONFIG_HOME" ]] && export XDG_CONFIG_HOME="$HOME/.config"
-  [[ -z "$XDG_DATA_HOME" ]] && export XDG_DATA_HOME="$HOME/.local/share"
-  [[ -z "$XDG_CACHE_HOME" ]] && export XDG_CACHE_HOME="$HOME/.cache"
+  check_arguments $@
 
-  mkdir -p "$XDG_CONFIG_HOME"
   mkdir -p "$XDG_DATA_HOME"
   mkdir -p "$XDG_CACHE_HOME"
+  mkdir -p "$XDG_CONFIG_HOME"
 
   mkdir -p .bak
-  mkdir -p "$XDG_CONFIG_HOME"/evangelist/{bash,custom}
+  mkdir -p "$EVANGELIST/custom"
 
   touch .update-list
   if ! grep -q 'LOGIN-SHELL' .update-list
@@ -91,26 +93,50 @@ _install () {
     echo Installed components: >> .update-list
   fi
 
-  if [[ $1 == bash ]]
+  # Let user select login shell
+  local msg input=$(grep -oE '(z|ba)sh' <<< $@)
+  if [[ $@ = *bash* && $@ = *zsh* ]]
   then
-    install_vim
-    install_tmux
-    install_bash
-  elif [[ $1 == zsh ]]
-  then
-    install_vim
-    install_tmux
-    install_zsh
-  elif [[ $1 == jupyter ]]
-  then
-    install_jupyter
+    msg+="Since you are installing BOTH the shells' settings,\n"
+    msg+='please type in which one will be used as a login shell.\n'
+
+    NOTE 210 "$msg"
+    read -p '(zsh|bash): ' input
+    echo
   fi
+
+  # Ensure shell settings are installed first
+  declare -a params=$@
+  [[ $@ = *bash+* ]] && params=( bash vim tmux ${params[@]/bash+} )
+  [[ $@ = *zsh+* ]] && params=( zsh vim tmux ${params[@]/zsh+} )
+  [[ $@ =~ bash ]] && params=( bash ${params[@]/bash} )
+  [[ $@ =~ zsh ]] && params=( zsh ${params[@]/zsh} )
+
+  # Discard duplicates
+  declare -a newparams
+  for arg in ${params[@]}
+  do
+    [[ ${newparams[@]} =~ $arg ]] || newparams+=( $arg )
+  done
+  set -- ${newparams[@]}
+
+  while [[ $# -gt 0 ]]
+  do
+    case $1 in
+      vim) install_vim; shift ;;
+      tmux) install_tmux; shift ;;
+      jupyter) install_jupyter; shift ;;
+      bash) install_bash; shift ;;
+      zsh) install_zsh; shift ;;
+      *) echo Infinite loop; exit ;;
+    esac
+  done
+
+  [[ -n $input ]] && instructions_after_install $input
 }
 
 
 _update () {
-  # Check the requirements
-  # TODO: Print messages of pulled commits
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
 
@@ -139,6 +165,7 @@ _update () {
   fi
 
   ECHO 'Updating installed components if any..'
+  print_commit_messages $BRANCH
   git merge origin/$BRANCH || exit 1
 
   for OBJ in $(sed '/nvim/d' <<< "$UPD")
@@ -152,29 +179,26 @@ _update () {
       bashrc)
         if grep -q '^bash' .update-list
         then
-          sed -e "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/{p; r $OBJ
-            }; /<SED-UPDATE/p; d }" ~/.bashrc > /tmp/evangelist-bashrc
+          sed -e "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/r $OBJ
+            d }" ~/.bashrc > /tmp/evangelist-bashrc
           mv /tmp/evangelist-bashrc ~/.bashrc
         fi
         ;;
+        # How sed works here. It applies the two commands to lines
+        # between >SED-UPDATE and <SED-UPDATE (including the markers):
+
+        # 1) insert file contents after >SED-UPDATE
+        # 2) delete all lines in the specified area
+
+        # Note, that no commands are applied to inserted text.
 
       zshenv)
         if grep -q '^zsh' .update-list
         then
-          sed -e "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/{p; r $OBJ
-            }; /<SED-UPDATE/p; d }" ~/.zshenv > /tmp/evangelist-zshenv
+          sed -e "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/r $OBJ
+            d }" ~/.zshenv > /tmp/evangelist-zshenv
           mv /tmp/evangelist-zshenv ~/.zshenv
         fi
-        ;;
-
-      aliases-functions.sh)
-        grep -qE '^(ba|z)sh' .update-list \
-          && cp $OBJ "$XDG_CONFIG_HOME/evangelist/bash"
-        ;;
-
-      ps1.bash)
-        grep -q '^bash' .update-list \
-          && cp $OBJ "$XDG_CONFIG_HOME/evangelist/bash"
         ;;
 
       tmux.conf)
@@ -222,9 +246,9 @@ _uninstall () {
   # Completely eradicate the possibility of removing '/'
   if grep -q '^zsh' .update-list
   then
-    rm -f ~/.zshenv
     ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
     [[ -n "$ZDOTDIR" ]] && rm -rf "$ZDOTDIR"
+    rm -f ~/.zshenv
   fi
 
   rm -rf "$XDG_CONFIG_HOME/nvim"
@@ -265,9 +289,6 @@ _uninstall () {
 
       notebook.json)
         cp $OBJ "$JUPCONFDIR/nbconfig/notebook.json"
-        ;;
-
-      *) :
         ;;
     esac
   done
