@@ -168,6 +168,7 @@ _update () {
   print_commit_messages $BRANCH
   git merge origin/$BRANCH || exit 1
 
+  # TODO: Rewrite 'case + if' to 'if + case' ? too cumbersome now
   for OBJ in $(sed '/nvim/d' <<< "$UPD")
   do
     case ${OBJ##*/} in
@@ -202,10 +203,15 @@ _update () {
         ;;
 
       tmux.conf)
-        local TMUXV=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
-        dummy_v1_gt_v2 $TMUXV 3.1 \
-          && cp $OBJ "$XDG_CONFIG_HOME/tmux" \
-          || cp $OBJ ~/.${OBJ##*/}
+        if grep -q '^tmux' .update-list
+        then
+          # A more stable way to determine the version of Tmux:
+          # TMUXV=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
+
+          dummy_v1_gt_v2 $(tmux -V | cut -d ' ' -f2) 3.1 \
+            && cp $OBJ "$XDG_CONFIG_HOME/tmux" \
+            || cp $OBJ ~/.${OBJ##*/}
+        fi
         ;;
 
       custom.js)
@@ -226,10 +232,13 @@ _update () {
     esac
   done
 
-  for OBJ in $(sed -n '/nvim/p' <<< "$UPD")
-  do
-    cp $OBJ "$XDG_CONFIG_HOME/$OBJ"
-  done
+  if grep -q '^nvim' .update-list
+  then
+    for OBJ in $(sed -n '/nvim/p' <<< "$UPD")
+    do
+      cp $OBJ "$XDG_CONFIG_HOME/$OBJ"
+    done
+  fi
 
   ECHO Successfully updated.
 }

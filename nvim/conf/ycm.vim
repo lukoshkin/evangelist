@@ -5,11 +5,11 @@ highlight YcmErrorSection ctermfg=DarkRed
 highlight YcmWarningSection ctermfg=LightMagenta
 
 " gd - go to definition or declaration
-" gk - open documentation
+" gK - open documentation (gk is mapped by default. See :help gk)
 " <leader>qf - error fix if the compiler knows how
 nnoremap <leader>qf :YcmCompleter FixIt<CR>
 nnoremap gd :YcmCompleter GoToDefinitionElseDeclaration<CR>
-nnoremap gk :YcmCompleter GetDoc<CR>
+nnoremap gK :YcmCompleter GetDoc<CR>
 
 
 nnoremap <silent><leader>err :call YcmErrToggle()<CR>

@@ -96,7 +96,9 @@ noremap <silent><A--> :silent !transset -a --dec .02<CR>
 
 
 " Remove all extra spaces at the end of lines
-command Trim %s/\s\+$//e | :nohlsearch
+command! Trim %s/\s\+$//e | :nohlsearch
+" The exclamation mark says to replace command if it doesn't exist.
+" So no error will pop up when sourcing this file several times.
 
 " Search for visually selected text
 vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>

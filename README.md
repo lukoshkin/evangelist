@@ -41,12 +41,13 @@ and the setup script will become more universal and cross-platform.
 
 ### Evangelist
 
-1. **Clone the repository.**
-<!--
+1. **Clone the repository.**  
+    For example:
     ```bash
     git clone https://github.com/lukoshkin/evangelist.git ~/.config/evangelist
+    cd ~/.config/evangelist
     ```
--->
+
 2. **Install minimal list of prerequisites** (The full list depends on the set of plugins you have
 chosen in the previous step). For help, run `./evangelist.sh checkhealth`
 
@@ -362,6 +363,15 @@ the ones defined by ***evangelist***.
   (they marked in `tmux.conf`) that use the syntax of newer Tmux versions,
   than the installed one. This will be fixed in the next patches.
 
+* **Enforce installation in a new folder**
+
+  Because of the current implementation, you cannot simply change the
+  installation path by running `./evangelist.sh install <shell>`
+  under a new folder. You need to first unset the variable with
+  the installation path to an active evangelist instance:
+
+  `unset EVANGELIST; ./evangelist.sh install <args>`
+
 <br>
 
 
@@ -385,6 +395,8 @@ This work is based primarily on leveraging the following projects.
     <td> Vim extension for Jupyter Notebook </td>
   </tr>
 </table>
+
+<br>
 
 
 ## TODO list
