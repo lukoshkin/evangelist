@@ -132,6 +132,8 @@ with broken colors during the process of both the installation and exploitation.
 
 ## Features
 
+- Light implementation of [conda-autoenv](https://github.com/sharonzhou/conda-autoenv)
+  which supports both bash and zsh
 - Efficient navigation in the project directory (commands: `tree`, `d`, `gg`, `G`)
 - Interactive command history search (key-bindings: `jjk`, `<M-k>`, `/`)
 - Jupyter empowered by Vim and basic set of notebook extensions
@@ -182,7 +184,9 @@ Patch 1.1.0 (!)
 
   | alias/function | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
   |:--------------:|:-----------|
-  | `tree` | draw a project tree |
+  | `mkenv [env]` | remember the environment used in a folder to <br> [de]activate the former when [leaving]/entering the latter <br> ***(supports only conda environments)*** |
+  | `md` | create a directory (or nested folders) and cd there |
+  | `tree` | draw a project tree <br> (a "safe" wrapper around Unix `tree`) |
   | `v` | open the last file closed (in Vim) |
   | `vv` | start Vim from the list of recently edited files |
   | `d` | show directories visited by user (autocd zsh option) |
@@ -208,15 +212,16 @@ Patch 1.1.0 (!)
   | mode | shortcut | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
   |:----:|:--------:|:-----------------------------------------------|
   | normal | `<leader>en` | toggle spell-check |
-  | command | Trim | remove all trailing spaces in the file |
   | normal | `<leader>y` | yank current buffer |
   | visual | `<leader>y` | yank selected text |
   | normal <br> (.py extension) | `<leader>py` | run the current buffer in python |
   | visual <br> (.py extension) | `<leader>py` | run the selected block of code in python |
   | normal | `<leader>t` | paste date and time before the cursor |
+  | normal | `<leader>nu` | toggle line numbering |
   | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss message in the cmd line below |
-  | normal | `<M-(h\|j\|k\|l)>` | insert an empty line or space in the direction which a movement key specifies |
-  | visual | `//` | search for selected text |
+  | normal | `<M-(h\|j\|k\|l)>` | insert an empty line or space in the direction <br> which a movement key specifies |
+  | command | Trim | remove all trailing spaces in the file |
+  | visual | `//` | search for selected text <br> (doesn't work in `VISUAL LINE` mode) |
   | any | `<A-m>` | toggle mouse |
   </details>
 
@@ -226,7 +231,7 @@ Patch 1.1.0 (!)
   |      |          |           |
   |:----:|:--------:|:----------|
   | normal | `<leader>nt` | open NERDTree <br> (helps to navigate through a project tree) |
-  | normal | `<leader>nf` | open NERDTree <br> starting from directory in which current file resides |
+  | normal | `<leader>nf` | open NERDTree <br> starting from a directory in which current file resides |
   | normal | `<leader>md` | open/close markdown preview |
   | normal | `<leader>u` | open undo-tree |
   | normal | `<C-p>` | open CtrlP (file navigation) |
@@ -405,4 +410,5 @@ This work is based primarily on leveraging the following projects.
  - [x] Write `install`, `uninstall`, `update` control functions
  - [x] Add `EVANGELIST` environment variable
  - [ ] Write bash/zsh completions
+ - [ ] Write Wiki evangelist
  - [ ] Add [Vim-tutor](https://github.com/lukoshkin/vim-tutor) to evangelist as a submodule

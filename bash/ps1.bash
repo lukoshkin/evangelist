@@ -9,7 +9,9 @@ BOLD=$(tput bold)
 RESET=$(tput sgr0)
 
 PROMPT_DIRTRIM=2
-PROMPT_COMMAND='\
+[[ -n $PROMPT_COMMAND ]] && PROMPT_COMMAND+=';'
+
+PROMPT_COMMAND+='\
   [[ -n $CONDA_DEFAULT_ENV ]] \
     && ENV=" $(basename $CONDA_DEFAULT_ENV)" || ENV='
 

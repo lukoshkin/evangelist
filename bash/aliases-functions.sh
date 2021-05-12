@@ -3,7 +3,12 @@ alias evangelist="$EVANGELIST/evangelist.sh"
 alias l='ls -lAh'
 alias ll='ls -lh'
 alias lt='ls -lAht'
-alias md='mkdir -p'
+
+md () {
+  mkdir -p $@
+  [[ $# -gt 1 ]] && exit
+  cd $1
+}
 
 alias _vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
 alias vimrc="vim $EVANGELIST/custom/custom.vim"
@@ -43,7 +48,7 @@ alias ff='find . -type f -name'
 alias grep='grep --color'
 
 tree () {
-  command tree &> /dev/null || return
+  command -v tree &> /dev/null || return
 
   local w8
   local hierarchy

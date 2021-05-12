@@ -29,6 +29,34 @@ ECHO2 () {
 }
 
 
+# Takes one argument - shell rc-file where to append imports
+dynamic_imports () {
+  grep -q '# Dynamic (on-install) imports' $1 \
+    || echo '# Dynamic (on-install) imports' >> $1
+
+  [[ $1 =~ bash ]] && ! grep -q 'source .*/bash/ps1.bash' $1 \
+    && echo 'source "$EVANGELIST/bash/ps1.bash"' >> $1
+
+  conda &> /dev/null || return
+
+  local line GITIGNORE
+  line=$(git config -l | grep 'core.excludesfile')
+
+  if [[ -n $line ]]
+  then
+    GITIGNORE=$(cut -d '=' -f2 <<< $line)
+  else
+    GITIGNORE="$XDG_CONFIG_HOME/git/ignore"
+    mkdir -p "${GITIGNORE%/*}" && touch "$GITIGNORE"
+    git config --global core.excludesfile "$GITIGNORE"
+  fi
+
+  grep '.autoenv.evn' "$GITIGNORE" &> /dev/null \
+    || echo '.autoenv.evn.*' >> "$GITIGNORE"
+  grep -q 'source "$EVANGELIST/zsh/conda-autoenv.sh"' $1 \
+    || echo 'source "$EVANGELIST/zsh/conda-autoenv.sh"' >> $1
+}
+
 # Takes one argument - shell for which to install settings: bash or zsh
 instructions_after_install () {
   locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
@@ -187,11 +215,13 @@ modulecheck () {
 }
 
 
-# 1 commit -> full message
-# more than 1 -> only title
 print_commit_messages () {
+  # 1 commit -> full message
+  # more than 1 -> only title
+
   local nrows format branch=$1
   nrows=$(git rev-list HEAD..origin/$branch | wc -l)
   [[ $nrows == 1 ]] && format=%B || format=%s
   git log HEAD..origin/$branch --format=$format
 }
+

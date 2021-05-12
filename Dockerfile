@@ -1,6 +1,10 @@
 ARG IMG_NAME
 FROM $IMG_NAME
 
+LABEL maintainer="lukoshkin@phystech.edu"
+LABEL repository="https://github.com/lukoshkin/evangelist"
+LABEL description="This Dockerfile is a part of 'evangelist' project"
+
 ENV XDG_CONFIG_HOME=$HOME/.config
 ENV XDG_CACHE_HOME=$HOME/.cache
 ENV XDG_DATA_HOME=$HOME/.local/share
@@ -22,8 +26,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && locale-gen en_US.UTF-8 \
     && rm -rf \
         /var/lib/apt/lists/* \
-        /var/tmp/* \
-        /tmp/*
+        /var/tmp/*
 
 # Install Jupyter and its extensions
 RUN pip3 install --no-cache-dir --upgrade \
@@ -34,9 +37,9 @@ RUN pip3 install --no-cache-dir --upgrade \
         jupyter_nbextensions_configurator
 
 USER $USER
-# Download configs and distribute them to their locations.
-RUN cd ~ && git clone https://github.com/lukoshkin/dotfiles.git \
-    && cd dotfiles \
+# Download configs and distribute them to their locations
+RUN cd ~ && git clone https://github.com/lukoshkin/evangelist.git \
+    && cd evangelist \
     && if [ -f ~/.bashrc ]; \
        then \
          sed -n '/> RESERVED-CONFS/,/< RESERVED-CONFS/{//!p}' \
@@ -62,4 +65,5 @@ RUN cd ~ && git clone https://github.com/lukoshkin/dotfiles.git \
     && mv jupyter/custom.js ~/.jupyter/custom/ \
     && mv jupyter/notebook.json ~/.jupyter/nbconfig \
     && nvim --headless +PlugInstall +qall \
-    && rm -rf ~/dotfiles
+    && rm -rf ~/evangelist
+

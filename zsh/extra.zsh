@@ -79,7 +79,7 @@ bindkey '^[w' forward-word  # complete word in a suggestion
 ##   use 'gsettings list-recursively | grep <pattern>'.
 
 ## Export standard ls colors (grep selects everything between '')
-export LS_COLORS=$(dircolors | grep -Po "'\K.*(?=')")
+type dircolors &> /dev/null && eval "$(dircolors -b)"
 ## Sets for the completion menu "similar to ls command" colors.
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 ## 'ignorecase'+'smartcase'+'hyphen_insensitive' completion on the cmd line.

@@ -134,15 +134,19 @@ install_jupyter () {
     f:"$JUPCONFDIR/custom/custom.js" \
     f:"$JUPCONFDIR/nbconfig/notebook.json"
 
-  # Install nbextensions
-  ( pip show -qq jupyter_contrib_nbextensions \
-    || pip install -q jupyter_contrib_nbextensions ) \
-    && echo Installed jupyter_contrib_nbextensions
+  # Install nbextensions if need be
+  if pip show -qq jupyter_contrib_nbextensions
+  then
+    pip install -q jupyter_contrib_nbextensions \
+      && echo Installed jupyter_contrib_nbextensions
+  fi
 
-  # Add extension tab in Jupyter Notebook
-  ( pip show -qq jupyter_nbextensions_configurator \
-    || pip install -q jupyter_nbextensions_configurator ) \
-    && echo Installed jupyter_nbextensions_configurator
+  # Add extension tab in Jupyter Notebook if need be
+  if pip show -qq jupyter_nbextensions_configurator
+  then
+    pip install -q jupyter_nbextensions_configurator \
+      && echo Installed jupyter_nbextensions_configurator
+  fi
 
   local JUPVIM="$(jupyter --data-dir)/nbextensions/vim_binding"
   [[ -d "$JUPVIM" ]] && rm -rf "$JUPVIM"
@@ -199,12 +203,7 @@ install_bash () {
     && (conda init bash > /dev/null; conda config --set changeps1 False) \
     || ECHO2 "conda doesn't seem to work."
 
-  # Add prompt customization
-  if ! grep -q 'source .*/bash/ps1.bash' ~/.bashrc
-  then
-    echo '# Dynamic (on-install) imports' >> ~/.bashrc
-    echo 'source "$EVANGELIST/bash/ps1.bash"' >> ~/.bashrc
-  fi
+  dynamic_imports ~/.bashrc
 
   # Transfer the old history
   local NEWHISTFILE="$HOME/.bash_history"
@@ -242,8 +241,6 @@ install_zsh () {
   cp zsh/agkozakrc "$ZDOTDIR"
   cp zsh/zshenv ~/.zshenv
 
-  HAS conda && cp zsh/conda_autoenv.sh "$ZDOTDIR"
-
   if [[ $(uname) == Darwin ]]
   then
     cp zsh/macos.zsh "$ZDOTDIR/extra.zsh"
@@ -259,7 +256,7 @@ install_zsh () {
     && echo Installed zplug.
 
   # Add conda init to .zshrc
-  ( HAS conda && conda &> /dev/null ) \
+  conda &> /dev/null \
     && conda init zsh > /dev/null \
     || ECHO2 "conda doesn't seem to work"
 
@@ -269,6 +266,8 @@ install_zsh () {
          ~/.zshrc >> "$ZDOTDIR/.zshrc" 2> /dev/null
 
   [[ $CODE -gt 0 ]] && rm -f ~/.zshrc
+
+  dynamic_imports $ZDOTDIR/.zshrc
 
   # Transfer the old history
   local NEWHISTFILE="$XDG_DATA_HOME/zsh_history"

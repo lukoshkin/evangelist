@@ -1,7 +1,8 @@
 # .:!:. >SED-UPDATE .:!:.
 
 # Set initialization file for Vim
-if ! which nvim &> /dev/null && which vim &> /dev/null
+if ! which nvim &> /dev/null && which vim &> /dev/null \
+  && grep -qE '^(nvim|vim)' "$EVANGELIST/.update-list"
 then
   export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
   export VIMINIT=":source $MYVIMRC"
@@ -79,32 +80,21 @@ alias ls='ls --color=auto'
 alias _bashrc='vim ~/.bashrc'
 alias bashrc="vim $EVANGELIST/custom/custom.bash"
 
-# Add visited dirs to the dir stack
-alias cd=_autopushd
+# Add visited dirs to the dir stack (doesn't work on macOS).
+[[ $(uname) != Darwin ]] && alias cd=_autopushd
 
 _autopushd () {
   local INDIR
-  if [[ -z $1 ]]
-  then
-    INDIR=~
-  elif [[ $1 == - ]]
-  then
-    [[ $(dirs -p | wc -l) -gt 1 ]] \
-      && pushd > /dev/null \
-      || pushd +0 > /dev/null
-    echo ${DIRSTACK[0]}
-    return
-  else
-    INDIR=$1
-  fi
+  case $1 in
+    '') INDIR=~ ;;
+    -)  INDIR=${OLDPWD:-~} ;;
+    *)  INDIR=$1 ;;
+  esac
 
   local CNT=0
   for DIR in $(dirs -l)
   do
-    if [[ $DIR == $(readlink -f $INDIR) ]]
-    then
-      break
-    fi
+    [[ $(readlink -f $DIR) = $(readlink -f $INDIR) ]] && break
     (( CNT++ ))
   done
 
