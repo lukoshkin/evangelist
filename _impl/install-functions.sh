@@ -135,14 +135,14 @@ install_jupyter () {
     f:"$JUPCONFDIR/nbconfig/notebook.json"
 
   # Install nbextensions if need be
-  if pip show -qq jupyter_contrib_nbextensions
+  if ! pip show -qq jupyter_contrib_nbextensions
   then
     pip install -q jupyter_contrib_nbextensions \
       && echo Installed jupyter_contrib_nbextensions
   fi
 
   # Add extension tab in Jupyter Notebook if need be
-  if pip show -qq jupyter_nbextensions_configurator
+  if ! pip show -qq jupyter_nbextensions_configurator
   then
     pip install -q jupyter_nbextensions_configurator \
       && echo Installed jupyter_nbextensions_configurator
@@ -153,7 +153,7 @@ install_jupyter () {
 
   # Install Vim for Jupyter Notebook
   git clone -q https://github.com/lambdalisue/jupyter-vim-binding "$JUPVIM"
-  jupyter nbextension enable vim_binding/vim_binding
+  jupyter nbextension enable vim_binding/vim_binding  # add log lvl control?
   jupyter contrib nbextension install --user --JupyterApp.log_level='WARN'
 
   # Copy new configs

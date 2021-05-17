@@ -232,7 +232,7 @@ _update () {
     esac
   done
 
-  if grep -q '^nvim' .update-list
+  if grep -qE '^n?vim' .update-list
   then
     for OBJ in $(sed -n '/nvim/p' <<< "$UPD")
     do

@@ -1,9 +1,11 @@
 #!/bin/bash
 
-EVANGELIST=${EVANGELIST:-.}
-XDG_CACHE_HOME=${XDG_CACHE_HOME:-"$HOME/.cache"}
-XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
-XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
+# Vim (8.1 and older) sources its rc file when running +PlugInstall.
+# So, if dealing with Vim, we need to export the variables below.
+export EVANGELIST=${EVANGELIST:-.}
+export XDG_CACHE_HOME=${XDG_CACHE_HOME:-"$HOME/.cache"}
+export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
+export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
 
 source $EVANGELIST/_impl/control-functions.sh
 source $EVANGELIST/_impl/install-functions.sh

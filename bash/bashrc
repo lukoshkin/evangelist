@@ -2,7 +2,7 @@
 
 # Set initialization file for Vim
 if ! which nvim &> /dev/null && which vim &> /dev/null \
-  && grep -qE '^(nvim|vim)' "$EVANGELIST/.update-list"
+  && grep -qE '^n?vim' "$EVANGELIST/.update-list"
 then
   export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
   export VIMINIT=":source $MYVIMRC"

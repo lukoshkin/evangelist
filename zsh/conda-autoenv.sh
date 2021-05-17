@@ -48,13 +48,7 @@ mkenv () {
     conda activate $1 || return
   fi
 
-  if [[ $CONDA_DEFAULT_ENV != base ]]
-  then
-    CONDA_AUTOENV=$CONDA_DEFAULT_ENV
-    rm -rf .autoenv-evn.*
-    touch .autoenv-evn.$CONDA_AUTOENV
-
-  elif [[ -f environment.yml ]]
+  if [[ -f environment.yml ]]
   then
     local ENV
     ENV=$(head -n 1 environment.yml | cut -d ' ' -f2)
@@ -64,6 +58,12 @@ mkenv () {
         && conda activate $ENV \
         && CONDA_AUTOENV=$ENV \
         && touch .autoenv-evn.$ENV
+
+  elif [[ $CONDA_DEFAULT_ENV != base ]]
+  then
+    CONDA_AUTOENV=$CONDA_DEFAULT_ENV
+    rm -rf .autoenv-evn.*
+    touch .autoenv-evn.$CONDA_AUTOENV
   fi
 }
 
