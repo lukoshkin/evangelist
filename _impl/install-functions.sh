@@ -8,7 +8,7 @@
 # ####  if they might contain spaces.
 
 check_arguments () {
-  local allowed='bash+/zsh+, bash/zsh, vim, tmux, jupyter'
+  local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter'
 
   if [[ $# -ne 0 ]]
   then
@@ -28,6 +28,7 @@ check_arguments () {
   echo
   echo zsh+ includes all settings except for bash and jupyter.
   echo Similarly, bash+ implies all but zsh and jupyter.
+  echo 'nvim and vim arguments are identical for `install`.'
   exit
 }
 
@@ -41,10 +42,10 @@ install_vim () {
   # Optional:
   # - npm (for some plugins and Neovim)
   # - python support (for Neovim)
-  if HAS npm
+  if ! HAS npm
   then
     conda install -yc conda-forge nodejs &> /dev/null \
-    echo Installed nodejs.
+      && echo Installed nodejs.
   fi
 
   # Make an "alias" for pip3
@@ -267,7 +268,7 @@ install_zsh () {
 
   [[ $CODE -gt 0 ]] && rm -f ~/.zshrc
 
-  dynamic_imports $ZDOTDIR/.zshrc
+  dynamic_imports "$ZDOTDIR/.zshrc"
 
   # Transfer the old history
   local NEWHISTFILE="$XDG_DATA_HOME/zsh_history"

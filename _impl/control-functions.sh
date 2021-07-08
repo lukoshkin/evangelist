@@ -18,9 +18,10 @@ _help () {
   printf '  %-18s Get the current version info.\n' '--version'
 
   echo -e '\nCommands:\n'
-  printf '  %-18s Update the repository and installed configs.\n' 'update'
-  printf '  %-18s Install one or all of the specified setups: bash zsh vim tmux jupyter.\n' 'install'
   printf '  %-18s Show the installation status or readiness to install.\n' 'checkhealth'
+  printf '  %-18s Install one or all of the specified setups: bash zsh vim tmux jupyter.\n' 'install'
+  printf '  %-18s Update the repository and installed configs.\n' 'update'
+  printf '  %-18s Force update of the repository in case of merge conflicts.\n' 'reinstall'
   printf '  %-18s Roll back to the original settings.\n' 'uninstall'
   echo
 }
@@ -123,7 +124,7 @@ _install () {
   while [[ $# -gt 0 ]]
   do
     case $1 in
-      vim) install_vim; shift ;;
+      nvim|vim) install_vim; shift ;;
       tmux) install_tmux; shift ;;
       jupyter) install_jupyter; shift ;;
       bash) install_bash; shift ;;
@@ -314,3 +315,21 @@ _uninstall () {
   instructions_after_removal $LOGSHELL
 }
 
+
+_reinstall () {
+  HAS git || { ECHO2 Missing git; exit; }
+  [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
+
+  NOTE 210 '
+  By executing this command, all changes made to
+  the repository working tree will be lost. ABORT? [Y/n]\n\n'
+
+  read -sn 1 -r
+  ! [[ $REPLY = n ]] && { echo -e Aborted.; exit 0; }
+
+  ECHO Reinstalling..
+
+  git fetch -q
+  git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+  _install $(sed -n '3,$p' .update-list | tr '\n' ' ')
+}

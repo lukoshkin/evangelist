@@ -62,7 +62,7 @@ mkenv () {
   elif [[ $CONDA_DEFAULT_ENV != base ]]
   then
     CONDA_AUTOENV=$CONDA_DEFAULT_ENV
-    rm -rf .autoenv-evn.*
+    { rm -rf .autoenv-evn.*; } 2> /dev/null
     touch .autoenv-evn.$CONDA_AUTOENV
   fi
 }

@@ -32,7 +32,7 @@ ECHO2 () {
 # Takes one argument - shell rc-file where to append imports
 dynamic_imports () {
   grep -q '# Dynamic (on-install) imports' $1 \
-    || echo '# Dynamic (on-install) imports' >> $1
+    || echo -e '\n# Dynamic (on-install) imports' >> $1
 
   [[ $1 =~ bash ]] && ! grep -q 'source .*/bash/ps1.bash' $1 \
     && echo 'source "$EVANGELIST/bash/ps1.bash"' >> $1
@@ -119,6 +119,7 @@ $2\\
 make_descriptor () {
   if [[ $1 =~ zsh ]]
   then
+    prepend_text $1 ''
     prepend_text $1 'export ZPLUG_CACHE_DIR="$XDG_CACHE_HOME/zplug"'
     prepend_text $1 "export ZPLUG_HOME=\"$ZPLUG_HOME\""
     prepend_text $1 "export ZDOTDIR=\"$ZDOTDIR\""

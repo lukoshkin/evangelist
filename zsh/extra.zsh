@@ -40,7 +40,7 @@ function push-input-from-cmd() {
 function history-interactive-fuzzy-search() {
   type fzf &> /dev/null || return
   local _buffer=$BUFFER
-  BUFFER=$(cat $XDG_DATA_HOME/zsh_history | fzf)
+  BUFFER=$(cat "$XDG_DATA_HOME/zsh_history" | fzf)
   [[ -z $BUFFER ]] && BUFFER=$_buffer
 }
 

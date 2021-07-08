@@ -407,7 +407,7 @@ This work is based primarily on leveraging the following projects.
 ## TODO list
 
  - [x] Write Dockerfile
- - [x] Write `install`, `uninstall`, `update` control functions
+ - [x] Add `install`, `update`, `reinstall`, `uninstall` control functions
  - [x] Add `EVANGELIST` environment variable
  - [ ] Write bash/zsh completions
  - [ ] Write Wiki evangelist

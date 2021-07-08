@@ -36,7 +36,7 @@ function push-input-from-cmd() {
 ## Requires installed fuzzy finder (fzf)
 function history-interactive-fuzzy-search() {
   local _buffer=$BUFFER
-  BUFFER=$(cat $XDG_DATA_HOME/zsh_history | fzf)
+  BUFFER=$(cat "$XDG_DATA_HOME/zsh_history" | fzf)
   [[ -z $BUFFER ]] && BUFFER=$_buffer
 }
 

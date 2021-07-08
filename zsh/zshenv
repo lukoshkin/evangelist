@@ -1,12 +1,5 @@
 # .:!:. >SED-UPDATE .:!:.
 
-# No need to export these variables since
-# - unlikely you will use them in your scripts
-# - a different shell (spawned as child process) will use its own history settings
-HISTFILE="$XDG_DATA_HOME/zsh_history"
-HISTSIZE=100000
-SAVEHIST=$HISTSIZE
-
 # aspell (used by vim spell checker)
 export ASPELL_CONF="per-conf $XDG_CONFIG_HOME/aspell/aspell.conf; \
     personal $XDG_CONFIG_HOME/aspell/en.pws; \

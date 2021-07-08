@@ -34,9 +34,10 @@ export EDITOR=$VISUAL
 
 
 # Standard bash settings
-## No need to export these variables since
+## No need to export these variables, since
 ## - unlikely you will use them in your scripts
-## - a different shell (spawned as child process) will use its own history settings
+## - a different shell (spawned as child process)
+##   will use its own history settings
 HISTSIZE=10000
 HISTFILESIZE=20000
 HISTFILE=~/.bash_history
