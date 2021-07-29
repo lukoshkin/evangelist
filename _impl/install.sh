@@ -51,7 +51,7 @@ install::vim_settings () {
   # NOTE: files backup is not implemented in this snippet
 
   # case $code in
-  #   0)
+  #   0?)
   #     ECHO2 Missing: vim, neovim
   #     return
   #     ;;
@@ -120,7 +120,7 @@ install::vim_settings () {
   #     shell=${SHELL##*/}
   #     ;;
 
-  #   2?) ;;
+  #   2?|31) ;;
   #   *)
   #     ECHO2 "Implementation error: uncovered case."
   #     exit 1
@@ -204,7 +204,7 @@ install::vim_settings () {
       shell=${SHELL##*/}
       ;;
 
-    2?) ;;
+    2?|31) ;;
     *)
       ECHO2 "Implementation error: uncovered case."
       exit 1
@@ -288,7 +288,7 @@ install::tmux_settings () {
   # Check if tmux is available
   HAS tmux || { ECHO2 Missing tmux; return; }
 
-  ECHO Installing tmux configuration..
+  ECHO Installing Tmux configuration..
 
   utils::back_up_original_configs tmux \
     f:~/.tmux.conf f:"$XDG_CONFIG_HOME/tmux/tmux.conf"

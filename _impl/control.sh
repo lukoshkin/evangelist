@@ -337,5 +337,5 @@ control::reinstall () {
 
   git fetch -q
   git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
-  _install $(sed -n '3,$p' .update-list | tr '\n' ' ')
+  control::install $(sed -n '3,$p' .update-list | tr '\n' ' ')
 }
