@@ -34,65 +34,184 @@ check_arguments () {
 
 
 install_vim () {
-  # Check if neovim is available
-  ( HAS nvim || HAS vim ) || { ECHO2 Missing: vim, neovim; return; }
+  # Go on with Neovim if available, otherwise with Vim
+  local VIM VIMPLUG
+  local hint reply code=0
+
+  # realpath is not available on OSX.
+  # [[ $(realpath $(which vim)) =~ nvim ]] && (( code+=1 ))
+  HAS vim && (( code+=1 ))
+  HAS nvim && (( code+=2 ))
+
+  [[ $code -eq 0 ]] && { ECHO2 Missing: vim, neovim; return; }
+  ! grep -qE '^(ba|z)sh' .update-list
+  code+="$?"
+
+  # =========================================================================
+  # NOTE: case fallthrough (;&) and resume (;;&) are available in bash >= 4.0
+  # NOTE: zsh's 'case resume' is different - `;|`
+  # NOTE: files backup is not implemented in this snippet
+
+  # case $code in
+  #   0)
+  #     ECHO2 Missing: vim, neovim
+  #     return
+  #     ;;
+
+  #   *)
+  #     ECHO Installing Vim configuration..
+  #     (! HAS pip && HAS pip3) && pip () { pip3 $@; }
+  #     ;;&
+
+  #   1?)
+  #     VIM=vim
+  #     VIMPLUG=~/.vim/autoload/plug.vim
+  #     mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
+  #     ;;&
+
+  #   [23]?)
+  #     if ! HAS npm
+  #     then
+  #       echo Installing npm..
+  #       conda install -yc conda-forge nodejs &> /dev/null \
+  #         && echo - Installed nodejs. \
+  #         || echo Failed to install: nodejs
+  #     fi
+
+  #     echo "Installing optional providers' deps.."
+  #     ( npm ls -g | grep neovim || npm install -g neovim ) &> /dev/null \
+  #       && echo - Installed neovim-client. \
+  #       || echo "Cannot execute: npm install -g neovim"
+  #     ( pip show pynvim || pip install pynvim ) &> /dev/null \
+  #       && echo - Installed pynvim. \
+  #       || echo "Cannot execute: pip install pynvim"
+
+  #     VIM=nvim
+  #     VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
+  #     ;;&
+
+  #   ?0)
+  #     # Check if need to expand $EVANGELIST
+  #     sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
+  #       -e 's;(filereadable\()(.+\));\1"\2;' \
+  #       -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
+  #       "$XDG_CONFIG_HOME/nvim/init.vim"
+  #     ;;&
+
+  #   10)
+  #     rm -f ~/.vimrc
+  #     ln -s "$XDG_CONFIG_HOME"/nvim/init.vim ~/.vimrc
+  #     ;;
+
+  #   11)
+  #     export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
+  #     export VIMINIT=":source $MYVIMRC"
+  #     ;;
+
+  #   30)
+  #     case ${SHELL##*/} in
+  #       bash) hint='~/.bashrc' ;;
+  #       zsh) hint='$ZDOTDIR/.zshrc' ;;
+  #     esac
+
+  #     read -p "Where to add an alias? [$hint]: " reply
+  #     [[ -z "$reply" ]] && reply=$(eval echo $hint)
+  #     echo -e '\nalias nvim=vim # added by EVANGELIST' >> "$reply"
+  #     # `shell` is local to `install` function
+  #     # but accessible from `install_vim`.
+  #     shell=${SHELL##*/}
+  #     ;;
+
+  #   2?) ;;
+  #   *)
+  #     ECHO2 "Implementation error: uncovered case."
+  #     exit 1
+  #     ;;
+  # esac
+  # =========================================================================
 
   ECHO Installing Vim configuration..
-
-  # Optional:
-  # - npm (for some plugins and Neovim)
-  # - python support (for Neovim)
-  if ! HAS npm
-  then
-    conda install -yc conda-forge nodejs &> /dev/null \
-      && echo Installed nodejs.
-  fi
 
   # Make an "alias" for pip3
   (! HAS pip && HAS pip3) && pip () { pip3 $@; }
 
-  if HAS nvim
-  then
-    ( npm ls -g | grep neovim \
-      || npm install -g neovim ) &> /dev/null \
-      && echo Installed neovim-client. \
-      || echo "Cannot execute: npm install -g neovim"
-    ( pip show -qq pynvim \
-      || pip install -q pynvim ) &> /dev/null \
-      && echo Installed pynvim. \
-      || echo "Cannot execute: pip install pynvim"
-  fi
+  case $code in
+    1?)
+      VIM=vim
+      VIMPLUG=~/.vim/autoload/plug.vim
+      mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
+      back_up_original_configs $VIM \
+        f:~/.vimrc d:"$XDG_CONFIG_HOME/nvim"
+      ;;
 
-  # Go on with Neovim if available, otherwise with Vim
-  local VIM
-  local VIMPLUG
+    [23]?)
+      if ! HAS npm
+      then
+        echo Installing npm..
+        conda install -yc conda-forge nodejs &> /dev/null \
+          && echo - Installed nodejs. \
+          || echo Failed to install: nodejs
+      fi
 
-  if HAS nvim
-  then
-    VIM=nvim
-    VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
-  elif HAS vim
-  then
-    VIM=vim
-    VIMPLUG=~/.vim/autoload/plug.vim
+      # Optional deps of Neovim providers (npm and python)
+      echo "Installing optional providers' deps.."
+      ( npm ls -g | grep neovim || npm install -g neovim ) &> /dev/null \
+        && echo - Installed neovim-client. \
+        || echo "Cannot execute: npm install -g neovim"
+      ( pip show pynvim || pip install -q pynvim ) &> /dev/null \
+        && echo - Installed pynvim. \
+        || echo "Cannot execute: pip install pynvim"
 
-    mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
-    export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
-    export VIMINIT=":source $MYVIMRC"
-  fi
-
-  back_up_original_configs $VIM d:"$XDG_CONFIG_HOME/nvim"
+      VIM=nvim
+      VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
+      back_up_original_configs $VIM d:"$XDG_CONFIG_HOME/nvim"
+      ;;
+  esac
 
   # Copy new configs
   cp -R nvim "$XDG_CONFIG_HOME"
 
-  # Check if need to expand $EVANGELIST
-  if ! grep -qE '^(ba|z)sh' .update-list
+  if [[ $code = ?0 ]]
   then
-    sed -ri 's;\$EVANGELIST[.\"]*;'"$PWD"';' "$XDG_CONFIG_HOME/nvim/init.vim"
-    sed -ri 's;(filereadable\()(.+\));\1"\2;' "$XDG_CONFIG_HOME/nvim/init.vim"
-    sed -ri 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' "$XDG_CONFIG_HOME/nvim/init.vim"
+  sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
+    -e 's;(filereadable\()(.+\));\1"\2;' \
+    -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
+    "$XDG_CONFIG_HOME/nvim/init.vim"
   fi
+
+  case $code in
+    10)
+      rm -f ~/.vimrc
+      ln -s "$XDG_CONFIG_HOME"/nvim/init.vim ~/.vimrc
+      ;;
+
+    11)
+      export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
+      export VIMINIT=":source $MYVIMRC"
+      ;;
+
+    30)
+      case ${SHELL##*/} in
+        bash) hint='~/.bashrc' ;;
+        zsh) hint='$ZDOTDIR/.zshrc' ;;
+      esac
+
+      read -p "Where to add an alias? [$hint]: " reply
+      [[ -z "$reply" ]] && reply=$(eval echo $hint)
+      echo -e '\nalias vim=nvim # added by EVANGELIST' >> "$reply"
+      # TODO: Better use `update-alternatives` instead.
+
+      # `shell` is local to `install` function
+      # but accessible from `install_vim`.
+      shell=${SHELL##*/}
+      ;;
+
+    2?) ;;
+    *)
+      ECHO2 "Implementation error: uncovered case."
+      exit 1
+      ;;
+  esac
 
   # Install vim-plug if it is not there yet
   if [[ ! -f "$VIMPLUG" ]]; then

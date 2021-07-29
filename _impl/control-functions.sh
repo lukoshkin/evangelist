@@ -95,14 +95,14 @@ _install () {
   fi
 
   # Let user select login shell
-  local msg input=$(grep -oE '(z|ba)sh' <<< $@)
+  local msg shell=$(grep -oE '(z|ba)sh' <<< $@)
   if [[ $@ = *bash* && $@ = *zsh* ]]
   then
     msg+="Since you are installing BOTH the shells' settings,\n"
     msg+='please type in which one will be used as a login shell.\n'
 
     NOTE 210 "$msg"
-    read -p '(zsh|bash): ' input
+    read -p '(zsh|bash): ' shell
     echo
   fi
 
@@ -133,7 +133,10 @@ _install () {
     esac
   done
 
-  [[ -n $input ]] && instructions_after_install $input
+  # NOTE: if installing Vim configuration w/o shell settings,
+  # while both Vim and Neovim are available, `shell` var changes
+  # from '' to "${SHELL##*/}".
+  [[ -n $shell ]] && instructions_after_install $shell
 }
 
 
@@ -274,10 +277,16 @@ _uninstall () {
     rm "$JUPCONFDIR/custom/custom.js"
   fi
 
+  setopt nonomatch 2> /dev/null
   for OBJ in .bak/{*,.*}
   do
     case ${OBJ##*/} in
       .bashrc | .inputrc | .condarc | .zshenv | .zshrc | .tmux.conf)
+        cp $OBJ ~
+        ;;
+
+      .vimrc)
+        rm -f ~/.vimrc
         cp $OBJ ~
         ;;
 

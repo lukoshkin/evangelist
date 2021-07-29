@@ -1,10 +1,29 @@
 #!/bin/bash
 
 # This function should be called only once
-# within the body of an installation function
+# within the body of an installation function.
+
+# Another option is to implement it as follows:
+# - in install.sh units, there might be several function calls
+# - there is also a mandatory call to it w/o args in control.sh
+
+# That is,
+# in install.sh: back_up_original_configs f:file d:dir
+# in control.sh: back_up_original_configs
+
+# Check out the commented code section below.
+
 back_up_original_configs () {
   if ! grep -q "^$1" .update-list
   then
+    # echo $1 >> /tmp/.update-list
+
+    # if [[ -z $1 ]]
+    # then
+    #   cat /tmp/.update-list >> .update-list
+    #   rm -f /tmp/.update-list
+    # fi
+
     echo $1 >> .update-list
     shift
 
