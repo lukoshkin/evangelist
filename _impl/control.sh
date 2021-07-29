@@ -1,17 +1,14 @@
 #!/bin/bash
 
-# exploits:
-# - install-functions.sh
-# - print-write.sh
-# - utils.sh
+# Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
 
-_version () {
+control::version () {
   echo evangelist $(git describe --abbrev=0)
   sed -n '3p' LICENSE
 }
 
 
-_help () {
+control::help () {
   echo 'Usage: ./evangelist.sh [opts] [<cmd> [<args>]]'
   echo An incorrect option or command will result in showing this message.
   echo -e '\nOptions:\n'
@@ -27,7 +24,7 @@ _help () {
 }
 
 
-_checkhealth () {
+control::checkhealth () {
   if [[ ! -f '.update-list' ]]
   then
     NOTE 147 'None of the listed configs is installed yet.'
@@ -67,18 +64,18 @@ _checkhealth () {
     && { BASH_DEPS+=(o:locale-gen:locales);
          ZSH_DEPS+=(r:locale-gen:locales); }
 
-  modulecheck BASH ${BASH_DEPS[@]}
-  modulecheck ZSH ${ZSH_DEPS[@]}
-  modulecheck VIM \
+  write::modulecheck BASH ${BASH_DEPS[@]}
+  write::modulecheck ZSH ${ZSH_DEPS[@]}
+  write::modulecheck VIM \
     r:'nvim vim':neovim r:curl \
     o:'pip pip3':pip3 o:'npm conda':npm
-  modulecheck JUPYTER r:'pip pip3':pip3 r:git
-  modulecheck TMUX r:tmux
+  write::modulecheck JUPYTER r:'pip pip3':pip3 r:git
+  write::modulecheck TMUX r:tmux
 }
 
 
-_install () {
-  check_arguments $@
+control::install () {
+  install::check_arguments $@
 
   mkdir -p "$XDG_DATA_HOME"
   mkdir -p "$XDG_CACHE_HOME"
@@ -124,23 +121,23 @@ _install () {
   while [[ $# -gt 0 ]]
   do
     case $1 in
-      nvim|vim) install_vim; shift ;;
-      tmux) install_tmux; shift ;;
-      jupyter) install_jupyter; shift ;;
-      bash) install_bash; shift ;;
-      zsh) install_zsh; shift ;;
-      *) echo Infinite loop; exit ;;
+      nvim|vim)    install::vim_settings; shift ;;
+      tmux)        install::tmux_settings; shift ;;
+      jupyter)     install::jupyter_settings; shift ;;
+      bash)        install::bash_settings; shift ;;
+      zsh)         install::zsh_settings; shift ;;
+      *)           echo Infinite loop; exit ;;
     esac
   done
 
   # NOTE: if installing Vim configuration w/o shell settings,
   # while both Vim and Neovim are available, `shell` var changes
   # from '' to "${SHELL##*/}".
-  [[ -n $shell ]] && instructions_after_install $shell
+  [[ -n $shell ]] && write::instructions_after_install $shell
 }
 
 
-_update () {
+control::update () {
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
 
@@ -158,7 +155,7 @@ _update () {
   # ####  by the following code in the 'if'-statement.
   # E.g.: If the structure of '.update-list' changes during development,
   # ####  one must rewrite the file if it was generated with old installation scripts.
-  if [[ $1 != SKIP ]] && str_has_any "$UPD" $SRC
+  if [[ $1 != SKIP ]] && utils::str_has_any "$UPD" $SRC
   then
     ECHO Self-updating..
 
@@ -169,7 +166,7 @@ _update () {
   fi
 
   ECHO 'Updating installed components if any..'
-  print_commit_messages $BRANCH
+  write::commit_messages $BRANCH
   git merge origin/$BRANCH || exit 1
 
   # TODO: Rewrite 'case + if' to 'if + case' ? too cumbersome now
@@ -212,7 +209,7 @@ _update () {
           # A more stable way to determine the version of Tmux:
           # TMUXV=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
 
-          dummy_v1_gt_v2 $(tmux -V | cut -d ' ' -f2) 3.1 \
+          utils::dummy_v1_gt_v2 $(tmux -V | cut -d ' ' -f2) 3.1 \
             && cp $OBJ "$XDG_CONFIG_HOME/tmux" \
             || cp $OBJ ~/.${OBJ##*/}
         fi
@@ -248,7 +245,7 @@ _update () {
 }
 
 
-_uninstall () {
+control::uninstall () {
   [[ -d .bak ]] || { ECHO2 Missing '.bak'; exit; }
   [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
 
@@ -321,11 +318,11 @@ _uninstall () {
   ECHO Successfully uninstalled.
 
   # Check if necessary to change the login shell
-  instructions_after_removal $LOGSHELL
+  write::instructions_after_removal $LOGSHELL
 }
 
 
-_reinstall () {
+control::reinstall () {
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This function should be called only once
-# within the body of an installation function.
+# within the body of an install::*_settings function
 
 # Another option is to implement it as follows:
 # - in install.sh units, there might be several function calls
@@ -13,7 +13,7 @@
 
 # Check out the commented code section below.
 
-back_up_original_configs () {
+utils::back_up_original_configs () {
   if ! grep -q "^$1" .update-list
   then
     # echo $1 >> /tmp/.update-list
@@ -53,7 +53,7 @@ back_up_original_configs () {
 }
 
 
-str_has_any () {
+utils::str_has_any () {
   local intersection=0
   local stringset=$1
 
@@ -68,7 +68,7 @@ str_has_any () {
 }
 
 
-dummy_v1_gt_v2 () {
+utils::dummy_v1_gt_v2 () {
   declare -a version1 version2
   if [[ $(readlink /proc/$$/exe) == *bash ]]
   then
@@ -81,8 +81,8 @@ dummy_v1_gt_v2 () {
     IFS='.' read -rA version2 <<< $2
     local shear=1
   else
-    ECHO2 "Don't support this shell."
-    exit
+    >&2 echo evangelist supports only bash and zsh.
+    exit 1
   fi
 
   for ((i=shear; i<3+shear; ++i ))

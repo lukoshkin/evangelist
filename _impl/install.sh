@@ -1,13 +1,11 @@
 #!/bin/bash
 
-# exploits:
-# - print-write.sh
-# - utils.sh
+# Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
 
 # NOTE: better to surround expansions with double quotes
 # ####  if they might contain spaces.
 
-check_arguments () {
+install::check_arguments () {
   local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter'
 
   if [[ $# -ne 0 ]]
@@ -33,7 +31,7 @@ check_arguments () {
 }
 
 
-install_vim () {
+install::vim_settings () {
   # Go on with Neovim if available, otherwise with Vim
   local VIM VIMPLUG
   local hint reply code=0
@@ -140,7 +138,7 @@ install_vim () {
       VIM=vim
       VIMPLUG=~/.vim/autoload/plug.vim
       mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
-      back_up_original_configs $VIM \
+      utils::back_up_original_configs $VIM \
         f:~/.vimrc d:"$XDG_CONFIG_HOME/nvim"
       ;;
 
@@ -164,7 +162,7 @@ install_vim () {
 
       VIM=nvim
       VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
-      back_up_original_configs $VIM d:"$XDG_CONFIG_HOME/nvim"
+      utils::back_up_original_configs $VIM d:"$XDG_CONFIG_HOME/nvim"
       ;;
   esac
 
@@ -232,7 +230,7 @@ install_vim () {
 }
 
 
-install_jupyter () {
+install::jupyter_settings () {
   # Check if pip and git are available
   (HAS pip || HAS pip3) || { ECHO2 Missing pip3; exit; }
   HAS git || { ECHO2 Missing git; exit; }
@@ -250,7 +248,7 @@ install_jupyter () {
 
   local JUPCONFDIR=$(jupyter --config-dir)
 
-  back_up_original_configs jupyter \
+  utils::back_up_original_configs jupyter \
     f:"$JUPCONFDIR/custom/custom.js" \
     f:"$JUPCONFDIR/nbconfig/notebook.json"
 
@@ -286,20 +284,20 @@ install_jupyter () {
 }
 
 
-install_tmux () {
+install::tmux_settings () {
   # Check if tmux is available
   HAS tmux || { ECHO2 Missing tmux; return; }
 
   ECHO Installing tmux configuration..
 
-  back_up_original_configs tmux \
+  utils::back_up_original_configs tmux \
     f:~/.tmux.conf f:"$XDG_CONFIG_HOME/tmux/tmux.conf"
 
   # Version of tmux determines where to put tmux configs
   local VERSION=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
 
   # Copy new configs
-  dummy_v1_gt_v2 $VERSION 3.1 \
+  utils::dummy_v1_gt_v2 $VERSION 3.1 \
     && cp -R tmux "$XDG_CONFIG_HOME" \
     || cp tmux/tmux.conf ~/.tmux.conf
 
@@ -307,23 +305,24 @@ install_tmux () {
 }
 
 
-install_bash () {
+install::bash_settings () {
   ECHO Installing BASH configuration..
 
-  back_up_original_configs bash f:~/.bashrc f:~/.inputrc f:~/.condarc
+  utils::back_up_original_configs bash \
+    f:~/.bashrc f:~/.inputrc f:~/.condarc
 
   # Copy new configs
   cp bash/bashrc ~/.bashrc
   cp bash/inputrc ~/.inputrc
 
-  make_descriptor ~/.bashrc
+  write::file_header ~/.bashrc
 
   # Add conda init to .bashrc
   conda &> /dev/null \
     && (conda init bash > /dev/null; conda config --set changeps1 False) \
     || ECHO2 "conda doesn't seem to work."
 
-  dynamic_imports ~/.bashrc
+  write::dynamic_imports ~/.bashrc
 
   # Transfer the old history
   local NEWHISTFILE="$HOME/.bash_history"
@@ -334,7 +333,7 @@ install_bash () {
 }
 
 
-install_zsh () {
+install::zsh_settings () {
   # Check if zsh and git are available
   HAS zsh || { ECHO2 Missing zsh; exit; }
   HAS git || { ECHO2 Missing git; exit; }
@@ -345,7 +344,7 @@ install_zsh () {
   [[ -z "$ZDOTDIR" ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
   [[ -z "$ZPLUG_HOME" ]] && export ZPLUG_HOME="$XDG_DATA_HOME/zplug"
 
-  back_up_original_configs zsh \
+  utils::back_up_original_configs zsh \
     f:~/.zshenv f:~/.zshrc d:"$ZDOTDIR:zdotdir"
 
   mkdir -p "$ZDOTDIR"
@@ -368,7 +367,7 @@ install_zsh () {
     cp zsh/extra.zsh "$ZDOTDIR"
   fi
 
-  make_descriptor ~/.zshenv
+  write::file_header ~/.zshenv
 
   # Install zplug
   [[ ! -d "$ZPLUG_HOME/.git" ]] \
@@ -387,7 +386,7 @@ install_zsh () {
 
   [[ $CODE -gt 0 ]] && rm -f ~/.zshrc
 
-  dynamic_imports "$ZDOTDIR/.zshrc"
+  write::dynamic_imports "$ZDOTDIR/.zshrc"
 
   # Transfer the old history
   local NEWHISTFILE="$XDG_DATA_HOME/zsh_history"

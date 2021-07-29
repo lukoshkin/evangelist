@@ -5,11 +5,15 @@ GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)
 WHITE=$(tput setaf 15)
 
-# NOTE: bold text modifier (below) doesn't affect
+# NOTE: tput bold text modifier doesn't affect
 # ####  colors defined not with tput
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
 
+
+########################
+# -----> MACROS -----> #
+########################
 
 ECHO () {
   local RAIN=$(tput setaf 152)
@@ -28,9 +32,19 @@ ECHO2 () {
   >&2 echo -e "${BOLD}${SALMON}EVANGELIST:${RED}PROBLEM:$RESET ${BUFF}$@${RESET}"
 }
 
+# NOTE: stderr-pipe redirection (|&) doesn't work on old shells
+HAS () {
+  [[ $(type $@ 2>&1 | grep -c 'not found') -lt $# ]] && return 0
+  return 1
+}
+
+########################
+# <----- MACROS <----- #
+########################
+
 
 # Takes one argument - shell rc-file where to append imports
-dynamic_imports () {
+write::dynamic_imports () {
   grep -q '# Dynamic (on-install) imports' $1 \
     || echo -e '\n# Dynamic (on-install) imports' >> $1
 
@@ -58,7 +72,7 @@ dynamic_imports () {
 }
 
 # Takes one argument - shell for which to install settings: bash or zsh
-instructions_after_install () {
+write::instructions_after_install () {
   locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
   local CODE=$?
 
@@ -88,7 +102,7 @@ instructions_after_install () {
 
 # Takes one argument - the shell that was before
 # the settings installation: bash or zsh
-instructions_after_removal () {
+write::instructions_after_removal () {
   NOTE 210 '\nFURTHER INSTRUCTIONS:'
   printf 'TO FINISH THE REMOVAL, '
   if [[ -n $1 && ${SHELL##*/} != $1 ]]
@@ -116,7 +130,7 @@ $2\\
 }
 
 # Takes one argument - shell for which to install settings: bash or zsh
-make_descriptor () {
+write::file_header () {
   if [[ $1 =~ zsh ]]
   then
     prepend_text $1 ''
@@ -144,13 +158,7 @@ make_descriptor () {
 }
 
 
-# NOTE: stderr-pipe redirection (|&) doesn't work on old shells
-HAS () {
-  [[ $(type $@ 2>&1 | grep -c 'not found') -lt $# ]] && return 0
-  return 1
-}
-
-modulecheck () {
+write::modulecheck () {
   echo -e "${BOLD}${WHITE}\n$1$RESET"
   local delim=$(printf "%${#1}s")
   echo -e "${BOLD}${delim// /-}$RESET"
@@ -216,7 +224,7 @@ modulecheck () {
 }
 
 
-print_commit_messages () {
+write::commit_messages () {
   # 1 commit -> full message
   # more than 1 -> only title
 
