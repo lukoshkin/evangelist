@@ -1,0 +1,60 @@
+#compdef evangelist
+
+_evangelist() {
+  local -a cmds subcmds
+
+  cmds=(
+      'checkhealth:Show the installation status or readiness to install.'
+      'install:Install one or all of the specified setups: bash zsh vim tmux jupyter.'
+      'update:Update the repository and installed configs.'
+      'reinstall:Force update of the repository in case of merge conflicts.'
+      'uninstall:Roll back to the original settings.'
+  )
+
+  subcmds=(
+    'zsh+:includes all settings except for bash and jupyter.'
+    'bash+:includes all settings except for zsh and jupyter.'
+    'zsh' 'bash' 'vim' 'tmux' 'jupyter'
+  )
+
+  # '-A pattern' - do not complete options matching 'pattern'
+  # ############   after the first non-option argument.
+  # '(- :)'      - do not complete any options and any arguments
+  # ############   after the option(s) in {}.
+  _arguments -A "-*" \
+    '(- :)'--version'[Get the current version info.]' \
+    '1: :->cmds' \
+    '2: :->subcmds' \
+    '*:: :->remaining'
+
+  case "$state" in
+    (cmds)
+      _describe 'commands' cmds
+      ;;
+
+    (subcmds)
+      if [[ ${line[1]} == 'install' ]]
+      then
+        _describe 'arguments' subcmds
+      fi
+      ;;
+
+    (remaining)
+      integer maxopts=6
+      # There are 5 options at max: bash zsh vim tmux jupyter.
+      # Plus, name of the command 'install'.
+
+      # If $line contains '+', the maximum number of options falls to 3.
+      # Plus, name of the command 'install'.
+      [[ "$line" = *'+'* ]] && maxopts=4
+
+      if [[ ${#line[@]} -le $maxopts ]]
+      then
+        _describe 'arguments' subcmds
+      fi
+      ;;
+  esac
+}
+
+_evangelist
+
