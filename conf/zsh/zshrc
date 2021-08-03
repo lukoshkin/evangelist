@@ -37,7 +37,7 @@ HISTSIZE=100000
 SAVEHIST=$HISTSIZE
 
 source "$ZDOTDIR/extra.zsh"
-source "$EVANGELIST/bash/aliases-functions.sh"
+source "$EVANGELIST/conf/bash/aliases-functions.sh"
 
 ## Import user-defined settings
 [[ -f "$EVANGELIST/custom/custom.zsh" ]] \

@@ -45,102 +45,28 @@ install::vim_settings () {
   ! grep -qE '^(ba|z)sh' .update-list
   code+="$?"
 
-  # =========================================================================
   # NOTE: case fallthrough (;&) and resume (;;&) are available in bash >= 4.0
   # NOTE: zsh's 'case resume' is different - `;|`
   # NOTE: files backup is not implemented in this snippet
 
-  # case $code in
-  #   0?)
-  #     ECHO2 Missing: vim, neovim
-  #     return
-  #     ;;
-
-  #   *)
-  #     ECHO Installing Vim configuration..
-  #     (! HAS pip && HAS pip3) && pip () { pip3 $@; }
-  #     ;;&
-
-  #   1?)
-  #     VIM=vim
-  #     VIMPLUG=~/.vim/autoload/plug.vim
-  #     mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
-  #     ;;&
-
-  #   [23]?)
-  #     if ! HAS npm
-  #     then
-  #       echo Installing npm..
-  #       conda install -yc conda-forge nodejs &> /dev/null \
-  #         && echo - Installed nodejs. \
-  #         || echo Failed to install: nodejs
-  #     fi
-
-  #     echo "Installing optional providers' deps.."
-  #     ( npm ls -g | grep neovim || npm install -g neovim ) &> /dev/null \
-  #       && echo - Installed neovim-client. \
-  #       || echo "Cannot execute: npm install -g neovim"
-  #     ( pip show pynvim || pip install pynvim ) &> /dev/null \
-  #       && echo - Installed pynvim. \
-  #       || echo "Cannot execute: pip install pynvim"
-
-  #     VIM=nvim
-  #     VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
-  #     ;;&
-
-  #   ?0)
-  #     # Check if need to expand $EVANGELIST
-  #     sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
-  #       -e 's;(filereadable\()(.+\));\1"\2;' \
-  #       -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
-  #       "$XDG_CONFIG_HOME/nvim/init.vim"
-  #     ;;&
-
-  #   10)
-  #     rm -f ~/.vimrc
-  #     ln -s "$XDG_CONFIG_HOME"/nvim/init.vim ~/.vimrc
-  #     ;;
-
-  #   11)
-  #     export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
-  #     export VIMINIT=":source $MYVIMRC"
-  #     ;;
-
-  #   30)
-  #     case ${SHELL##*/} in
-  #       bash) hint='~/.bashrc' ;;
-  #       zsh) hint='$ZDOTDIR/.zshrc' ;;
-  #     esac
-
-  #     read -p "Where to add an alias? [$hint]: " reply
-  #     [[ -z "$reply" ]] && reply=$(eval echo $hint)
-  #     echo -e '\nalias nvim=vim # added by EVANGELIST' >> "$reply"
-  #     # `shell` is local to `install` function
-  #     # but accessible from `install_vim`.
-  #     shell=${SHELL##*/}
-  #     ;;
-
-  #   2?|31) ;;
-  #   *)
-  #     ECHO2 "Implementation error: uncovered case."
-  #     exit 1
-  #     ;;
-  # esac
-  # =========================================================================
-
-  ECHO Installing Vim configuration..
-
-  # Make an "alias" for pip3
-  (! HAS pip && HAS pip3) && pip () { pip3 $@; }
-
   case $code in
+    0?)
+      ECHO2 Missing: vim, neovim
+      return
+      ;;
+
+    *)
+      ECHO Installing Vim configuration..
+      (! HAS pip && HAS pip3) && pip () { pip3 $@; }
+      ;;&
+
     1?)
       VIM=vim
       VIMPLUG=~/.vim/autoload/plug.vim
       mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
       utils::back_up_original_configs $VIM \
         f:~/.vimrc d:"$XDG_CONFIG_HOME/nvim"
-      ;;
+      ;;&
 
     [23]?)
       if ! HAS npm
@@ -151,33 +77,27 @@ install::vim_settings () {
           || echo Failed to install: nodejs
       fi
 
-      # Optional deps of Neovim providers (npm and python)
       echo "Installing optional providers' deps.."
       ( npm ls -g | grep neovim || npm install -g neovim ) &> /dev/null \
         && echo - Installed neovim-client. \
         || echo "Cannot execute: npm install -g neovim"
-      ( pip show pynvim || pip install -q pynvim ) &> /dev/null \
+      ( pip show pynvim || pip install pynvim ) &> /dev/null \
         && echo - Installed pynvim. \
         || echo "Cannot execute: pip install pynvim"
 
       VIM=nvim
       VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
       utils::back_up_original_configs $VIM d:"$XDG_CONFIG_HOME/nvim"
-      ;;
-  esac
+      ;;&
 
-  # Copy new configs
-  cp -R nvim "$XDG_CONFIG_HOME"
+    ?0)
+      # Check if need to expand $EVANGELIST
+      sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
+        -e 's;(filereadable\()(.+\));\1"\2;' \
+        -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
+        "$XDG_CONFIG_HOME/nvim/init.vim"
+      ;;&
 
-  if [[ $code = ?0 ]]
-  then
-  sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
-    -e 's;(filereadable\()(.+\));\1"\2;' \
-    -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
-    "$XDG_CONFIG_HOME/nvim/init.vim"
-  fi
-
-  case $code in
     10)
       rm -f ~/.vimrc
       ln -s "$XDG_CONFIG_HOME"/nvim/init.vim ~/.vimrc
@@ -210,6 +130,9 @@ install::vim_settings () {
       exit 1
       ;;
   esac
+
+  # Copy new configs
+  cp -R conf/nvim "$XDG_CONFIG_HOME"
 
   # Install vim-plug if it is not there yet
   if [[ ! -f "$VIMPLUG" ]]; then
@@ -256,29 +179,33 @@ install::jupyter_settings () {
   if ! pip show -qq jupyter_contrib_nbextensions
   then
     pip install -q jupyter_contrib_nbextensions \
-      && echo Installed jupyter_contrib_nbextensions
+      && echo Installed jupyter_contrib_nbextensions \
+      || exit 1
   fi
 
   # Add extension tab in Jupyter Notebook if need be
   if ! pip show -qq jupyter_nbextensions_configurator
   then
     pip install -q jupyter_nbextensions_configurator \
-      && echo Installed jupyter_nbextensions_configurator
+      && echo Installed jupyter_nbextensions_configurator \
+      || exit 1
   fi
 
   local JUPVIM="$(jupyter --data-dir)/nbextensions/vim_binding"
   [[ -d "$JUPVIM" ]] && rm -rf "$JUPVIM"
 
   # Install Vim for Jupyter Notebook
-  git clone -q https://github.com/lambdalisue/jupyter-vim-binding "$JUPVIM"
-  jupyter nbextension enable vim_binding/vim_binding  # add log lvl control?
-  jupyter contrib nbextension install --user --JupyterApp.log_level='WARN'
+  {
+    git clone -q https://github.com/lambdalisue/jupyter-vim-binding "$JUPVIM";
+    jupyter nbextension enable vim_binding/vim_binding; # add log lvl control?
+    jupyter contrib nbextension install --user --JupyterApp.log_level='WARN';
+  } || exit 1
 
   # Copy new configs
   mkdir -p "$JUPCONFDIR/custom"
   mkdir -p "$JUPCONFDIR/nbconfig"
-  cp jupyter/custom.js "$JUPCONFDIR/custom"
-  cp jupyter/notebook.json "$JUPCONFDIR/nbconfig"
+  cp conf/jupyter/custom.js "$JUPCONFDIR/custom"
+  cp conf/jupyter/notebook.json "$JUPCONFDIR/nbconfig"
 
   ECHO Successfully installed: Jupyter configuration.
 }
@@ -298,8 +225,8 @@ install::tmux_settings () {
 
   # Copy new configs
   utils::dummy_v1_gt_v2 $VERSION 3.1 \
-    && cp -R tmux "$XDG_CONFIG_HOME" \
-    || cp tmux/tmux.conf ~/.tmux.conf
+    && cp -R conf/tmux "$XDG_CONFIG_HOME" \
+    || cp conf/tmux/tmux.conf ~/.tmux.conf
 
   ECHO Successfully installed: Tmux configuration.
 }
@@ -312,8 +239,8 @@ install::bash_settings () {
     f:~/.bashrc f:~/.inputrc f:~/.condarc
 
   # Copy new configs
-  cp bash/bashrc ~/.bashrc
-  cp bash/inputrc ~/.inputrc
+  cp conf/bash/bashrc ~/.bashrc
+  cp conf/bash/inputrc ~/.inputrc
 
   write::file_header ~/.bashrc
 
@@ -356,15 +283,15 @@ install::zsh_settings () {
   local CODE=$?
 
   # Copy new configs
-  cp zsh/zshrc "$ZDOTDIR/.zshrc"
-  cp zsh/agkozakrc "$ZDOTDIR"
-  cp zsh/zshenv ~/.zshenv
+  cp conf/zsh/zshrc "$ZDOTDIR/.zshrc"
+  cp conf/zsh/agkozakrc "$ZDOTDIR"
+  cp conf/zsh/zshenv ~/.zshenv
 
   if [[ $(uname) == Darwin ]]
   then
-    cp zsh/macos.zsh "$ZDOTDIR/extra.zsh"
+    cp conf/zsh/macos.zsh "$ZDOTDIR/extra.zsh"
   else
-    cp zsh/extra.zsh "$ZDOTDIR"
+    cp conf/zsh/extra.zsh "$ZDOTDIR"
   fi
 
   write::file_header ~/.zshenv

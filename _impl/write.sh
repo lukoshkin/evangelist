@@ -48,8 +48,8 @@ write::dynamic_imports () {
   grep -q '# Dynamic (on-install) imports' $1 \
     || echo -e '\n# Dynamic (on-install) imports' >> $1
 
-  [[ $1 =~ bash ]] && ! grep -q 'source .*/bash/ps1.bash' $1 \
-    && echo 'source "$EVANGELIST/bash/ps1.bash"' >> $1
+  [[ $1 =~ bash ]] && ! grep -q 'source .*/conf/bash/ps1.bash' $1 \
+    && echo 'source "$EVANGELIST/conf/bash/ps1.bash"' >> $1
 
   conda &> /dev/null || return
 
@@ -67,8 +67,8 @@ write::dynamic_imports () {
 
   grep '.autoenv.evn' "$GITIGNORE" &> /dev/null \
     || echo '.autoenv.evn.*' >> "$GITIGNORE"
-  grep -q 'source "$EVANGELIST/zsh/conda-autoenv.sh"' $1 \
-    || echo 'source "$EVANGELIST/zsh/conda-autoenv.sh"' >> $1
+  grep -q 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' $1 \
+    || echo 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' >> $1
 }
 
 # Takes one argument - shell for which to install settings: bash or zsh

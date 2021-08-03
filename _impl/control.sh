@@ -326,6 +326,12 @@ control::reinstall () {
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
 
+  if [[ $1 = --no-reset ]]
+  then
+    control::install $(sed -n '3,$p' .update-list | tr '\n' ' ')
+    return
+  fi
+
   NOTE 210 '
   By executing this command, all changes made to
   the repository working tree will be lost. ABORT? [Y/n]\n\n'
@@ -335,7 +341,7 @@ control::reinstall () {
 
   ECHO Reinstalling..
 
-  git fetch -q
+  git fetch -q || { echo Unable to fetch.; exit 1; }
   git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
   control::install $(sed -n '3,$p' .update-list | tr '\n' ' ')
 }

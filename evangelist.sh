@@ -11,7 +11,7 @@ export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
 export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
 
 source "$EVANGELIST/_impl/control.sh"
-source "$EVANGELIST/_impl/install.sh"
+source "$EVANGELIST/_impl/install.bash4"
 source "$EVANGELIST/_impl/write.sh"
 source "$EVANGELIST/_impl/utils.sh"
 
@@ -21,7 +21,7 @@ main() {
   case $1 in
     install)        shift; control::install $@ ;;
     update)         control::update $2 ;;
-    reinstall)      control::reinstall ;;
+    reinstall)      control::reinstall $2 ;;
     uninstall)      control::uninstall ;;
     checkhealth)    control::checkhealth ;;
     --version)      control::version ;;
