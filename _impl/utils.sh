@@ -104,3 +104,30 @@ utils::dummy_v1_gt_v2 () {
   return 1
 }
 
+
+utils::resolve_vim_alternatives () {
+  # `msg_G` and `shell_G` are local to `controll::install` function
+  # but accessible from `utils::resolve_vim_alternatives`.
+  local cnt hint reply
+
+  { cnt=$(update-alternatives --query vim | grep -c 'Alternative') \
+    && update-alternatives --query vim | grep -q "$(which nvim)"; }
+
+  if [[ $cnt -ge 2 ]] && [[ $? -ne 1 ]]
+  then
+    msg_G="sudo update-alternatives --set vim \$(which nvim)"
+    return
+  fi
+
+  # more aggressive way
+  case ${SHELL##*/} in
+    bash) hint='~/.bashrc' ;;
+    zsh) hint='$ZDOTDIR/.zshrc' ;;
+  esac
+
+  read -p "Where to add an alias? [$hint]: " reply
+  [[ -z "$reply" ]] && reply=$(eval echo $hint)
+  echo -e '\nalias vim=nvim # added by EVANGELIST' >> "$reply"
+
+  shell_G=${SHELL##*/}
+}

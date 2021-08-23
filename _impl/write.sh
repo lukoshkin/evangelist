@@ -65,8 +65,8 @@ write::dynamic_imports () {
     git config --global core.excludesfile "$GITIGNORE"
   fi
 
-  grep '.autoenv.evn' "$GITIGNORE" &> /dev/null \
-    || echo '.autoenv.evn.*' >> "$GITIGNORE"
+  grep '.autoenv-evn' "$GITIGNORE" &> /dev/null \
+    || echo '.autoenv-evn.*' >> "$GITIGNORE"
   grep -q 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' $1 \
     || echo 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' >> $1
 }
@@ -81,7 +81,14 @@ write::instructions_after_install () {
   if [[ ${SHELL##*/} != $1 ]]
   then
     printf "CHANGE THE CURRENT SHELL TO $(tr a-z A-Z <<< $1),\n\n"
-    printf "\t${BOLD}${WHITE}chsh -s $(which $1)$RESET\n\n"
+    printf "\t${BOLD}${WHITE}chsh -s $(which $1)${RESET}\n\n"
+  fi
+
+  if [[ -n $msg_G ]]
+  then
+    printf 'SET FOR VIM THE ALTERNATIVE TO USE,\n'
+    printf '(One can google other ways to do it w/o sudo)\n\n'
+    printf "\t${BOLD}${WHITE}$msg_G${RESET}\n\n"
   fi
 
   if [[ $CODE -eq 1 ]]
@@ -90,6 +97,8 @@ write::instructions_after_install () {
     printf '(You can choose another one)\n\n'
     printf "\t${BOLD}${WHITE}sudo locale-gen en_US.UTF-8$RESET\n\n"
   fi
+
+  [[ -n $2 ]] && echo -e "\n$2\n"
 
   if [[ ${SHELL##*/} != $1 ]]
   then
@@ -159,9 +168,9 @@ write::file_header () {
 
 
 write::modulecheck () {
-  echo -e "${BOLD}${WHITE}\n$1$RESET"
+  echo -e "${BOLD}${WHITE}\n$1${RESET}"
   local delim=$(printf "%${#1}s")
-  echo -e "${BOLD}${delim// /-}$RESET"
+  echo -e "${BOLD}${delim// /-}${RESET}"
 
   shift
 

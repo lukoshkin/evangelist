@@ -91,15 +91,18 @@ control::install () {
     echo Installed components: >> .update-list
   fi
 
+  local msg msg_G shell_G=$(grep -oE '(z|ba)sh' <<< $@)
+  # suffix G means that the variable is exposed to subroutines,
+  # i.e. global to internal function calls.
+
   # Let user select login shell
-  local msg shell=$(grep -oE '(z|ba)sh' <<< $@)
   if [[ $@ = *bash* && $@ = *zsh* ]]
   then
     msg+="Since you are installing BOTH the shells' settings,\n"
     msg+='please type in which one will be used as a login shell.\n'
 
     NOTE 210 "$msg"
-    read -p '(zsh|bash): ' shell
+    read -p '(zsh|bash): ' shell_G
     echo
   fi
 
@@ -131,9 +134,9 @@ control::install () {
   done
 
   # NOTE: if installing Vim configuration w/o shell settings,
-  # while both Vim and Neovim are available, `shell` var changes
-  # from '' to "${SHELL##*/}".
-  [[ -n $shell ]] && write::instructions_after_install $shell
+  # while both Vim and Neovim are available, `shell_G` var changes
+  # from '' to "${SHELL##*/}" in vim_settings subroutine.
+  [[ -n $shell_G ]] && write::instructions_after_install $shell_G
 }
 
 
@@ -309,8 +312,10 @@ control::uninstall () {
     esac
   done
 
-  local LOGSHELL
-  LOGSHELL=$(grep 'LOGIN-SHELL' .update-list | cut -d ':' -f2)
+  # No use of `local` specifier if variable does not appear
+  # in nested (internal) function calls, and the program finishes
+  # after this routine.
+  logshell=$(grep 'LOGIN-SHELL' .update-list | cut -d ':' -f2)
 
   rm .update-list
   rm -rf .bak
@@ -318,7 +323,7 @@ control::uninstall () {
   ECHO Successfully uninstalled.
 
   # Check if necessary to change the login shell
-  write::instructions_after_removal $LOGSHELL
+  write::instructions_after_removal $logshell
 }
 
 

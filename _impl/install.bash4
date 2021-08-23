@@ -33,8 +33,7 @@ install::check_arguments () {
 
 install::vim_settings () {
   # Go on with Neovim if available, otherwise with Vim
-  local VIM VIMPLUG
-  local hint reply code=0
+  local VIM VIMPLUG code=0
 
   # realpath is not available on OSX.
   # [[ $(realpath $(which vim)) =~ nvim ]] && (( code+=1 ))
@@ -47,7 +46,6 @@ install::vim_settings () {
 
   # NOTE: case fallthrough (;&) and resume (;;&) are available in bash >= 4.0
   # NOTE: zsh's 'case resume' is different - `;|`
-  # NOTE: files backup is not implemented in this snippet
 
   case $code in
     0?)
@@ -109,19 +107,7 @@ install::vim_settings () {
       ;;
 
     30)
-      case ${SHELL##*/} in
-        bash) hint='~/.bashrc' ;;
-        zsh) hint='$ZDOTDIR/.zshrc' ;;
-      esac
-
-      read -p "Where to add an alias? [$hint]: " reply
-      [[ -z "$reply" ]] && reply=$(eval echo $hint)
-      echo -e '\nalias vim=nvim # added by EVANGELIST' >> "$reply"
-      # TODO: Better use `update-alternatives` instead.
-
-      # `shell` is local to `install` function
-      # but accessible from `install_vim`.
-      shell=${SHELL##*/}
+      utils::resolve_vim_alternatives
       ;;
 
     2?|31) ;;

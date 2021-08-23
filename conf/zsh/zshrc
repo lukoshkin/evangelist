@@ -39,10 +39,12 @@ SAVEHIST=$HISTSIZE
 source "$ZDOTDIR/extra.zsh"
 source "$EVANGELIST/conf/bash/aliases-functions.sh"
 
-## Import user-defined settings
+## Import user-defined settings.
 [[ -f "$EVANGELIST/custom/custom.zsh" ]] \
   && source "$EVANGELIST/custom/custom.zsh"
 
-## If the system has both Vim and Neovim, use the latter
+## If the system has both Vim and Neovim, use the latter.
+## (NOTE: this is a pretty aggressive approach; better to use
+## `update-alternatives`; see utils::resolve_vim_alternatives)
 which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
 
