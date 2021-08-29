@@ -88,6 +88,11 @@ install::vim_settings () {
       utils::back_up_original_configs $VIM d:"$XDG_CONFIG_HOME/nvim"
       ;;&
 
+    *)
+      # Copy new configs
+      cp -R conf/nvim "$XDG_CONFIG_HOME"
+      ;;&
+
     ?0)
       # Check if need to expand $EVANGELIST
       sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
@@ -116,9 +121,6 @@ install::vim_settings () {
       exit 1
       ;;
   esac
-
-  # Copy new configs
-  cp -R conf/nvim "$XDG_CONFIG_HOME"
 
   # Install vim-plug if it is not there yet
   if [[ ! -f "$VIMPLUG" ]]; then

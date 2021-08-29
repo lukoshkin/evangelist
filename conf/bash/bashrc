@@ -115,7 +115,7 @@ which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
 
 # Static imports
 ## Import more aliases.
-source "$EVANGELIST/bash/aliases-functions.sh"
+source "$EVANGELIST/conf/bash/aliases-functions.sh"
 
 ## Import user-defined settings.
 [[ -f "$EVANGELIST/custom/custom.bash" ]] \

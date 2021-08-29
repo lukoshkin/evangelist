@@ -73,32 +73,32 @@ write::dynamic_imports () {
 
 # Takes one argument - shell for which to install settings: bash or zsh
 write::instructions_after_install () {
-  locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
-  local CODE=$?
-
   NOTE 210 '\nFURTHER INSTRUCTIONS:'
   printf 'TO FINISH THE INSTALLATION, '
+
+  if [[ -n $msg_G ]]
+  then
+    printf "SET VIM'S ALTERNATIVE TO USE, e.g.,\n"
+    printf '(One can google other ways to do it w/o sudo)\n\n'
+    printf "\t${BOLD}${WHITE}$msg_G${RESET}\n\n"
+  fi
+
+  [[ $1 == '--' ]] && return
+  locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
+  local code=$?
+
   if [[ ${SHELL##*/} != $1 ]]
   then
     printf "CHANGE THE CURRENT SHELL TO $(tr a-z A-Z <<< $1),\n\n"
     printf "\t${BOLD}${WHITE}chsh -s $(which $1)${RESET}\n\n"
   fi
 
-  if [[ -n $msg_G ]]
-  then
-    printf 'SET FOR VIM THE ALTERNATIVE TO USE,\n'
-    printf '(One can google other ways to do it w/o sudo)\n\n'
-    printf "\t${BOLD}${WHITE}$msg_G${RESET}\n\n"
-  fi
-
-  if [[ $CODE -eq 1 ]]
+  if [[ $code -eq 1 ]]
   then
     printf "GENERATE 'en_US' LOCALES,\n"
-    printf '(You can choose another one)\n\n'
+    printf '(You can choose other ones)\n\n'
     printf "\t${BOLD}${WHITE}sudo locale-gen en_US.UTF-8$RESET\n\n"
   fi
-
-  [[ -n $2 ]] && echo -e "\n$2\n"
 
   if [[ ${SHELL##*/} != $1 ]]
   then
@@ -120,6 +120,16 @@ write::instructions_after_removal () {
     printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $1)${RESET}\n\n"
     printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
   else
+    local alter msg
+    alt=$(grep 'VIM-ALTERNATIVE' .update-list | cut -d: -f2) 2> /dev/null
+    msg="${BOLD}${WHITE}sudo update-alternatives --set vim $alt${RESET}"
+
+    if [[ -n $alt ]]
+    then
+      printf 'RESTORE THE ORIGINAL VALUE OF THE VIM ALTERNATIVE.'
+      printf "\n\n\t$msg\n\n"
+    fi
+
     printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.'
     printf "\n\n\t${BOLD}${WHITE}exec $1${RESET}\n\n"
   fi

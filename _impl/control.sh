@@ -2,6 +2,12 @@
 
 # Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
 
+# About coding style and 'local' in particular.
+# No use of `local` specifier if variable does not appear
+# in nested (internal) function calls, and the program finishes
+# after this routine. Though the way 'local' being used may seem
+# inconsistent in the project, it never leads to an error (I hope).
+
 control::version () {
   echo evangelist $(git describe --abbrev=0)
   sed -n '3p' LICENSE
@@ -25,16 +31,16 @@ control::help () {
 
 
 control::checkhealth () {
-  if [[ ! -f '.update-list' ]]
+  components=$(sed '1,/Installed/d' .update-list | tr '\n' ' ') 2> /dev/null
+  # sed: comma specifies the operating range, where endpoints are included
+  # and can be patterns. If called without args, sed prints the current
+  # buffer. One can use $ as the EOF marker.
+
+  if [[ -n $components ]]
   then
-    NOTE 147 'None of the listed configs is installed yet.'
+    NOTE 147 "Installed: $components"
   else
-    if [[ $(wc -l < .update-list) -gt 2 ]]
-    then
-      NOTE 147 "Installed: $(sed -n '3,$p' .update-list | tr '\n' ' ')"
-    else
-      NOTE 147 'None of the listed configs is installed yet.'
-    fi
+    NOTE 147 'None of the listed configs is installed yet.'
   fi
 
   # modulecheck's syntaxis: MODIFIER:COMMAND[:PACKAGE]
@@ -155,9 +161,10 @@ control::update () {
   SRC='evangelist.sh _impl/*'
 
   # TODO: Add hook to handle updates that cannot be resolved
-  # ####  by the following code in the 'if'-statement.
+  #       by the following code in the 'if'-statement.
   # E.g.: If the structure of '.update-list' changes during development,
-  # ####  one must rewrite the file if it was generated with old installation scripts.
+  #       one must rewrite the file if it was generated
+  #       with old installation scripts.
   if [[ $1 != SKIP ]] && utils::str_has_any "$UPD" $SRC
   then
     ECHO Self-updating..
@@ -184,7 +191,7 @@ control::update () {
       bashrc)
         if grep -q '^bash' .update-list
         then
-          sed -e "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/r $OBJ
+          sed "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/r $OBJ
             d }" ~/.bashrc > /tmp/evangelist-bashrc
           mv /tmp/evangelist-bashrc ~/.bashrc
         fi
@@ -200,7 +207,7 @@ control::update () {
       zshenv)
         if grep -q '^zsh' .update-list
         then
-          sed -e "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/r $OBJ
+          sed "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/r $OBJ
             d }" ~/.zshenv > /tmp/evangelist-zshenv
           mv /tmp/evangelist-zshenv ~/.zshenv
         fi
@@ -312,9 +319,6 @@ control::uninstall () {
     esac
   done
 
-  # No use of `local` specifier if variable does not appear
-  # in nested (internal) function calls, and the program finishes
-  # after this routine.
   logshell=$(grep 'LOGIN-SHELL' .update-list | cut -d ':' -f2)
 
   rm .update-list
@@ -333,7 +337,7 @@ control::reinstall () {
 
   if [[ $1 = --no-reset ]]
   then
-    control::install $(sed -n '3,$p' .update-list | tr '\n' ' ')
+    control::install $(sed '1,/Installed/d' .update-list | tr '\n' ' ')
     return
   fi
 
@@ -348,5 +352,5 @@ control::reinstall () {
 
   git fetch -q || { echo Unable to fetch.; exit 1; }
   git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
-  control::install $(sed -n '3,$p' .update-list | tr '\n' ' ')
+  control::install $(sed '1,/Installed/d' .update-list | tr '\n' ' ')
 }

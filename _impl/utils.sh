@@ -3,7 +3,7 @@
 # This function should be called only once
 # within the body of an install::*_settings function
 
-# Another option is to implement it as follows:
+# NOTE: another option is to implement it as follows:
 # - in install.sh units, there might be several function calls
 # - there is also a mandatory call to it w/o args in control.sh
 
@@ -16,12 +16,12 @@
 utils::back_up_original_configs () {
   if ! grep -q "^$1" .update-list
   then
-    # echo $1 >> /tmp/.update-list
+    # echo $1 >> /tmp/update-evn-list
 
     # if [[ -z $1 ]]
     # then
-    #   cat /tmp/.update-list >> .update-list
-    #   rm -f /tmp/.update-list
+    #   cat /tmp/update-evn-list >> .update-list
+    #   rm -f /tmp/update-evn-list
     # fi
 
     echo $1 >> .update-list
@@ -106,17 +106,28 @@ utils::dummy_v1_gt_v2 () {
 
 
 utils::resolve_vim_alternatives () {
-  # `msg_G` and `shell_G` are local to `controll::install` function
-  # but accessible from `utils::resolve_vim_alternatives`.
-  local cnt hint reply
+  # Note, this function is called when `HAS nvim && HAS vim` gives `true`.
+  # That means that the system might have both Vim and Neovim installed.
+  # But it is not necessarily the case.
 
-  { cnt=$(update-alternatives --query vim | grep -c 'Alternative') \
-    && update-alternatives --query vim | grep -q "$(which nvim)"; }
+  local alternatives cnt hint reply
 
-  if [[ $cnt -ge 2 ]] && [[ $? -ne 1 ]]
+  if alternatives=$(update-alternatives --query vim) 2> /dev/null
   then
-    msg_G="sudo update-alternatives --set vim \$(which nvim)"
-    return
+    value=$(grep 'Value:' <<< $alternatives | cut -d ' ' -f2)
+    sed -i "/^Installed components:/i VIM-ALTERNATIVE:$value" .update-list
+
+    grep -q 'nvim' <<< "$value" && return
+    cnt=$(grep -c 'Alternative:' <<< "$alternatives")
+
+    if [[ $cnt -ge 2 ]]
+    then
+      # `msg_G` and `shell_G` are local to `controll::install` function
+      #  but accessible from `utils::resolve_vim_alternatives`.
+      msg_G="sudo update-alternatives --set vim \$(which nvim)"
+      shell_G='--'
+      return
+    fi
   fi
 
   # more aggressive way
