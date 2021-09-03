@@ -110,17 +110,18 @@ utils::resolve_vim_alternatives () {
   # That means that the system might have both Vim and Neovim installed.
   # But it is not necessarily the case.
 
-  local alternatives cnt hint reply
-
+  local alternatives value hint reply
   if alternatives=$(update-alternatives --query vim) 2> /dev/null
   then
-    value=$(grep 'Value:' <<< $alternatives | cut -d ' ' -f2)
-    sed -i "/^Installed components:/i VIM-ALTERNATIVE:$value" .update-list
+    if ! grep -q 'VIM-ALTERNATIVE' .update-list
+    then
+      value=$(grep 'Value:' <<< $alternatives | cut -d ' ' -f2)
+      sed -i "/^Installed/i VIM-ALTERNATIVE:$value" .update-list
+    fi
 
-    grep -q 'nvim' <<< "$value" && return
-    cnt=$(grep -c 'Alternative:' <<< "$alternatives")
+    ([[ -z "$value" ]] || grep -q 'nvim' <<< "$value") && return
 
-    if [[ $cnt -ge 2 ]]
+    if [[ $(grep -c 'Alternative:' <<< "$alternatives") -ge 2 ]]
     then
       # `msg_G` and `shell_G` are local to `controll::install` function
       #  but accessible from `utils::resolve_vim_alternatives`.
@@ -138,7 +139,13 @@ utils::resolve_vim_alternatives () {
 
   read -p "Where to add an alias? [$hint]: " reply
   [[ -z "$reply" ]] && reply=$(eval echo $hint)
+  # The following lines also cover the case
+  # when it is not possible to set Vim's alternative.
   echo -e '\nalias vim=nvim # added by EVANGELIST' >> "$reply"
+  echo -e "alias vimdiff='nvim -d' # added by EVANGELIST" >> "$reply"
+  # ex (improved Ex mode) and view (read only mode):
+  # echo -e "alias ex='nvim -E' # added by EVANGELIST" >> "$reply"
+  # echo -e "alias view='nvim -R' # added by EVANGELIST" >> "$reply"
 
   shell_G=${SHELL##*/}
 }

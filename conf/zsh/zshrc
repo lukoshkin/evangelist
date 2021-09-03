@@ -3,9 +3,9 @@
 ## If this is the case, you will need to expand $ZPLUG_HOME variable.
 source "$ZPLUG_HOME/init.zsh"
 
-zplug "zsh-users/zsh-autosuggestions"
-zplug "zsh-users/zsh-syntax-highlighting", defer:2
-zplug "zsh-users/zsh-history-substring-search", defer:3
+zplug 'zsh-users/zsh-autosuggestions'
+zplug 'zsh-users/zsh-syntax-highlighting', defer:2
+zplug 'zsh-users/zsh-history-substring-search', defer:3
 zplug 'zplug/zplug', hook-build:'zplug --self-manage'
 zplug 'zsh-users/zsh-completions', depth:1
 
@@ -43,8 +43,10 @@ source "$EVANGELIST/conf/bash/aliases-functions.sh"
 [[ -f "$EVANGELIST/custom/custom.zsh" ]] \
   && source "$EVANGELIST/custom/custom.zsh"
 
-## If the system has both Vim and Neovim, use the latter.
-## (NOTE: this is a pretty aggressive approach; better to use
-## `update-alternatives`; see utils::resolve_vim_alternatives)
-which nvim &> /dev/null && which vim &> /dev/null && alias vim=nvim
+## Enforce the use of Neovim.
+if which nvim &> /dev/null
+then
+  alias vim=nvim
+  alias vimdiff='nvim -d'
+fi
 

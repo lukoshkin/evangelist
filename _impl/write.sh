@@ -6,7 +6,7 @@ YELLOW=$(tput setaf 3)
 WHITE=$(tput setaf 15)
 
 # NOTE: tput bold text modifier doesn't affect
-# ####  colors defined not with tput
+# ####  colors defined not with tput.
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
 
@@ -109,29 +109,40 @@ write::instructions_after_install () {
   fi
 }
 
-# Takes one argument - the shell that was before
-# the settings installation: bash or zsh
+# Operates on '.update-list' file
 write::instructions_after_removal () {
+  local shell curr orig msg
+  shell=$(grep 'LOGIN-SHELL' .update-list | cut -d ':' -f2)
+
   NOTE 210 '\nFURTHER INSTRUCTIONS:'
   printf 'TO FINISH THE REMOVAL, '
-  if [[ -n $1 && ${SHELL##*/} != $1 ]]
+  # `-n` is an unnecessary test under the current implementation. We always
+  # add info about the login shell on the creation of '.update-list'. Unlike
+  # Vim's alternative, a line about it is only added if `update-alternatives`
+  # is available on the OS. Still, it is good to have this extra sanity
+  # check here.
+
+  if [[ -n $shell && ${SHELL##*/} != $shell ]]
   then
     printf 'RESTORE THE ORIGINAL VALUE OF THE LOGIN SHELL.'
-    printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $1)${RESET}\n\n"
+    printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $shell)${RESET}\n\n"
     printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
   else
-    local alter msg
-    alt=$(grep 'VIM-ALTERNATIVE' .update-list | cut -d: -f2) 2> /dev/null
-    msg="${BOLD}${WHITE}sudo update-alternatives --set vim $alt${RESET}"
+    curr=$(update-alternatives --query vim | grep 'Value:' | cut -d ' ' -f2)
+    orig=$(grep 'VIM-ALTERNATIVE' .update-list | cut -d: -f2) 2> /dev/null
 
-    if [[ -n $alt ]]
+    if [[ -n $orig && $curr != $orig ]]
     then
+      msg="${BOLD}${WHITE}sudo update-alternatives --set vim ${orig}${RESET}"
       printf 'RESTORE THE ORIGINAL VALUE OF THE VIM ALTERNATIVE.'
       printf "\n\n\t$msg\n\n"
     fi
 
+    # The following instruction is only needed
+    # when environment variables should be updated;
+    # but just in case, it is printed every time.
     printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.'
-    printf "\n\n\t${BOLD}${WHITE}exec $1${RESET}\n\n"
+    printf "\n\n\t${BOLD}${WHITE}exec ${shell}${RESET}\n\n"
   fi
 }
 

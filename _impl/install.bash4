@@ -72,15 +72,16 @@ install::vim_settings () {
         echo Installing npm..
         conda install -yc conda-forge nodejs &> /dev/null \
           && echo - Installed nodejs. \
-          || echo Failed to install: nodejs
+          || echo Failed to install with conda: nodejs
       fi
 
-      echo "Installing optional providers' deps.."
+      echo "Checking optional providers' deps.."
+      echo "(Missing ones will be installed if possible)"
       ( npm ls -g | grep neovim || npm install -g neovim ) &> /dev/null \
-        && echo - Installed neovim-client. \
+        && echo - [OK] neovim-client. \
         || echo "Cannot execute: npm install -g neovim"
       ( pip show pynvim || pip install pynvim ) &> /dev/null \
-        && echo - Installed pynvim. \
+        && echo - [OK] pynvim. \
         || echo "Cannot execute: pip install pynvim"
 
       VIM=nvim
@@ -151,10 +152,16 @@ install::jupyter_settings () {
 
   ECHO Installing Jupyter configuration..
 
-  # Install Jupyter if necessary
+  echo Checking required packages..
+  echo "(Missing ones will be installed if possible)"
+  # - jupyter
+  # - jupyter_contrib_nbextensions
+  # - jupyter_nbextensions_configurator
+
+  # Install Jupyter if need be
   HAS jupyter \
     || { pip install -q jupyter \
-         && HAS jupyter && echo Installed jupyter.; } \
+         && HAS jupyter && echo - Installed jupyter.; } \
       || { ECHO2 Jupyter is not accessible.; exit; }
 
   local JUPCONFDIR=$(jupyter --config-dir)
@@ -167,7 +174,7 @@ install::jupyter_settings () {
   if ! pip show -qq jupyter_contrib_nbextensions
   then
     pip install -q jupyter_contrib_nbextensions \
-      && echo Installed jupyter_contrib_nbextensions \
+      && echo - Installed jupyter_contrib_nbextensions. \
       || exit 1
   fi
 
@@ -175,14 +182,15 @@ install::jupyter_settings () {
   if ! pip show -qq jupyter_nbextensions_configurator
   then
     pip install -q jupyter_nbextensions_configurator \
-      && echo Installed jupyter_nbextensions_configurator \
+      && echo - Installed jupyter_nbextensions_configurator. \
       || exit 1
   fi
 
+  echo Ready to install jupyter-vim-bindings.
   local JUPVIM="$(jupyter --data-dir)/nbextensions/vim_binding"
   [[ -d "$JUPVIM" ]] && rm -rf "$JUPVIM"
 
-  # Install Vim for Jupyter Notebook
+  # Install Vim in Jupyter Notebook
   {
     git clone -q https://github.com/lambdalisue/jupyter-vim-binding "$JUPVIM";
     jupyter nbextension enable vim_binding/vim_binding; # add log lvl control?

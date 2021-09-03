@@ -409,6 +409,6 @@ This work is based primarily on leveraging the following projects.
  - [x] Write Dockerfile
  - [x] Add `install`, `update`, `reinstall`, `uninstall` control functions
  - [x] Add `EVANGELIST` environment variable
- - [ ] Write bash/zsh completions
+ - [x] Write bash/zsh completions
  - [ ] Write Wiki evangelist
  - [ ] Add [Vim-tutor](https://github.com/lukoshkin/vim-tutor) to evangelist as a submodule

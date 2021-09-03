@@ -319,15 +319,13 @@ control::uninstall () {
     esac
   done
 
-  logshell=$(grep 'LOGIN-SHELL' .update-list | cut -d ':' -f2)
-
-  rm .update-list
-  rm -rf .bak
-
   ECHO Successfully uninstalled.
 
-  # Check if necessary to change the login shell
-  write::instructions_after_removal $logshell
+  # Check if necessary to change
+  # the login shell and Vim alternatives.
+  write::instructions_after_removal
+  rm .update-list
+  rm -r .bak
 }
 
 
