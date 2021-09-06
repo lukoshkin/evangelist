@@ -36,20 +36,21 @@ RUN pip3 install --no-cache-dir --upgrade \
 
 USER $USER
 # Download configs and distribute them to their locations
+# (We should not change WORKDIR of the base image.)
 RUN cd ~ && git clone https://github.com/lukoshkin/evangelist.git \
     && cd evangelist \
     && if [ -f ~/.bashrc ]; \
        then \
          sed -n '/> RESERVED-CONFS/,/< RESERVED-CONFS/{//!p}' \
-         ~/.bashrc >> bash/bashrc; \
+         ~/.bashrc >> conf/bash/bashrc; \
        fi \
-    && mv bash/bashrc ~/.bashrc \
-    && mv tmux/tmux.conf ~/.tmux.conf \
-    && mv bash/inputrc ~/.inputrc \
-    && cp -R nvim "$XDG_CONFIG_HOME"/ \
+    && mv conf/bash/bashrc ~/.bashrc \
+    && mv conf/tmux/tmux.conf ~/.tmux.conf \
+    && mv conf/bash/inputrc ~/.inputrc \
+    && cp -R conf/nvim "$XDG_CONFIG_HOME/" \
     && sed -e '/^source .*\/bash\/aliases-functions\.sh/ \
-         {r bash/aliases-functions.sh' -e 'd}' -i ~/.bashrc \
-    && cat bash/ps1.bash >> ~/.bashrc \
+         {r conf/bash/aliases-functions.sh' -e 'd}' -i ~/.bashrc \
+    && cat conf/bash/ps1.bash >> ~/.bashrc \
     && echo "source ~/.bashrc" > ~/.profile \
     && sed -i '1i set-option -g default-shell /bin/bash' ~/.tmux.conf \
     && curl -fLo "$XDG_DATA_HOME"/nvim/site/autoload/plug.vim --create-dirs \
@@ -60,8 +61,8 @@ RUN cd ~ && git clone https://github.com/lukoshkin/evangelist.git \
     && jupyter nbextension enable vim_binding/vim_binding \
     && jupyter contrib nbextension install --user \
     && mkdir -p ~/.jupyter/custom \
-    && mv jupyter/custom.js ~/.jupyter/custom/ \
-    && mv jupyter/notebook.json ~/.jupyter/nbconfig \
+    && mv conf/jupyter/custom.js ~/.jupyter/custom/ \
+    && mv conf/jupyter/notebook.json ~/.jupyter/nbconfig \
     && nvim --headless +PlugInstall +qall \
     && rm -rf ~/evangelist
 

@@ -31,7 +31,7 @@ control::help () {
 
 
 control::checkhealth () {
-  components=$(sed '1,/Installed/d' .update-list | tr '\n' ' ') 2> /dev/null
+  components=$(sed '1,/Installed/d' .update-list 2> /dev/null | tr '\n' ' ')
   # sed: comma specifies the operating range, where endpoints are included
   # and can be patterns. If called without args, sed prints the current
   # buffer. One can use $ as the EOF marker.
@@ -97,6 +97,9 @@ control::install () {
     echo Installed components: >> .update-list
   fi
 
+  # 'local msg' not only does shadow the eponymous variable
+  # in control::reinstall function, but also makes `msg` empty,
+  # if the latter had any value before the statement.
   local msg msg_G shell_G=$(grep -oE '(z|ba)sh' <<< $@)
   # suffix G means that the variable is exposed to subroutines,
   # i.e. global to internal function calls.
@@ -109,7 +112,6 @@ control::install () {
 
     NOTE 210 "$msg"
     read -p '(zsh|bash): ' shell_G
-    echo
   fi
 
   # Ensure shell settings are installed first
@@ -222,6 +224,7 @@ control::update () {
           utils::dummy_v1_gt_v2 $(tmux -V | cut -d ' ' -f2) 3.1 \
             && cp $OBJ "$XDG_CONFIG_HOME/tmux" \
             || cp $OBJ ~/.${OBJ##*/}
+            # lstrip all the parents in dir name
         fi
         ;;
 
@@ -236,9 +239,11 @@ control::update () {
         ;;
 
       *)
-        ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
-        [[ $OBJ =~ zsh ]] && grep -q '^zsh' .update-list \
-          && cp $OBJ "$ZDOTDIR"
+        if [[ $OBJ =~ zsh/ ]] && grep -q '^zsh' .update-list
+        then
+          ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
+          cp $OBJ "$ZDOTDIR"
+        fi
         ;;
     esac
   done
@@ -247,7 +252,8 @@ control::update () {
   then
     for OBJ in $(sed -n '/nvim/p' <<< "$UPD")
     do
-      cp $OBJ "$XDG_CONFIG_HOME/$OBJ"
+      # lstrip 'conf/' in names of the form 'conf/nvim/conf/...'
+      cp $OBJ "$XDG_CONFIG_HOME/${OBJ#*/}"
     done
   fi
 
@@ -339,9 +345,9 @@ control::reinstall () {
     return
   fi
 
-  NOTE 210 '
-  By executing this command, all changes made to
-  the repository working tree will be lost. ABORT? [Y/n]\n\n'
+  msg+='By executing this command, all changes made to\n'
+  msg+='the repository working tree will be lost. ABORT? [Y/n]\n'
+  NOTE 210 "$msg"
 
   read -sn 1 -r
   ! [[ $REPLY = n ]] && { echo -e Aborted.; exit 0; }

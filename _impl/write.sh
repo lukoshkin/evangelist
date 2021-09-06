@@ -129,7 +129,7 @@ write::instructions_after_removal () {
     printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
   else
     curr=$(update-alternatives --query vim | grep 'Value:' | cut -d ' ' -f2)
-    orig=$(grep 'VIM-ALTERNATIVE' .update-list | cut -d: -f2) 2> /dev/null
+    orig=$(grep 'VIM-ALTERNATIVE' .update-list 2> /dev/null | cut -d: -f2)
 
     if [[ -n $orig && $curr != $orig ]]
     then

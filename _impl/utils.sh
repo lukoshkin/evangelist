@@ -111,7 +111,7 @@ utils::resolve_vim_alternatives () {
   # But it is not necessarily the case.
 
   local alternatives value hint reply
-  if alternatives=$(update-alternatives --query vim) 2> /dev/null
+  if alternatives=$(update-alternatives --query vim 2> /dev/null)
   then
     if ! grep -q 'VIM-ALTERNATIVE' .update-list
     then

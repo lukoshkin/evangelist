@@ -40,3 +40,4 @@ ctrl_c () {
 
 trap ctrl_c SIGINT
 main $@
+
