@@ -143,7 +143,8 @@ _ignorecommon="(\
 ^pwd ?$|\
 ^clear ?$|\
 ^man \S*$|\
-^tmux ?$"
+^tmux ?$|\
+\.unknowno"
 
 _ignorecommon+="|\
 ^vi[m]? ~?\/?\.?\w+[^/ ]*$|\

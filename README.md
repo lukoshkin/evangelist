@@ -156,7 +156,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.1.0 (!)
+Patch 1.2.2 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -214,11 +214,9 @@ Patch 1.1.0 (!)
   | normal | `<leader>en` | toggle spell-check |
   | normal | `<leader>y` | yank current buffer |
   | visual | `<leader>y` | yank selected text |
-  | normal <br> (.py extension) | `<leader>py` | run the current buffer in python |
-  | visual <br> (.py extension) | `<leader>py` | run the selected block of code in python |
   | normal | `<leader>t` | paste date and time before the cursor |
   | normal | `<leader>nu` | toggle line numbering |
-  | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss message in the cmd line below |
+  | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss a message in the cmd line below |
   | normal | `<M-(h\|j\|k\|l)>` | insert an empty line or space in the direction <br> which a movement key specifies |
   | command | Trim | remove all trailing spaces in the file |
   | visual | `//` | search for selected text <br> (doesn't work in `VISUAL LINE` mode) |

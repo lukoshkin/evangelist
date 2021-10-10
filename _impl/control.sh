@@ -144,7 +144,7 @@ control::install () {
   # NOTE: if installing Vim configuration w/o shell settings,
   # while both Vim and Neovim are available, `shell_G` var changes
   # from '' to "${SHELL##*/}" in vim_settings subroutine.
-  [[ -n $shell_G ]] && write::instructions_after_install $shell_G
+  [[ -n $shell_G ]] && write::instructions_after_install $shell_G || :
 }
 
 
@@ -160,7 +160,7 @@ control::update () {
   UPD=$(git diff --name-only ..origin/$BRANCH)
   [[ -z "$UPD" ]] && { ECHO Up to date.; exit; }
 
-  SRC='evangelist.sh _impl/*'
+  SRC=( evangelist.sh _impl )
 
   # TODO: Add hook to handle updates that cannot be resolved
   #       by the following code in the 'if'-statement.
@@ -171,7 +171,7 @@ control::update () {
   then
     ECHO Self-updating..
 
-    git checkout origin/$BRANCH -- $SRC
+    git checkout origin/$BRANCH -- ${SRC[@]}
 
     $SHELL $0 update SKIP
     exit

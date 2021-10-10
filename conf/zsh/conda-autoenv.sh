@@ -1,25 +1,44 @@
 #!/bin/bash
 
+up_hierarchy_search() {
+  if [[ -z $1 || -z $2 ]]; then
+    echo up_hierarchy_search: missing args.
+    echo 'Try: up_hierarchy_search <dir> <file>`'
+    return 1
+  fi
+
+  local found
+  _up_hierarchy_search () {
+    [[ $1 = / ]] && return 1
+    # 'ls $1/$2' is simpler but doesn't fit zsh
+    found=$(find $1 -maxdepth 1 -type f -name $2)
+
+    if [[ -z $found ]]; then
+      _up_hierarchy_search $(dirname $1) $2
+    fi
+  }
+
+  _up_hierarchy_search $(realpath $1) $2
+  echo $found
+}
+
+
 _conda_autoenv_zsh() {
   first_elem_id=${1:-1}
+  local -a lsout=( $(up_hierarchy_search $PWD '.autoenv-evn.*') )
 
-  local lsout code
-  { ls .autoenv-evn.*; } &> /dev/null
-  code=$?
-
-  if [[ $code -ne 0 ]]
+  if [[ ${#lsout[@]} -eq 0 ]]
   then
-    # Note: [[ "sth" =~ "" ]] evaluates to 'true'
+    # Note: [[ "$any_var" =~ "" ]] always evaluates to 'true'
     ! [[ "$PWD" =~ "$CONDA_AUTOENV" ]] \
-      && CONDA_AUTOENV= && conda deactivate
+      && CONDA_AUTOENV= && conda activate base
     return 0
   fi
 
-  lsout=( $(ls .autoenv-evn.*) )
   if [[ ${#lsout[@]} -gt 1 ]]
   then
     echo There are several autoenv-files found: ${lsout[@]}
-    echo Note, the autoenv-script will try to activate only the environment
+    echo Note, the autoenv-script tries to activate only the environment
     echo 'corresponding to the first autoenv-file listed by `ls`.'
     echo Please, keep only one '.autoenv-evn.*'
     echo

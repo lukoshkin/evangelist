@@ -33,46 +33,9 @@ nnoremap <A-h> i<Space><Esc>
 nnoremap <A-l> a<Space><Esc>
 
 
-" Run the currently edited file (or selected lines) with python.
-augroup PyExecutor
-  autocmd!
-  autocmd FileType python
-        \ xnoremap <buffer><silent><leader>py
-        \ :call PySelect() <bar> call PyExec()<CR>
-  autocmd FileType python
-        \ nnoremap <buffer><silent><leader>py :w !python<CR>
-augroup END
-" <silent> prevents the command defined on the RHS of a mapping to be printed.
-" With <buffer>, one cannot call python in tmp buffers like Mundo or NERDtree.
-
-" Note: the functions below exploit 'z' register (see :help registers).
-" If you stored anything there, all the data will be lost.
-" You can change the named buffer used in the command to another
-" (all the hardcoded occurrences).
-function! PySelect()
-  call setreg('z', [])
-  silent g/^import [^\.\-\n]\+/yank Z
-  silent g/^from [^\.\-\n]\+/yank Z
-  silent normal gv"Zy
-endfunction
-" 'normal' in VimScript allows you execute keystrokes.
-" 'gv' tells Vim to select the same area as the one selected on
-" the function call. Copied text is appended
-
-function! PyExec()
-  echo execute(join(['!python -c', shellescape(@z, 1)]))
-  call setreg('z', [])
-endfunction
-" 'execute()' captures an output of a python-program,
-" and 'echo' separates the output and the python call.
-" 'shellescape()' is needed in Vim for escaping newline
-" characters in @z. In Neovim, one can do without it.
-
-
 " Copy to clipboard (the whole buffer or selected lines)
 xnoremap <leader>y "+y
 nnoremap <leader>y :%y+<CR>
-
 
 " Spell checker ('<leader>e' to switch on)
 " To add ru lang, you need to download the dictionary
@@ -88,12 +51,10 @@ nmap <leader>t i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>
 " and clear any message already displayed.
 nnoremap <silent><Space><Space> :nohlsearch<Bar>:echo<CR>
 
-
 " Change the bg's transparency with terminal/tmux mappings <Alt-+> and <Alt-->
 noremap <silent><A-+> :silent !transset -a --inc .02<CR>
 noremap <silent><A--> :silent !transset -a --dec .02<CR>
 " :silent discards the output of a command that follows it.
-
 
 " Remove all extra spaces at the end of lines
 command! -range=% Trim <line1>,<line2>s/\s\+$//e | :nohlsearch
