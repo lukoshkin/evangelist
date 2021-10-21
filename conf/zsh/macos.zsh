@@ -49,21 +49,16 @@ autoload -U down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 
-function from-ins-beginning-search-up() {
+function insert-space-cmd-mode() {
+  zle magic-space
   zle vi-cmd-mode
-  zle up-line-or-beginning-search
+  zle vi-forward-char
 }
 
-function from-ins-beginning-search-down() {
-  zle vi-cmd-mode
-  zle down-line-or-beginning-search
-}
+zle -N insert-space-cmd-mode
 
-zle -N from-ins-beginning-search-up
-zle -N from-ins-beginning-search-down
-
-bindkey -M viins '^[k' from-ins-beginning-search-up
-bindkey -M viins '^[j' from-ins-beginning-search-down
+bindkey -M viins '^[k' insert-space-cmd-mode
+bindkey -M viins '^[j' insert-space-cmd-mode
 bindkey -M vicmd '^[k' up-line-or-beginning-search
 bindkey -M vicmd '^[j' down-line-or-beginning-search
 ### -------- block ends --------
@@ -113,7 +108,8 @@ _ignorecommon="(\
 ^pwd ?$|\
 ^clear ?$|\
 ^man \S*$|\
-^tmux ?$"
+^tmux ?$|\
+\.unknowno"
 
 _ignorecommon+="|\
 ^vi[m]? ~?\/?\.?\w+[^/ ]*$|\

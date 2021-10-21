@@ -49,7 +49,7 @@ nmap <leader>t i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>
 
 " Press Space two times to turn off highlighting
 " and clear any message already displayed.
-nnoremap <silent><Space><Space> :nohlsearch<Bar>:echo<CR>
+nnoremap <silent><Space><Space> :nohlsearch <bar> echo<CR>
 
 " Change the bg's transparency with terminal/tmux mappings <Alt-+> and <Alt-->
 noremap <silent><A-+> :silent !transset -a --inc .02<CR>
@@ -66,4 +66,4 @@ command! -range=% Trim <line1>,<line2>s/\s\+$//e | :nohlsearch
 vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>
 
 " Toggle line numbering
-nnoremap <silent><leader>nu :set invnu invrnu<CR>
+nnoremap <silent><leader>nu :set invnu invrnu <bar> silent! ToggleDiag<CR>

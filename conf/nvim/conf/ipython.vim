@@ -4,7 +4,7 @@ command! Run :IPythonCellRun
 command! RunTime :IPythonCellRunTime
 command! Clear :IPythonCellClear
 
-# Cell execution
+" Cell execution (first one overrides SlimeSendCell)
 nnoremap <CR> :IPythonCellExecuteCell<CR>
 nnoremap <C-n> :IPythonCellExecuteCellJump<CR>
 

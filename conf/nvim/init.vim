@@ -15,6 +15,8 @@ endif
 
 " --> Extra plugins that one may find useful
 " Plug 'lervag/vimtex'
+" Plug 'jpalardy/vim-slime', { 'for': 'python' }
+" Plug 'hanschen/vim-ipython-cell', { 'for': 'python' }
 " Plug 'iamcco/markdown-preview.nvim',
 "       \ { 'do': { -> mkdp#util#install() },
 "       \ 'for': ['markdown', 'vim-plug']}
@@ -42,6 +44,8 @@ source $XDG_CONFIG_HOME/nvim/conf/ctrlp.vim
 
 " --> Settings of the plugins commented out above
 " source $XDG_CONFIG_HOME/nvim/conf/md-preview.vim
+" source $XDG_CONFIG_HOME/nvim/conf/ipython.vim
+" source $XDG_CONFIG_HOME/nvim/conf/slime.vim
 " source $XDG_CONFIG_HOME/nvim/conf/tex.vim
 
 "" The same choice as above.

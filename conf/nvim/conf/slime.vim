@@ -8,5 +8,5 @@ let g:slime_default_config = {
 " To send just a line, use <C-c><C-c> (default mapping).
 " Send text delimited by #%% (emulation of cells) with <C-s>.
 let g:slime_cell_delimiter = "#%%"
-nmap <leader>s <Plug>SlimeSendCell
+nmap <CR> <Plug>(SlimeSendCell)
 

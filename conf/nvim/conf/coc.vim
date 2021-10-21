@@ -1,5 +1,7 @@
-" Make error popups readable in the colorscheme used by evangelist 
+" Make linting popups readable in the colorscheme used by evangelist
 hi! CocErrorSign guifg=#6D0604
+hi! CocWarningSign guifg=#D1CD66
+hi! CocHintSign guifg=#04376D
 
 " Highlight a symbol and its references when holding the cursor over it.
 " A 'symbol' in computer programming is a primitive data type whose
@@ -103,6 +105,7 @@ omap ac <Plug>(coc-classobj-a)
 command! -nargs=0 Format :call CocAction('format')
 " Show the diagnostics in the location list.
 command! Diagnostics :CocDiagnostics<CR>
+command! ToggleDiag :silent! call CocAction('diagnosticToggle')<CR>
 
 " <C-f> and <C-b> for scrolling float windows/popups.
 if has('nvim-0.4.0') || has('patch-8.2.0750')
@@ -112,10 +115,10 @@ if has('nvim-0.4.0') || has('patch-8.2.0750')
         \ coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 
   inoremap <silent><nowait><expr> <C-f>
-        \ coc#float#has_scroll() ? 
+        \ coc#float#has_scroll() ?
         \ "\<c-r>=coc#float#scroll(1)\<CR>" : "\<Right>"
   inoremap <silent><nowait><expr> <C-b>
-        \ coc#float#has_scroll() ? 
+        \ coc#float#has_scroll() ?
         \ "\<c-r>=coc#float#scroll(0)\<CR>" : "\<Left>"
 
   vnoremap <silent><nowait><expr> <C-f>

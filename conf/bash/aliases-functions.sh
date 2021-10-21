@@ -4,16 +4,20 @@ alias l='ls -lAh'
 alias ll='ls -lh'
 alias lt='ls -lAht'
 
-md () {
-  mkdir -p $@
-  [[ $# -gt 1 ]] && exit
-  cd $1
-}
+alias fd='find . -type d -name'
+alias ff='find . -type f -name'
+alias grep='grep --color'
+
+## Open the last file closed:
+# alias v="vim +'e #<1'"
+alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
+type nvim &> /dev/null \
+  && alias vv="vim +'browse filter !/__\|NERD_tree\|ControlP/ oldfiles'"
 
 alias _vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
 alias vimrc="vim $EVANGELIST/custom/custom.vim"
 
-## Folder stack navigation
+## Folder stack navigation.
 alias d='dirs -v'
 alias G='gg 0'
 
@@ -37,18 +41,38 @@ gg () {
 }
 
 
-## Open the last file closed
-# alias v="vim +'e #<1'"
-alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
-type nvim &> /dev/null \
-  && alias vv="vim +'browse filter !/__\|NERD_tree\|ControlP/ oldfiles'"
+## Some other functions that might be useful.
+md () {
+  mkdir -p $@
+  [[ $# -gt 1 ]] && exit
+  cd $1
+}
 
-alias fd='find . -type d -name'
-alias ff='find . -type f -name'
-alias grep='grep --color'
+
+dtree () {
+  local w8
+  [[ -n $1 ]] && w8=$1 || w8=.5
+
+  timeout $w8 find . ! -path '*/\.*' -type d &> /dev/null
+
+  # 124 - command timed out
+  if [[ $? -eq 124 ]]
+  then
+    echo 'Try to run it in one of subfolders.'
+    return
+  fi
+
+  ls -R | grep ":$" | sed -e 's/:$//' \
+    -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+}
+
 
 tree () {
-  command -v tree &> /dev/null || return
+  if command -v tree &> /dev/null
+  then
+    dtree $1
+    return
+  fi
 
   local w8
   local hierarchy
@@ -62,7 +86,7 @@ tree () {
   # -c - command to execute
   hierarchy=$(script -eqc "timeout --preserve-status $w8 tree" /dev/null)
 
-  # 143 - SIGTERM (process was killed)
+  # 143 - SIGTERM (process was killed by another one)
   if [[ $? -eq 143 ]]
   then
     echo 'Try to run it in one of subfolders.'
@@ -72,4 +96,18 @@ tree () {
   # double quotes are required in bash
   echo "$hierarchy"
 }
+
+
+swap () {
+  [[ -z $1 || -z $2 ]] && { echo 'Requires src and dest'; exit 1; }
+
+  cp -R $1 /tmp/$1.bak
+  mv $2 $1
+  mv /tmp/$1.bak $2
+}
+
+
+(grep -q '^n?vim' $EVANGELIST/.update-list \
+  && grep -q '^Plug .*vim-slime' $XDG_CONFIG_HOME/nvim/init.vim) \
+  && source $EVANGELIST/conf/tmux/templates.sh || :
 

@@ -135,7 +135,7 @@ with broken colors during the process of both the installation and exploitation.
 - Light implementation of [conda-autoenv](https://github.com/sharonzhou/conda-autoenv)
   which supports both bash and zsh
 - Efficient navigation in the project directory (commands: `tree`, `d`, `gg`, `G`)
-- Interactive command history search (key-bindings: `jjk`, `<M-k>`, `/`)
+- Interactive command history search (key-bindings: `jjk`, `<M-kk>`, `/`)
 - Jupyter empowered by Vim and basic set of notebook extensions
 - Minimal configurations for Vim and Tmux
 
@@ -156,7 +156,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.2.2 (!)
+Patch 1.2.3 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -168,7 +168,7 @@ Patch 1.2.2 (!)
   |:----:|:--------:|:----------|
   | ins | `jj` | exit insert mode |
   | cmd | `(j\|k)` | go to the (next \| previous) matching substring in cmd history <br> _provided no substring,_ go to the (next \| previous) cmd |
-  | any | `<M-(j\|k)>` | go to the (next \| previous) cmd matching the current buffer from the beginning |
+  | any <br>  | `<M-(j\|k)>` | go to the (next \| previous) cmd matching the current buffer from <br> the beginning (Note: one more `<j/k>` press to exit from ins mode) |
   | any | `<C-q>` | deletes the current buffer, so one can execute another cmd, <br> after which the original one would be restored |
   | cmd | `/` | start interactive fuzzy search over cmds in the history file |
 
@@ -186,13 +186,16 @@ Patch 1.2.2 (!)
   |:--------------:|:-----------|
   | `mkenv [env]` | remember the environment used in a folder to <br> [de]activate the former when [leaving]/entering the latter <br> ***(supports only conda environments)*** |
   | `md` | create a directory (or nested folders) and cd there |
-  | `tree` | draw a project tree <br> (a "safe" wrapper around Unix `tree`) |
+  | `tree` | draw a project tree (files and directories); <br> if not installed `dtree` is called instead <br> (a "safe" wrapper around Unix `tree`) |
+  | `dtree` | draw a project tree (folders only) |
   | `v` | open the last file closed (in Vim) |
   | `vv` | start Vim from the list of recently edited files |
+  | `vip` | initiate the "vim-ipython" split in tmux <br> (available only if tmux settings are installed) |
   | `d` | show directories visited by user (autocd zsh option) |
   | `(gg\|G)` | go through the dir stack in (forward \| backward) direction |
   | `gg n` | go to n-th directory in the list obtained with `d` <br> &emsp;&emsp;&emsp;&emsp;&emsp; (starting from 0) |
   | `gg -n` | remove n-th directory from the dir stack |
+  | `swap` | swap names of two targets |
   | `(bash\|zsh\|vim)rc`\* | edit user-defined settings for the specified target |
   | `_(bash\|zsh\|vim)rc` | open main config file for the specified target |
 
