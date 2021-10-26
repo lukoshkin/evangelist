@@ -233,6 +233,7 @@ install::bash_settings () {
     && (conda init bash > /dev/null; conda config --set changeps1 False) \
     || ECHO2 "conda doesn't seem to work."
 
+  # Dynamic imports should make the last line in rc files.
   write::dynamic_imports ~/.bashrc
 
   # Transfer the old history
@@ -297,6 +298,7 @@ install::zsh_settings () {
 
   [[ $CODE -gt 0 ]] && rm -f ~/.zshrc
 
+  # Dynamic imports should make the last line in rc files.
   write::dynamic_imports "$ZDOTDIR/.zshrc"
 
   # Transfer the old history

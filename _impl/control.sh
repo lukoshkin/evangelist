@@ -230,12 +230,12 @@ control::update () {
 
       custom.js)
         grep -q '^jupyter' .update-list \
-          && cp $OBJ $(jupyter --config-dir)/custom/custom.js
+          && cp $OBJ "$(jupyter --config-dir)"/custom/custom.js
         ;;
 
       notebook.json)
         grep -q '^jupyter' .update-list \
-          && cp $OBJ $(jupyter --config-dir)/nbconfig/notebook.json
+          && cp $OBJ "$(jupyter --config-dir)"/nbconfig/notebook.json
         ;;
 
       *)
@@ -285,7 +285,7 @@ control::uninstall () {
 
   if grep -q '^jupyter' .update-list
   then
-    local JUPCONFDIR=$(jupyter --config-dir)
+    local JUPCONFDIR="$(jupyter --config-dir)"
     rm "$JUPCONFDIR/nbconfig/notebook.json"
     rm "$JUPCONFDIR/custom/custom.js"
   fi

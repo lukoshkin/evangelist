@@ -118,11 +118,9 @@ fi
 # Static imports
 ## Import more aliases.
 source "$EVANGELIST/conf/bash/aliases-functions.sh"
-
-## Import user-defined settings.
-[[ -f "$EVANGELIST/custom/custom.bash" ]] \
-  && source "$EVANGELIST/custom/custom.bash"
-
+## evangelist completions for bash
+source "$EVANGELIST/completions/evn-compl.bash"
+complete -F _evangelist evn
 
 # Misc
 ## Increase key repeat rate with xset if it is available.

@@ -156,7 +156,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.2.3 (!)
+Patch 1.2.4 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -198,8 +198,9 @@ Patch 1.2.3 (!)
   | `swap` | swap names of two targets |
   | `(bash\|zsh\|vim)rc`\* | edit user-defined settings for the specified target |
   | `_(bash\|zsh\|vim)rc` | open main config file for the specified target |
+  | `evn\|evangelist` | alias for evangelist.sh executable script |
 
-  \* Note, priority is given to custom settings. Also, they will not be overwritten by
+  \* Note, the priority is given to custom settings. Also, they will not be overwritten by
   updates or new installations.
 
   </details>

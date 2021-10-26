@@ -1,5 +1,5 @@
 # ZSH ALIASES
-# -------
+# -----------
 alias -g ...=../..
 alias -g ....=../../..
 alias -g .....=../../../..
@@ -132,7 +132,7 @@ zshaddhistory() {
 
 
 # ZSH OPTIONS
-#------------
+# -----------
 ## zsh options are case insensitive and ignore underscores in the name.
 setopt autopushd
 setopt pushdignoredups
@@ -153,3 +153,8 @@ setopt extendedglob
 ## - approximate matching   ls (#a1)foobar  fobar,
 ## - qualifiers             ls foo/*(#q@)   finds all symblic links (@) in foo
 ## more info by googling article: 37-ZSH-Gem-2-Extended-globbing-and-expansion.html
+
+# EVANGELIST COMPLETIONS (ZSH)
+# ----------------------------
+fpath+=( "$EVANGELIST/completions" )
+compdef evn=evangelist

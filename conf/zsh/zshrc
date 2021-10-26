@@ -39,10 +39,6 @@ SAVEHIST=$HISTSIZE
 source "$ZDOTDIR/extra.zsh"
 source "$EVANGELIST/conf/bash/aliases-functions.sh"
 
-## Import user-defined settings.
-[[ -f "$EVANGELIST/custom/custom.zsh" ]] \
-  && source "$EVANGELIST/custom/custom.zsh"
-
 ## Enforce the use of Neovim.
 if which nvim &> /dev/null
 then

@@ -1,4 +1,13 @@
-alias evangelist="$EVANGELIST/evangelist.sh"
+## With `setopt complete_aliases` in zsh, both `evn` and `evangelist`
+## aliases can be completed with Tab. However, it is hardly possible
+## to complete aliases not connected to any function in bash. Therefore,
+## we define `evangelist` as a function (in zsh this is also valid
+## after adding `compdef evn=evangelist`).
+evangelist () {
+  "$EVANGELIST"/evangelist.sh $@
+}
+
+alias evn=evangelist
 
 alias l='ls -lAh'
 alias ll='ls -lh'
@@ -101,13 +110,14 @@ tree () {
 swap () {
   [[ -z $1 || -z $2 ]] && { echo 'Requires src and dest'; exit 1; }
 
-  cp -R $1 /tmp/$1.bak
-  mv $2 $1
-  mv /tmp/$1.bak $2
+  cp -R $1 /tmp/$1.bak \
+    && rm -rf $1 \
+    && mv $2 $1 \
+    && mv /tmp/$1.bak $2
 }
 
 
-(grep -q '^n?vim' $EVANGELIST/.update-list \
-  && grep -q '^Plug .*vim-slime' $XDG_CONFIG_HOME/nvim/init.vim) \
-  && source $EVANGELIST/conf/tmux/templates.sh || :
+(grep -q '^n?vim' "$EVANGELIST"/.update-list \
+  && grep -q '^Plug .*vim-slime' "$XDG_CONFIG_HOME"/nvim/init.vim) \
+  && source "$EVANGELIST"/conf/tmux/templates.sh || :
 

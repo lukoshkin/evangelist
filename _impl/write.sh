@@ -51,24 +51,38 @@ write::dynamic_imports () {
   [[ $1 =~ bash ]] && ! grep -q 'source .*/conf/bash/ps1.bash' $1 \
     && echo 'source "$EVANGELIST/conf/bash/ps1.bash"' >> $1
 
-  conda &> /dev/null || return
-
-  local line GITIGNORE
-  line=$(git config -l | grep 'core.excludesfile')
-
-  if [[ -n $line ]]
+  if conda &> /dev/null
   then
-    GITIGNORE=$(cut -d '=' -f2 <<< $line)
-  else
-    GITIGNORE="$XDG_CONFIG_HOME/git/ignore"
-    mkdir -p "${GITIGNORE%/*}" && touch "$GITIGNORE"
-    git config --global core.excludesfile "$GITIGNORE"
+    local line GITIGNORE
+    line=$(git config -l | grep 'core.excludesfile')
+
+    if [[ -n $line ]]
+    then
+      GITIGNORE=$(cut -d '=' -f2 <<< $line)
+    else
+      GITIGNORE="$XDG_CONFIG_HOME/git/ignore"
+      mkdir -p "${GITIGNORE%/*}" && touch "$GITIGNORE"
+      git config --global core.excludesfile "$GITIGNORE"
+    fi
+
+    grep '.autoenv-evn' "$GITIGNORE" &> /dev/null \
+      || echo '.autoenv-evn.*' >> "$GITIGNORE"
+    grep -q 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' $1 \
+      || echo 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' >> $1
   fi
 
-  grep '.autoenv-evn' "$GITIGNORE" &> /dev/null \
-    || echo '.autoenv-evn.*' >> "$GITIGNORE"
-  grep -q 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' $1 \
-    || echo 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' >> $1
+  if ! grep -q 'source "$EVANGELIST/custom/custom\..*sh"' $1
+  then
+    if [[ $1 =~ zsh ]]
+    then
+      echo '[[ -f "$EVANGELIST/custom/custom.zsh" ]] \' >> $1
+      echo '  && source "$EVANGELIST/custom/custom.zsh"' >> $1
+    elif [[ $1 =~ bash ]]
+    then
+      echo '[[ -f "$EVANGELIST/custom/custom.bash" ]] \' >> $1
+      echo '  && source "$EVANGELIST/custom/custom.bash"' >> $1
+    fi
+  fi
 }
 
 # Takes one argument - shell for which to install settings: bash or zsh
