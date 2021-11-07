@@ -6,7 +6,7 @@ command! Clear :IPythonCellClear
 
 " Cell execution (first one overrides SlimeSendCell)
 nnoremap <CR> :IPythonCellExecuteCell<CR>
-nnoremap <C-n> :IPythonCellExecuteCellJump<CR>
+nnoremap <Space><CR> :IPythonCellExecuteCellJump<CR>
 
 " Close all matplotlib figure windows
 nnoremap <localleader>x :IPythonCellClose<CR>

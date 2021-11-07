@@ -56,5 +56,6 @@ _evangelist() {
   esac
 }
 
+compdef evn=evangelist
 _evangelist
 

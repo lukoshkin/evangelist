@@ -2,8 +2,8 @@
 # Original: https://stackoverflow.com/questions/60330838
 
 vip () {
-  type vim &> /dev/null || { echo Neovim/Vim not found.; exit; }
-  type ipython &> /dev/null || { echo Ipython not found.; exit; }
+  type vim &> /dev/null || { echo Neovim/Vim not found.; return 1; }
+  type ipython &> /dev/null || { echo Ipython not found.; return 1; }
   [[ -z $1 ]] && cmd='v' || cmd="vim $1"
 
   uuid="$(uuidgen)"

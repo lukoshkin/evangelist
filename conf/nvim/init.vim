@@ -4,7 +4,6 @@ call plug#begin()
 Plug 'preservim/nerdtree'
 Plug 'tpope/vim-surround'
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'othree/eregex.vim'
 
 " Settings of both plugins can be found in 'mundo.vim'
 if has('python3')
@@ -13,8 +12,9 @@ else
   Plug 'mbbill/undotree'
 endif
 
-" --> Extra plugins that one may find useful
+" --> Extra plugins that one might find useful
 " Plug 'lervag/vimtex'
+" Plug 'othree/eregex.vim'
 " Plug 'jpalardy/vim-slime', { 'for': 'python' }
 " Plug 'hanschen/vim-ipython-cell', { 'for': 'python' }
 " Plug 'iamcco/markdown-preview.nvim',
@@ -35,7 +35,6 @@ call plug#end()
 source $XDG_CONFIG_HOME/nvim/conf/mappings.vim
 source $XDG_CONFIG_HOME/nvim/conf/appearance.vim
 source $XDG_CONFIG_HOME/nvim/conf/functionality.vim
-source $XDG_CONFIG_HOME/nvim/conf/regex.vim
 
 " --> Core plugin settings
 source $XDG_CONFIG_HOME/nvim/conf/nerdtree.vim
@@ -44,8 +43,9 @@ source $XDG_CONFIG_HOME/nvim/conf/ctrlp.vim
 
 " --> Settings of the plugins commented out above
 " source $XDG_CONFIG_HOME/nvim/conf/md-preview.vim
-" source $XDG_CONFIG_HOME/nvim/conf/ipython.vim
 " source $XDG_CONFIG_HOME/nvim/conf/slime.vim
+" source $XDG_CONFIG_HOME/nvim/conf/ipython.vim
+" source $XDG_CONFIG_HOME/nvim/conf/regex.vim
 " source $XDG_CONFIG_HOME/nvim/conf/tex.vim
 
 "" The same choice as above.

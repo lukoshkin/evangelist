@@ -187,4 +187,4 @@ setopt extendedglob
 # EVANGELIST COMPLETIONS (ZSH)
 # ----------------------------
 fpath+=( "$EVANGELIST/completions" )
-compdef evn=evangelist
+compinit

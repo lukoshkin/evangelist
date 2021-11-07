@@ -10,15 +10,16 @@ up_hierarchy_search() {
   local found
   _up_hierarchy_search () {
     [[ $1 = / ]] && return 1
-    # 'ls $1/$2' is simpler but doesn't fit zsh
+    # 'ls $1/$2' is simpler but doesn't fit zsh.
+    # (by default, zsh prints an error msg to stdout on a failed globbing).
     found=$(find $1 -maxdepth 1 -type f -name $2)
 
     if [[ -z $found ]]; then
-      _up_hierarchy_search $(dirname $1) $2
+      _up_hierarchy_search "$(dirname $1)" $2
     fi
   }
 
-  _up_hierarchy_search $(realpath $1) $2
+  _up_hierarchy_search "$(realpath $1)" $2
   echo $found
 }
 

@@ -87,6 +87,10 @@ in `evangelist/anacron` folder
 Note, if you are a user of a different OS, you will have to set up 'auto-purge' of the undodir manually.  
 To get more information about what arguments `anacron.sh` takes, type `./anacron.sh`.
 
+Also, check the `develop` branch for recent updates. If there are any,
+you may want to incorporate them by typing `git checkout develop` before
+going to the step 2.
+
 
 ### Docker
 
@@ -156,7 +160,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.2.4 (!)
+Patch 1.2.5 (!)
 
 <details>
 <summary><b>Shell</b></summary>

@@ -1,8 +1,8 @@
 ## With `setopt complete_aliases` in zsh, both `evn` and `evangelist`
 ## aliases can be completed with Tab. However, it is hardly possible
 ## to complete aliases not connected to any function in bash. Therefore,
-## we define `evangelist` as a function (in zsh this is also valid
-## after adding `compdef evn=evangelist`).
+## we define `evangelist` as a function and `evn` as an alias to it.
+## (in zsh this is also valid after adding `compdef evn=evangelist`).
 evangelist () {
   "$EVANGELIST"/evangelist.sh $@
 }
@@ -53,7 +53,7 @@ gg () {
 ## Some other functions that might be useful.
 md () {
   mkdir -p $@
-  [[ $# -gt 1 ]] && exit
+  [[ $# -gt 1 ]] && return 1
   cd $1
 }
 
@@ -108,7 +108,7 @@ tree () {
 
 
 swap () {
-  [[ -z $1 || -z $2 ]] && { echo 'Requires src and dest'; exit 1; }
+  [[ -z $1 || -z $2 ]] && { echo 'Requires src and dest'; return 1; }
 
   cp -R $1 /tmp/$1.bak \
     && rm -rf $1 \
@@ -117,7 +117,7 @@ swap () {
 }
 
 
-(grep -q '^n?vim' "$EVANGELIST"/.update-list \
+(grep -qE '^n?vim' "$EVANGELIST"/.update-list \
   && grep -q '^Plug .*vim-slime' "$XDG_CONFIG_HOME"/nvim/init.vim) \
-  && source "$EVANGELIST"/conf/tmux/templates.sh || :
+  && source "$EVANGELIST"/conf/tmux/templates.sh
 

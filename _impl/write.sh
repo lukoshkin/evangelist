@@ -76,11 +76,11 @@ write::dynamic_imports () {
     if [[ $1 =~ zsh ]]
     then
       echo '[[ -f "$EVANGELIST/custom/custom.zsh" ]] \' >> $1
-      echo '  && source "$EVANGELIST/custom/custom.zsh"' >> $1
+      echo '  && source "$EVANGELIST/custom/custom.zsh" || :' >> $1
     elif [[ $1 =~ bash ]]
     then
       echo '[[ -f "$EVANGELIST/custom/custom.bash" ]] \' >> $1
-      echo '  && source "$EVANGELIST/custom/custom.bash"' >> $1
+      echo '  && source "$EVANGELIST/custom/custom.bash" || :' >> $1
     fi
   fi
 }
@@ -265,6 +265,28 @@ write::modulecheck () {
     echo -e "  $p"
   done
   echo
+}
+
+write::how_to_install_conda () {
+  link=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+
+  if [[ $(uname) != Linux ]]
+  then
+    link='https://repo.anaconda.com/miniconda/<find-propper-link>'
+  fi
+
+  echo -e '\nTo install conda, you can copy-paste the following snippet:'
+
+  cmd=( "\n\n\tcurl -o miniconda.sh $link\n" )
+  cmd+=( '\tbash miniconda.sh -b -p "$HOME"/miniconda\n' )
+  cmd+=( '\t"$HOME"/miniconda/bin/conda init'" ${SHELL##*/}\n" )
+  cmd+=( "\texec ${SHELL##*/}\n\n" )
+  echo -e ${BOLD}${WHITE}${cmd[@]}${RESET}
+
+  echo If one has wget installed instead of curl or prefer
+  printf "using one over the other, substitute ${BOLD}${WHITE}curl -o$RESET"
+  printf " with ${BOLD}${WHITE}wget -O$RESET\n"
+  echo leaving the remaining code unchanged.
 }
 
 
