@@ -52,9 +52,9 @@ gg () {
 
 ## Some other functions that might be useful.
 md () {
-  mkdir -p $@
+  mkdir -p "$@"
   [[ $# -gt 1 ]] && return 1
-  cd $1
+  cd "$1"
 }
 
 

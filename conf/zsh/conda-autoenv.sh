@@ -7,51 +7,61 @@ up_hierarchy_search() {
     return 1
   fi
 
-  local found
+  local found max_recursion_depth=100
+  ## max_recursion_depth is for safety measures
+
   _up_hierarchy_search () {
     [[ $1 = / ]] && return 1
-    # 'ls $1/$2' is simpler but doesn't fit zsh.
+    # 'ls $1/$2' is simpler but doesn't fit zsh
     # (by default, zsh prints an error msg to stdout on a failed globbing).
-    found=$(find $1 -maxdepth 1 -type f -name $2)
+    found=$(find "$1" -maxdepth 1 -type f -name "$2")
 
-    if [[ -z $found ]]; then
-      _up_hierarchy_search "$(dirname $1)" $2
+    if [[ -z $found && $max_recursion_depth -gt 0 ]]
+    then
+      (( max_recursion_depth-- ))
+      _up_hierarchy_search "$(dirname "$1")" "$2"
     fi
   }
 
-  _up_hierarchy_search "$(realpath $1)" $2
-  echo $found
+  local parent
+  ## Solve this via env variable -
+  ## Too slow to check conditions every time.
+  parent=$(realpath "$1" 2> /dev/null)
+  [[ $? -ne 0 ]] && local parent=$(readlink -f "$1" &> /dev/null) || :
+  [[ $? -ne 0 ]] && return
+
+  _up_hierarchy_search "$parent" "$2"
+  echo "$found"
 }
 
 
 _conda_autoenv_zsh() {
   first_elem_id=${1:-1}
-  local -a lsout=( $(up_hierarchy_search $PWD '.autoenv-evn.*') )
+  local -a found=( "$(up_hierarchy_search "$PWD" '.autoenv-evn.*')" )
 
-  if [[ ${#lsout[@]} -eq 0 ]]
+  if [[ -z ${found[@]} ]]
   then
-    # Note: [[ "$any_var" =~ "" ]] always evaluates to 'true'
-    ! [[ "$PWD" =~ "$CONDA_AUTOENV" ]] \
-      && CONDA_AUTOENV= && conda activate base
+    conda activate base
     return 0
   fi
 
-  if [[ ${#lsout[@]} -gt 1 ]]
+  if [[ $(echo "${found[@]}" | wc -l) -gt 1 ]]
   then
-    echo There are several autoenv-files found: ${lsout[@]}
+    echo There are several autoenv-files found:
+    echo "${found[@]}"
+    echo
     echo Note, the autoenv-script tries to activate only the environment
     echo 'corresponding to the first autoenv-file listed by `ls`.'
     echo Please, keep only one '.autoenv-evn.*'
     echo
   fi
 
-  local file=${lsout[$first_elem_id]} ENV
+  local file="${found[$first_elem_id]}" ENV
   ENV=${file##*.}
 
   # Check if you are already in the environment.
   # (conda modifies $PATH every time the environment changes.)
-  # CONDA_AUTOENV prevents 'base` from getting deactivated.
-  ! [[ $PATH =~ $ENV ]] && conda activate $ENV && CONDA_AUTOENV="$PWD"
+  ! [[ $PATH =~ $ENV ]] && conda activate $ENV
 }
 
 
@@ -76,14 +86,12 @@ mkenv () {
     ( (conda env list | grep -q "^$ENV") \
       || conda env create -q -f environment.yml ) \
         && conda activate $ENV \
-        && CONDA_AUTOENV=$ENV \
         && touch .autoenv-evn.$ENV
 
   elif [[ $CONDA_DEFAULT_ENV != base ]]
   then
-    CONDA_AUTOENV=$CONDA_DEFAULT_ENV
     { rm -rf .autoenv-evn.*; } 2> /dev/null
-    touch .autoenv-evn.$CONDA_AUTOENV
+    touch .autoenv-evn.$CONDA_DEFAULT_ENV
   fi
 }
 

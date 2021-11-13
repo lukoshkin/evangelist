@@ -93,11 +93,23 @@ _autopushd () {
   esac
 
   local CNT=0
-  for DIR in $(dirs -l)
+  local ifs_bak=$IFS
+  IFS=$'\n'
+
+  for DIR in $(dirs -p)
   do
+    # `dirs -p` prints dir stack with one entry per line.
+    # `dirs -l` prints longer listing substituting tilde with the home dir.
+    # the latter option seems more suitable in for-loop but we can't use it
+    # with dir names containing a space. Instead, we go with `dirs -p`,
+    # change IFS (with a backup), and substitute tilde manually.
+
+    DIR=${DIR//'~'/$HOME}
+    INDIR=${INDIR//'~'/$HOME}
     [[ $(readlink -f $DIR) = $(readlink -f $INDIR) ]] && break
     (( CNT++ ))
   done
+  IFS=$ifs_bak
 
   if [[ $CNT -lt $(dirs -p | wc -l) ]]
   then
@@ -105,7 +117,7 @@ _autopushd () {
     return
   fi
 
-  pushd $INDIR > /dev/null
+  pushd "$INDIR" > /dev/null
 }
 
 ## Enforce the use of Neovim.
