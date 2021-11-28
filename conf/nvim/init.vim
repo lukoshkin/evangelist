@@ -2,7 +2,6 @@ call plug#begin()
 
 " --> Core plugins
 Plug 'preservim/nerdtree'
-Plug 'tpope/vim-surround'
 Plug 'ctrlpvim/ctrlp.vim'
 
 " Settings of both plugins can be found in 'mundo.vim'
@@ -15,13 +14,17 @@ endif
 " --> Extra plugins that one might find useful
 " Plug 'lervag/vimtex'
 " Plug 'othree/eregex.vim'
-" Plug 'jpalardy/vim-slime', { 'for': 'python' }
-" Plug 'hanschen/vim-ipython-cell', { 'for': 'python' }
+" Plug 'tpope/vim-surround'
 " Plug 'iamcco/markdown-preview.nvim',
 "       \ { 'do': { -> mkdp#util#install() },
 "       \ 'for': ['markdown', 'vim-plug']}
 
-"" Use either CoC or YCM.
+"" Towards IDE
+" Plug 'jpalardy/vim-slime', { 'for': 'python' }
+" Plug 'hanschen/vim-ipython-cell', { 'for': 'python' }
+" Plug 'puremourning/vimspector'
+
+"" Use either CoC or YCM (!)
 " Plug 'neoclide/coc.nvim', {'branch': 'release'}
 " Plug 'ycm-core/YouCompleteMe',
 "       \ { 'do': 'python3 ./install.py
@@ -31,26 +34,28 @@ call plug#end()
 
 
 
-" --> General Vim settings
+"" --> General Vim settings
 source $XDG_CONFIG_HOME/nvim/conf/mappings.vim
 source $XDG_CONFIG_HOME/nvim/conf/appearance.vim
 source $XDG_CONFIG_HOME/nvim/conf/functionality.vim
 
-" --> Core plugin settings
+"" --> Core plugin settings
 source $XDG_CONFIG_HOME/nvim/conf/nerdtree.vim
 source $XDG_CONFIG_HOME/nvim/conf/mundo.vim
 source $XDG_CONFIG_HOME/nvim/conf/ctrlp.vim
 
-" --> Settings of the plugins commented out above
+"" --> Settings of the plugins commented out above
+" source $XDG_CONFIG_HOME/nvim/conf/tex.vim
+" source $XDG_CONFIG_HOME/nvim/conf/regex.vim
 " source $XDG_CONFIG_HOME/nvim/conf/md-preview.vim
+
 " source $XDG_CONFIG_HOME/nvim/conf/slime.vim
 " source $XDG_CONFIG_HOME/nvim/conf/ipython.vim
-" source $XDG_CONFIG_HOME/nvim/conf/regex.vim
-" source $XDG_CONFIG_HOME/nvim/conf/tex.vim
+" source $XDG_CONFIG_HOME/nvim/conf/vimspector.vim
 
 "" The same choice as above.
-" source $XDG_CONFIG_HOME/nvim/conf/ycm.vim
 " source $XDG_CONFIG_HOME/nvim/conf/coc.vim
+" source $XDG_CONFIG_HOME/nvim/conf/ycm.vim
 
 
 " Import user-defined settings

@@ -1,3 +1,15 @@
+## Setting search path for `cd` command properly.
+if ! [[ $CDPATH =~ ':?\.:' ]]
+then
+  [[ -z $CDPATH ]] && CDPATH=. || CDPATH=.:$CDPATH
+fi
+
+if ! [[ $CDPATH =~ ~ ]]
+then
+  CDPATH=$CDPATH:~
+fi
+
+
 ## With `setopt complete_aliases` in zsh, both `evn` and `evangelist`
 ## aliases can be completed with Tab. However, it is hardly possible
 ## to complete aliases not connected to any function in bash. Therefore,
@@ -16,6 +28,7 @@ alias lt='ls -lAht'
 alias fd='find . -type d -name'
 alias ff='find . -type f -name'
 alias grep='grep --color'
+alias rexgrep="grep -r --exclude-dir='.?*'"
 
 ## Open the last file closed:
 # alias v="vim +'e #<1'"

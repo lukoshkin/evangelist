@@ -1,0 +1,21 @@
+{
+  "configurations": {
+    "Python - Launch": {
+      "adapter": "debugpy",
+      "filetypes": [ "python" ],
+      "default": true,
+      "configuration": {
+        "request": "launch",
+        "program": "${file}",
+        "stopOnEntry": true,
+        "cwd": "${workspaceRoot}"
+      },
+      "breakpoints": {
+        "exception": {
+          "raised": "",
+          "uncaught": ""
+        }
+      }
+    }
+  }
+}

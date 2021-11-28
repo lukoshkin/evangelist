@@ -8,7 +8,7 @@ highlight ColorColumn ctermbg=darkgray
 
 " Highlighting for the current line
 set cursorline
-hi CursorLine cterm=bold ctermbg=238
+highlight CursorLine cterm=bold ctermbg=238
 
 " Better numbering
 set number relativenumber
@@ -46,3 +46,16 @@ set incsearch
 if has('nvim')
   set inccommand=nosplit
 endif
+
+
+" Trailing whitespace highlighting
+highlight ExtraWhitespace ctermbg=red guibg=red
+au! FileType markdown hi ExtraWhitespace ctermbg=brown guibg=brown
+
+" Pattern matching for au is different:
+" to exclude buffer names with leading underscores, we put
+" 'negative lookbehind' after the star expression.
+au! BufWinEnter *\(_\)\@<! match ExtraWhitespace /\s\+$/
+au! InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+au! InsertLeave * match ExtraWhitespace /\s\+$/
+au! BufWinLeave *\(_\)\@<! call clearmatches()

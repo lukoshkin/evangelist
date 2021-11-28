@@ -49,7 +49,7 @@ nmap <leader>t i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>
 
 " Press Space two times to turn off highlighting
 " and clear any message already displayed.
-nnoremap <silent><Space><Space> :nohlsearch <bar> echo<CR>
+nnoremap <silent><Space><Space> :nohlsearch <Bar> echo<CR>
 
 " Change the bg's transparency with terminal/tmux mappings <Alt-+> and <Alt-->
 noremap <silent><A-+> :silent !transset -a --inc .02<CR>
@@ -66,4 +66,12 @@ command! -range=% Trim <line1>,<line2>s/\s\+$//e | :nohlsearch
 vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>
 
 " Toggle line numbering
-nnoremap <silent><leader>nu :set invnu invrnu <bar> silent! ToggleDiag<CR>
+nnoremap <silent><leader>nu :set invnu invrnu <Bar> silent! ToggleDiag<CR>
+
+" Break a line at the next space or at the char you searched with `f<char>`.
+" In visual selection, it is applied to all spanned lines.
+nnoremap <Space>b<Space> f<Space>r<CR>
+nnoremap <Space>bb ;li<CR><Esc>
+
+xnoremap <Space>b<Space> :s/ /\r/g<CR>
+xnoremap <Space>bb :s//\0\r/g<CR>

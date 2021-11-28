@@ -1,12 +1,15 @@
-" Provides tab-completion for all file-related tasks
+" Provide tab-completion for all file-related tasks.
 set path+=**
 
-
-" Display all matching files when tab complete
+" Display all matching files when tab complete.
 set wildmenu
 
-" Buffer updates instead of updating all the time
+" Buffer updates instead of updating all the time.
 set lazyredraw
+
+" Switch to another buffer even if the current one is modified.
+" set hidden
+
 
 " Mouse support
 if !has('nvim')

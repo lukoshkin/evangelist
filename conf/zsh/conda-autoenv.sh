@@ -59,9 +59,7 @@ _conda_autoenv_zsh() {
   local file="${found[$first_elem_id]}" ENV
   ENV=${file##*.}
 
-  # Check if you are already in the environment.
-  # (conda modifies $PATH every time the environment changes.)
-  ! [[ $PATH =~ $ENV ]] && conda activate $ENV
+  ! [[ $CONDA_DEFAULT_ENV =~ $ENV ]] && conda activate $ENV
 }
 
 

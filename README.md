@@ -160,7 +160,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.2.5 (!)
+Patch 1.2.7 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -200,6 +200,7 @@ Patch 1.2.5 (!)
   | `gg n` | go to n-th directory in the list obtained with `d` <br> &emsp;&emsp;&emsp;&emsp;&emsp; (starting from 0) |
   | `gg -n` | remove n-th directory from the dir stack |
   | `swap` | swap names of two targets |
+  | `rexgrep <str>` | is equivalent to `grep -r --exclude-dir='.?*' <str>`, <br> which excludes hidden directories from recursive search |
   | `(bash\|zsh\|vim)rc`\* | edit user-defined settings for the specified target |
   | `_(bash\|zsh\|vim)rc` | open main config file for the specified target |
   | `evn\|evangelist` | alias for evangelist.sh executable script |
@@ -224,6 +225,10 @@ Patch 1.2.5 (!)
   | visual | `<leader>y` | yank selected text |
   | normal | `<leader>t` | paste date and time before the cursor |
   | normal | `<leader>nu` | toggle line numbering |
+  | normal | `<Space>b<Space>` | split line at the next space after the cursor position |
+  | visual | `<Space>b<Space>` | split the entire line at spaces |
+  | normal | `<Space>bb` | split line at the next char you previously searched with `f` |
+  | visual | `<Space>bb` | split the entire line at a separator you searched with `/` |
   | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss a message in the cmd line below |
   | normal | `<M-(h\|j\|k\|l)>` | insert an empty line or space in the direction <br> which a movement key specifies |
   | command | Trim | remove all trailing spaces in the file |
@@ -295,6 +300,7 @@ Check the rest settings with `<F1>` or `H` (`<Shift-h>`) while running Jupyter s
 | `<C-b> + (h\|j\|k\|l)` | go to the window (on the left \| below \| above \| on the right) |
 | `<M-S-(h\|j\|k\|l)>` | resize pane moving the border (to the left \| down \| up \| to the right) |
 | `<C-b> + (H\|J\|K\|L)` | swap the window that has input focus with <br> the one (on the left \| below \| above \| on the right) |
+| `<C-b>Q` | close vim buffers (saving them first if modified) and terminate tmux session |
 | `<C-b>y` | toggle synchronous input in all panes |
 | `<C-b>m` | toggle mouse support |
 
