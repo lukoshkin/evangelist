@@ -8,6 +8,9 @@ set wildmenu
 set lazyredraw
 
 " Switch to another buffer even if the current one is modified.
+" (Can lead to closing of hidden buffers without saving if using
+"  such exit options like `<prefix>-Q` in Tmux. Likely, a swap file
+"  will be created in this case, so no data will be lost.)
 " set hidden
 
 

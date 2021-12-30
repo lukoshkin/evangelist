@@ -81,6 +81,7 @@ install::vim_settings () {
       VIM=nvim
       VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
       utils::back_up_original_configs $VIM d:"$XDG_CONFIG_HOME/nvim"
+      grep -q '^vim' .update-list && sed -i '/^vim/d' .update-list
       ;;&
 
     *)

@@ -28,11 +28,20 @@ alias lt='ls -lAht'
 alias fd='find . -type d -name'
 alias ff='find . -type f -name'
 alias grep='grep --color'
-alias rexgrep="grep -r --exclude-dir='.?*'"
+alias rexgrep="grep -rIn --exclude-dir='.?*'"
 
 ## Open the last file closed:
 # alias v="vim +'e #<1'"
-alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
+# alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
+v () {
+  if [[ $# -gt 0 ]]; then
+    vim "$@"
+    return
+  fi
+
+  vim +'execute "normal \<C-P>\<Enter>"'
+}
+
 type nvim &> /dev/null \
   && alias vv="vim +'browse filter !/__\|NERD_tree\|ControlP/ oldfiles'"
 
@@ -127,6 +136,11 @@ swap () {
     && rm -rf $1 \
     && mv $2 $1 \
     && mv /tmp/$1.bak $2
+}
+
+
+vrmswp () {
+  rm $XDG_DATA_HOME/nvim/swap/*$1*
 }
 
 

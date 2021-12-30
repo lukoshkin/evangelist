@@ -79,6 +79,7 @@ mkenv () {
   if [[ -f environment.yml ]]
   then
     local ENV
+    echo "Found 'environment.yml'. Creating env from it.."
     ENV=$(head -n 1 environment.yml | cut -d ' ' -f2)
     { rm -rf .autoenv-evn.*; } 2> /dev/null
     ( (conda env list | grep -q "^$ENV") \

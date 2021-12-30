@@ -4,7 +4,9 @@
 vip () {
   type vim &> /dev/null || { echo Neovim/Vim not found.; return 1; }
   type ipython &> /dev/null || { echo Ipython not found.; return 1; }
+
   [[ -z $1 ]] && cmd='v' || cmd="vim $1"
+  [[ -n $TMUX ]] && { eval "$cmd"; return; }
 
   uuid="$(uuidgen)"
   tmux new -d -s "$uuid"

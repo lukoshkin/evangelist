@@ -36,13 +36,15 @@ HISTFILE="$XDG_DATA_HOME/zsh_history"
 HISTSIZE=100000
 SAVEHIST=$HISTSIZE
 
-source "$ZDOTDIR/extra.zsh"
-source "$EVANGELIST/conf/bash/aliases-functions.sh"
-
 ## Enforce the use of Neovim.
 if which nvim &> /dev/null
 then
   alias vim=nvim
   alias vimdiff='nvim -d'
 fi
+
+## vim-alias is used in aliases-functions.sh, so
+## the imports should go after it.
+source "$ZDOTDIR/extra.zsh"
+source "$EVANGELIST/conf/bash/aliases-functions.sh"
 

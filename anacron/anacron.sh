@@ -17,7 +17,6 @@ main () {
 
   delay=15
   jobid='purgeVimUndo'
-  cmd='/bin/sh '
 
   if [[ $1 = old ]]
   then
@@ -27,11 +26,12 @@ main () {
       @monthly) days=30 ;;
       *) days=$period ;;
     esac
-    cmd+="find $XDG_DATA_HOME/nvim/site/undo -type f -mtime +$days -delete"
+    cmd="find $XDG_DATA_HOME/nvim/site/undo -type f -mtime +$days -delete"
   elif [[ $1 = dead ]]
   then
-    # FIXME: relative path to $jobid.sh script
-    cp $jobid.sh $XDG_DATA_HOME/nvim/site/ \
+    cmd='/bin/sh '
+    parent=$(dirname ${BASH_SOURCE:-$0})
+    cp $parent/$jobid.sh $XDG_DATA_HOME/nvim/site/ \
       || { echo "Check that 'evangelist' is installed"; exit; }
     cmd+="$XDG_DATA_HOME/nvim/site/$jobid.sh $XDG_DATA_HOME/nvim/site/undo"
   else

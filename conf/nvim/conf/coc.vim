@@ -1,3 +1,10 @@
+let g:coc_global_extensions = [
+      \ 'coc-sh',
+      \ 'coc-json',
+      \ 'coc-pyright',
+      \ 'coc-vimlsp',
+      \ 'coc-clangd' ]
+
 " Make linting popups readable in the colorscheme used by evangelist
 hi! CocErrorSign guifg=#6D0604
 hi! CocWarningSign guifg=#D1CD66
@@ -63,8 +70,9 @@ nmap <silent> [g <Plug>(coc-diagnostic-prev)
 nmap <silent> ]g <Plug>(coc-diagnostic-next)
 
 " GoTo code navigation.
+" Note 'gt' is mapped to 'go to the next tab page' in Vim defaults.
 nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gt <Plug>(coc-type-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 

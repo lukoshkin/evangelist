@@ -75,8 +75,7 @@ chosen in the previous step). For help, run `./evangelist.sh checkhealth`
 <br>
 
 Since Vim keeps all changes made to files with its help, on Linux, one might consider
-adding anacron job (or its equivalent on macOS) by running the following command
-in `evangelist/anacron` folder
+adding anacron job (or its equivalent on macOS) by running `anacron/anacron.sh` script.
 
 * to remove old undofiles  
 `./anacron.sh old @monthly`
