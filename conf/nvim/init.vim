@@ -1,64 +1,36 @@
-call plug#begin()
-
-" --> Core plugins
-Plug 'preservim/nerdtree'
-Plug 'ctrlpvim/ctrlp.vim'
-
-" Settings of both plugins can be found in 'mundo.vim'
-if has('python3')
-  Plug 'simnalamburt/vim-mundo'
-else
-  Plug 'mbbill/undotree'
-endif
-
-" --> Extra plugins that one might find useful
-" Plug 'lervag/vimtex'
-" Plug 'othree/eregex.vim'
-" Plug 'tpope/vim-surround'
-" Plug 'iamcco/markdown-preview.nvim',
-"       \ { 'do': { -> mkdp#util#install() },
-"       \ 'for': ['markdown', 'vim-plug']}
-
-"" Towards IDE
-" Plug 'jpalardy/vim-slime', { 'for': 'python' }
-" Plug 'hanschen/vim-ipython-cell', { 'for': 'python' }
-" Plug 'puremourning/vimspector'
-
-"" Use either CoC or YCM (!)
-" Plug 'neoclide/coc.nvim', {'branch': 'release'}
-" Plug 'ycm-core/YouCompleteMe',
-"       \ { 'do': 'python3 ./install.py
-"       \ --clangd-completer --rust-completer' }
-
-call plug#end()
-
-
-
-"" --> General Vim settings
+"" General Vim settings
 source $XDG_CONFIG_HOME/nvim/conf/mappings.vim
 source $XDG_CONFIG_HOME/nvim/conf/appearance.vim
 source $XDG_CONFIG_HOME/nvim/conf/functionality.vim
 
-"" --> Core plugin settings
-source $XDG_CONFIG_HOME/nvim/conf/nerdtree.vim
-source $XDG_CONFIG_HOME/nvim/conf/mundo.vim
-source $XDG_CONFIG_HOME/nvim/conf/ctrlp.vim
 
-"" --> Settings of the plugins commented out above
+call plug#begin()
+
+"" Core plugins
+source $XDG_CONFIG_HOME/nvim/conf/nerdtree.vim
+source $XDG_CONFIG_HOME/nvim/conf/ctrlp.vim
+source $XDG_CONFIG_HOME/nvim/conf/mundo.vim
+
+"" Extra plugins that one might find useful
 " source $XDG_CONFIG_HOME/nvim/conf/tex.vim
 " source $XDG_CONFIG_HOME/nvim/conf/regex.vim
 " source $XDG_CONFIG_HOME/nvim/conf/md-preview.vim
+" Plug 'tpope/vim-surround'
 
+"" 'Towards IDE' plugins
 " source $XDG_CONFIG_HOME/nvim/conf/slime.vim
 " source $XDG_CONFIG_HOME/nvim/conf/ipython.vim
 " source $XDG_CONFIG_HOME/nvim/conf/vimspector.vim
+" Plug 'tpope/vim-commentary'
 
-"" The same choice as above.
+"" Use either CoC or YCM (!)
 " source $XDG_CONFIG_HOME/nvim/conf/coc.vim
 " source $XDG_CONFIG_HOME/nvim/conf/ycm.vim
 
-
-" Import user-defined settings
+"" Import user-defined settings
+"" (including plugins of their preferences)
 if filereadable($EVANGELIST."/custom/custom.vim")
   source $EVANGELIST/custom/custom.vim
 endif
+
+call plug#end()

@@ -1,4 +1,4 @@
-# PLUGINS
+## PLUGINS
 ## The sourcing below might fail for IDEs.
 ## If this is the case, you will need to expand $ZPLUG_HOME variable.
 source "$ZPLUG_HOME/init.zsh"
@@ -9,7 +9,7 @@ zplug 'zsh-users/zsh-history-substring-search', defer:3
 zplug 'zplug/zplug', hook-build:'zplug --self-manage'
 zplug 'zsh-users/zsh-completions', depth:1
 
-# and THEME
+## and THEME
 ## If you don't face any bugs,
 ## (particularly the one related to resizing terminal window)
 ## powerlevel10k is a good choice.
@@ -27,7 +27,7 @@ fi
 
 zplug load
 
-# OTHER SETTINGS
+## OTHER SETTINGS
 ## No need to export the following variables, since
 ## - unlikely you will use them in your scripts
 ## - a different shell (spawned as child process)

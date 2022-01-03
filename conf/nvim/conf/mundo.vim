@@ -1,12 +1,18 @@
 if has('python3')
+  Plug 'simnalamburt/vim-mundo'
+else
+  Plug 'mbbill/undotree'
+endif
+
+if has('python3')
   nnoremap <leader>u :MundoToggle<CR>
 else
-  " written in pure Vimscript
+  "" written in pure Vimscript
   nnoremap <leader>u :UndotreeToggle<CR>
 endif
 
-" Undo history is persistent across different vim sessions.
+"" Undo history is persistent across different vim sessions.
 set undofile
 set undodir=$XDG_DATA_HOME/nvim/site/undo
-" NOTE: One can also set up auto removal of
-"       old undo files with cron or anacron
+"" NOTE: One can also set up auto removal of
+""       old undo files with cron or anacron

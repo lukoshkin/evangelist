@@ -12,8 +12,8 @@ up_hierarchy_search() {
 
   _up_hierarchy_search () {
     [[ $1 = / ]] && return 1
-    # 'ls $1/$2' is simpler but doesn't fit zsh
-    # (by default, zsh prints an error msg to stdout on a failed globbing).
+    ## 'ls $1/$2' is simpler but doesn't fit zsh
+    ## (by default, zsh prints an error msg to stdout on a failed globbing).
     found=$(find "$1" -maxdepth 1 -type f -name "$2")
 
     if [[ -z $found && $max_recursion_depth -gt 0 ]]
@@ -98,20 +98,20 @@ mkenv () {
 
 if [[ ${HISTFILE##*/} =~ zsh ]]
 then
-  # 'chpwd' hook fires when the directory is changed.
+  ## 'chpwd' hook fires when the directory is changed.
   autoload -U add-zsh-hook
   add-zsh-hook chpwd _conda_autoenv_zsh
-  # Run when starting a new shell instance.
+  ## Run when starting a new shell instance.
   _conda_autoenv_zsh
 elif [[ ${HISTFILE##*/} =~ bash ]]
 then
-  # PROMPT_COMMAND contents is executed before each prompt.
-  # However, we want to be able to run `conda deactivate` in a directory
-  # with .autoenv-evn.* file. To this end, we use PREV_WORK_DIR variable
-  # to run the _conda_autoenv_zsh only when the directory is changed.
+  ## PROMPT_COMMAND contents is executed before each prompt.
+  ## However, we want to be able to run `conda deactivate` in a directory
+  ## with .autoenv-evn.* file. To this end, we use PREV_WORK_DIR variable
+  ## to run the _conda_autoenv_zsh only when the directory is changed.
 
-  # To call _conda_autoenv_zsh on the shell startup, we initialize
-  # PREV_WORK_DIR with non-existent path
+  ## To call _conda_autoenv_zsh on the shell startup, we initialize
+  ## PREV_WORK_DIR with non-existent path
   PREV_WORK_DIR=/-/
   PROMPT_COMMAND="_conda_autoenv_bash; $PROMPT_COMMAND"
 fi

@@ -22,7 +22,7 @@ v: ''
 "gg": beginning-of-history
 "G": end-of-history
 
-# bash >= 4.3
+## bash >= 4.3
 set show-mode-in-prompt on
 set vi-ins-mode-string "+"
 set vi-cmd-mode-string ":"

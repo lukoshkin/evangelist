@@ -1,3 +1,12 @@
+"" NOTE: in settings, we distinguish between comments and commented out code
+""       sections. Comments that raise an error if uncommented (i.e., are
+""       not lines of code) should be started with two comment chars.
+""       This rule does not apply here, though. Since most of the comments
+""       are not mine.
+Plug 'iamcco/markdown-preview.nvim',
+      \ { 'do': { -> mkdp#util#install() },
+      \ 'for': ['markdown', 'vim-plug']}
+
 " set to 1, nvim will open the preview window after entering the markdown buffer
 " default: 0
 let g:mkdp_auto_start = 0
@@ -83,7 +92,7 @@ let g:mkdp_port = ''
 
 " preview page title
 " ${name} will be replace with the file name
-let g:mkdp_page_title = '「${name}」'
+let g:mkdp_page_title = '${name}'
 
 " Open and close with the following mapping
 nmap <leader>md <Plug>MarkdownPreviewToggle

@@ -86,7 +86,7 @@ dtree () {
 
   timeout $w8 find . ! -path '*/\.*' -type d &> /dev/null
 
-  # 124 - command timed out
+  ## 124 - command timed out
   if [[ $? -eq 124 ]]
   then
     echo 'Try to run it in one of subfolders.'
@@ -109,22 +109,22 @@ tree () {
   local hierarchy
 
   [[ -n $1 ]] && w8=$1 || w8=.1
-  # 'script' preserves output colors (one of its assets)
-  #  Since script saves the output to a file, /dev/null is used to discard it
+  ## 'script' preserves output colors (one of its assets)
+  ##  Since script saves the output to a file, /dev/null is used to discard it
 
-  # -e - return exit code of the child process
-  # -q - don't write start-end timestamps
-  # -c - command to execute
+  ## -e - return exit code of the child process
+  ## -q - don't write start-end timestamps
+  ## -c - command to execute
   hierarchy=$(script -eqc "timeout --preserve-status $w8 tree" /dev/null)
 
-  # 143 - SIGTERM (process was killed by another one)
+  ## 143 - SIGTERM (process was killed by another one)
   if [[ $? -eq 143 ]]
   then
     echo 'Try to run it in one of subfolders.'
     return
   fi
 
-  # double quotes are required in bash
+  ## double quotes are required in bash
   echo "$hierarchy"
 }
 

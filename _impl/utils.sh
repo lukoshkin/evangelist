@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# This function should be called only once
-# within the body of an install::*_settings function
+## This function should be called only once
+## within the body of an install::*_settings function
 
-# NOTE: another option is to implement it as follows:
-# - in install.sh units, there might be several function calls
-# - there is also a mandatory call to it w/o args in control.sh
+## NOTE: another option is to implement it as follows:
+## - in install.sh units, there might be several function calls
+## - there is also a mandatory call to it w/o args in control.sh
 
-# That is,
-# in install.sh: back_up_original_configs f:file d:dir
-# in control.sh: back_up_original_configs
+## That is,
+## in install.sh: back_up_original_configs f:file d:dir
+## in control.sh: back_up_original_configs
 
-# Check out the commented code section below.
+## Check out the commented code section below.
 
 utils::back_up_original_configs () {
   if ! grep -q "^$1" .update-list
@@ -106,9 +106,9 @@ utils::dummy_v1_gt_v2 () {
 
 
 utils::resolve_vim_alternatives () {
-  # Note, this function is called when `HAS nvim && HAS vim` gives `true`.
-  # That means that the system might have both Vim and Neovim installed.
-  # But it is not necessarily the case.
+  ## Note, this function is called when `HAS nvim && HAS vim` gives `true`.
+  ## That means that the system might have both Vim and Neovim installed.
+  ## But it is not necessarily the case.
 
   local alternatives value hint reply
   if alternatives=$(update-alternatives --query vim 2> /dev/null)
@@ -123,15 +123,15 @@ utils::resolve_vim_alternatives () {
 
     if [[ $(grep -c 'Alternative:' <<< "$alternatives") -ge 2 ]]
     then
-      # `msg_G` and `shell_G` are local to `controll::install` function
-      #  but accessible from `utils::resolve_vim_alternatives`.
-      msg_G="sudo update-alternatives --set vim \$(which nvim)"
-      shell_G='--'
+      ## `MSG_` and `SHELL_` are local to `controll::install` function
+      ##  but accessible from `utils::resolve_vim_alternatives`.
+      MSG_="sudo update-alternatives --set vim \$(which nvim)"
+      SHELL_='--'
       return
     fi
   fi
 
-  # more aggressive way
+  ## more aggressive way
   case ${SHELL##*/} in
     bash) hint='~/.bashrc' ;;
     zsh) hint='$ZDOTDIR/.zshrc' ;;
@@ -139,13 +139,13 @@ utils::resolve_vim_alternatives () {
 
   read -p "Where to add an alias? [$hint]: " reply
   [[ -z "$reply" ]] && reply=$(eval echo $hint)
-  # The following lines also cover the case
-  # when it is not possible to set Vim's alternative.
+  ## The following lines also cover the case
+  ## when it is not possible to set Vim's alternative.
   echo -e '\nalias vim=nvim # added by EVANGELIST' >> "$reply"
   echo -e "alias vimdiff='nvim -d' # added by EVANGELIST" >> "$reply"
-  # ex (improved Ex mode) and view (read only mode):
+  ## ex (improved Ex mode) and view (read only mode):
   # echo -e "alias ex='nvim -E' # added by EVANGELIST" >> "$reply"
   # echo -e "alias view='nvim -R' # added by EVANGELIST" >> "$reply"
 
-  shell_G=${SHELL##*/}
+  SHELL_=${SHELL##*/}
 }

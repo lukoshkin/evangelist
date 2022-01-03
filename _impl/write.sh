@@ -5,15 +5,15 @@ GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)
 WHITE=$(tput setaf 15)
 
-# NOTE: tput bold text modifier doesn't affect
-# ####  colors defined not with tput.
+## NOTE: tput bold text modifier doesn't affect
+## ####  colors defined not with tput.
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
 
 
-########################
-# -----> MACROS -----> #
-########################
+##########################
+## -----> MACROS -----> ##
+##########################
 
 ECHO () {
   local RAIN=$(tput setaf 152)
@@ -32,18 +32,18 @@ ECHO2 () {
   >&2 echo -e "${BOLD}${SALMON}EVANGELIST:${RED}PROBLEM:$RESET ${BUFF}$@${RESET}"
 }
 
-# NOTE: stderr-pipe redirection (|&) doesn't work on old shells
+## NOTE: stderr-pipe redirection (|&) doesn't work on old shells
 HAS () {
   [[ $(type $@ 2>&1 | grep -c 'not found') -lt $# ]] && return 0
   return 1
 }
 
-########################
-# <----- MACROS <----- #
-########################
+##########################
+## <----- MACROS <----- ##
+##########################
 
 
-# Takes one argument - shell rc-file where to append imports
+## Takes one argument - shell rc-file where to append imports
 write::dynamic_imports () {
   grep -q '# Dynamic (on-install) imports' $1 \
     || echo -e '\n# Dynamic (on-install) imports' >> $1
@@ -85,16 +85,16 @@ write::dynamic_imports () {
   fi
 }
 
-# Takes one argument - shell for which to install settings: bash or zsh
+## Takes one argument - shell for which to install settings: bash or zsh
 write::instructions_after_install () {
   NOTE 210 '\nFURTHER INSTRUCTIONS:'
   printf 'TO FINISH THE INSTALLATION, '
 
-  if [[ -n $msg_G ]]
+  if [[ -n $MSG_ ]]
   then
     printf "SET VIM'S ALTERNATIVE TO USE, e.g.,\n"
     printf '(One can google other ways to do it w/o sudo)\n\n'
-    printf "\t${BOLD}${WHITE}$msg_G${RESET}\n\n"
+    printf "\t${BOLD}${WHITE}$MSG_${RESET}\n\n"
   fi
 
   [[ $1 == '--' ]] && return
@@ -123,18 +123,18 @@ write::instructions_after_install () {
   fi
 }
 
-# Operates on '.update-list' file
+## Operates on '.update-list' file
 write::instructions_after_removal () {
   local shell curr orig msg
   shell=$(grep 'LOGIN-SHELL' .update-list | cut -d ':' -f2)
 
   NOTE 210 '\nFURTHER INSTRUCTIONS:'
   printf 'TO FINISH THE REMOVAL, '
-  # `-n` is an unnecessary test under the current implementation. We always
-  # add info about the login shell on the creation of '.update-list'. Unlike
-  # Vim's alternative, a line about it is only added if `update-alternatives`
-  # is available on the OS. Still, it is good to have this extra sanity
-  # check here.
+  ## `-n` is an unnecessary test under the current implementation. We always
+  ## add info about the login shell on the creation of '.update-list'. Unlike
+  ## Vim's alternative, a line about it is only added if `update-alternatives`
+  ## is available on the OS. Still, it is good to have this extra sanity
+  ## check here.
 
   if [[ -n $shell && ${SHELL##*/} != $shell ]]
   then
@@ -152,9 +152,9 @@ write::instructions_after_removal () {
       printf "\n\n\t$msg\n\n"
     fi
 
-    # The following instruction is only needed
-    # when environment variables should be updated;
-    # but just in case, it is printed every time.
+    ## The following instruction is only needed
+    ## when environment variables should be updated;
+    ## but just in case, it is printed every time.
     printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.'
     printf "\n\n\t${BOLD}${WHITE}exec ${shell}${RESET}\n\n"
   fi
@@ -173,7 +173,7 @@ $2\\
   fi
 }
 
-# Takes one argument - shell for which to install settings: bash or zsh
+## Takes one argument - shell for which to install settings: bash or zsh
 write::file_header () {
   if [[ $1 =~ zsh ]]
   then
@@ -291,8 +291,8 @@ write::how_to_install_conda () {
 
 
 write::commit_messages () {
-  # 1 commit -> full message
-  # more than 1 -> only title
+  ## 1 commit -> full message
+  ## more than 1 -> only title
 
   local nrows format branch=$1
   nrows=$(git rev-list HEAD..origin/$branch | wc -l)

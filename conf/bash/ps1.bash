@@ -1,5 +1,5 @@
 
-# Customize cmd prompt
+## Customize cmd prompt
 GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)
 BLUE=$(tput setaf 4)

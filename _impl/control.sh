@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
+## Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
 
-# About coding style and 'local' in particular.
-# No use of `local` specifier if variable does not appear
-# in nested (internal) function calls, and the program finishes
-# after this routine. Though the way 'local' being used may seem
-# inconsistent in the project, it never leads to an error (I hope).
+## About coding style and 'local' in particular.
+## No use of `local` specifier if variable does not appear
+## in nested (internal) function calls, and the program finishes
+## after this routine. Though the way 'local' being used may seem
+## inconsistent in the project, it never leads to an error (I hope).
 
 control::version () {
   echo evangelist $(git describe --abbrev=0)
@@ -32,9 +32,9 @@ control::help () {
 
 control::checkhealth () {
   components=$(sed '1,/Installed/d' .update-list 2> /dev/null | tr '\n' ' ')
-  # sed: comma specifies the operating range, where endpoints are included
-  # and can be patterns. If called without args, sed prints the current
-  # buffer. One can use $ as the EOF marker.
+  ## sed: comma specifies the operating range, where endpoints are included
+  ## and can be patterns. If called without args, sed prints the current
+  ## buffer. One can use $ as the EOF marker.
 
   if [[ -n $components ]]
   then
@@ -43,22 +43,22 @@ control::checkhealth () {
     NOTE 147 'None of the listed configs is installed yet.'
   fi
 
-  # modulecheck's syntaxis: MODIFIER:COMMAND[:PACKAGE]
-  # - MODIFIER is either 'r' (required) or 'o' (optional).
-  #
-  # - COMMAND is a shell command that can be passed to
-  # which/whence/type commands as argument.
-  #
-  # - PACKAGE is the name of an installation package
-  # which contains the comannd. If the command name and
-  # package name coincide, one can omit the latter.
-  #
-  # Substitutable packages or a package and managers
-  # that will install it in case of absence can be specified
-  # in a single-quoted space-separated string:
-  #     'nvim vim' (precedence to the 1st)
-  #         or
-  #     'npm conda' (npm can be installed via conda)
+  ## modulecheck's syntaxis: MODIFIER:COMMAND[:PACKAGE]
+  ## - MODIFIER is either 'r' (required) or 'o' (optional).
+  ##
+  ## - COMMAND is a shell command that can be passed to
+  ## which/whence/type commands as argument.
+  ##
+  ## - PACKAGE is the name of an installation package
+  ## which contains the comannd. If the command name and
+  ## package name coincide, one can omit the latter.
+  ##
+  ## Substitutable packages or a package and managers
+  ## that will install it in case of absence can be specified
+  ## in a single-quoted space-separated string:
+  ##     'nvim vim' (precedence to the 1st)
+  ##         or
+  ##     'npm conda' (npm can be installed via conda)
 
   BASH_DEPS=(o:conda o:tree)
   ZSH_DEPS=(r:zsh r:git o:conda o:fzf o:tree)
@@ -99,37 +99,38 @@ control::install () {
     echo Installed components: >> .update-list
   fi
 
-  # 'local msg' not only does shadow the eponymous variable
-  # in control::reinstall function, but also makes `msg` empty,
-  # if the latter had any value before the statement.
-  local msg msg_G shell_G=$(grep -oE '(z|ba)sh' <<< $@)
-  # suffix G means that the variable is exposed to subroutines,
-  # i.e. global to internal function calls.
+  ## 'local msg' not only does shadow the eponymous variable
+  ## in control::reinstall function, but also makes `msg` empty,
+  ## if the latter had any value before the statement.
+  local msg _MSG _SHELL=$(grep -oE '(z|ba)sh' <<< $@)
+  ## uppercase with leading underscore show that the variable is exposed
+  ## to subroutines, i.e. global to internal function calls.
 
-  # Let user select login shell
+  ## Let user select login shell
   if [[ $@ = *bash* && $@ = *zsh* ]]
   then
     msg+="Since you are installing BOTH the shells' settings,\n"
     msg+='please type in which one will be used as a login shell.\n'
 
     NOTE 210 "$msg"
-    read -p '(zsh|bash): ' shell_G
+    read -p '(zsh|bash): ' _SHELL
   fi
 
-  # Ensure shell settings are installed first
+  ## Ensure shell settings are installed first
   declare -a params=$@
   [[ $@ = *bash+* ]] && params=( bash vim tmux ${params[@]/bash+} )
   [[ $@ = *zsh+* ]] && params=( zsh vim tmux ${params[@]/zsh+} )
   [[ $@ =~ bash ]] && params=( bash ${params[@]/bash} )
   [[ $@ =~ zsh ]] && params=( zsh ${params[@]/zsh} )
 
-  # Discard duplicates
+  ## Discard duplicates
   declare -a newparams
   for arg in ${params[@]}
   do
     [[ ${newparams[@]} =~ $arg ]] || newparams+=( $arg )
   done
   set -- ${newparams[@]}
+  unset params newparams
 
   while [[ $# -gt 0 ]]
   do
@@ -143,10 +144,10 @@ control::install () {
     esac
   done
 
-  # NOTE: if installing Vim configuration w/o shell settings,
-  # while both Vim and Neovim are available, `shell_G` var changes
-  # from '' to "${SHELL##*/}" in vim_settings subroutine.
-  [[ -n $shell_G ]] && write::instructions_after_install $shell_G || :
+  ## NOTE: if installing Vim configuration w/o shell settings,
+  ## while both Vim and Neovim are available, `_SHELL` var changes
+  ## from '' to "${SHELL##*/}" in vim_settings subroutine.
+  [[ -n $_SHELL ]] && write::instructions_after_install $_SHELL || :
 }
 
 
@@ -164,11 +165,11 @@ control::update () {
 
   SRC=( evangelist.sh _impl )
 
-  # TODO: Add hook to handle updates that cannot be resolved
-  #       by the following code in the 'if'-statement.
-  # E.g.: If the structure of '.update-list' changes during development,
-  #       one must rewrite the file if it was generated
-  #       with old installation scripts.
+  ## TODO: Add hook to handle updates that cannot be resolved
+  ##       by the following code in the 'if'-statement.
+  ## E.g.: If the structure of '.update-list' changes during development,
+  ##       one must rewrite the file if it was generated
+  ##       with old installation scripts.
   if [[ $1 != SKIP ]] && utils::str_has_any "$UPD" $SRC
   then
     ECHO Self-updating..
@@ -183,7 +184,7 @@ control::update () {
   write::commit_messages $BRANCH
   git merge origin/$BRANCH || exit 1
 
-  # TODO: Rewrite 'case + if' to 'if + case' ? too cumbersome now
+  ## TODO: Rewrite 'case + if' to 'if + case' ? too cumbersome now
   for OBJ in $(sed '/nvim/d' <<< "$UPD")
   do
     case ${OBJ##*/} in
@@ -200,13 +201,13 @@ control::update () {
           mv /tmp/evangelist-bashrc ~/.bashrc
         fi
         ;;
-        # How sed works here. It applies the two commands to lines
-        # between >SED-UPDATE and <SED-UPDATE (including the markers):
+        ## How sed works here. It applies the two commands to lines
+        ## between >SED-UPDATE and <SED-UPDATE (including the markers):
 
-        # 1) insert file contents after >SED-UPDATE
-        # 2) delete all lines in the specified area
+        ## 1) insert file contents after >SED-UPDATE
+        ## 2) delete all lines in the specified area
 
-        # Note, that no commands are applied to inserted text.
+        ## Note, that no commands are applied to inserted text.
 
       zshenv)
         if grep -q '^zsh' .update-list
@@ -220,13 +221,13 @@ control::update () {
       tmux.conf)
         if grep -q '^tmux' .update-list
         then
-          # A more stable way to determine the version of Tmux:
+          ## A more stable way to determine the version of Tmux:
           # TMUXV=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
 
           utils::dummy_v1_gt_v2 $(tmux -V | cut -d ' ' -f2) 3.1 \
             && cp $OBJ "$XDG_CONFIG_HOME/tmux" \
             || cp $OBJ ~/.${OBJ##*/}
-            # lstrip all the parents in dir name
+            ## lstrip all the parents in dir name
         fi
         ;;
 
@@ -254,7 +255,7 @@ control::update () {
   then
     for OBJ in $(sed -n '/nvim/p' <<< "$UPD")
     do
-      # lstrip 'conf/' in names of the form 'conf/nvim/conf/...'
+      ## lstrip 'conf/' in names of the form 'conf/nvim/conf/...'
       cp $OBJ "$XDG_CONFIG_HOME/${OBJ#*/}"
     done
   fi
@@ -271,7 +272,7 @@ control::uninstall () {
 
   grep -q '^bash' .update-list && rm ~/.{bashrc,inputrc}
 
-  # Completely eradicate the possibility of removing '/'
+  ## Completely eradicate the possibility of removing '/'
   if grep -q '^zsh' .update-list
   then
     ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
@@ -329,8 +330,8 @@ control::uninstall () {
 
   ECHO Successfully uninstalled.
 
-  # Check if necessary to change
-  # the login shell and Vim alternatives.
+  ## Check if necessary to change
+  ## the login shell and Vim alternatives.
   write::instructions_after_removal
   rm .update-list
   rm -r .bak

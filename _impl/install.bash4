@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
+## Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
 
-# NOTE: better to surround expansions with double quotes
-# ####  if they might contain spaces.
+## NOTE: better to surround expansions with double quotes
+## ####  if they might contain spaces.
 
 install::check_arguments () {
   local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter'
@@ -32,10 +32,10 @@ install::check_arguments () {
 
 
 install::vim_settings () {
-  # Go on with Neovim if available, otherwise with Vim
+  ## Go on with Neovim if available, otherwise with Vim
   local VIM VIMPLUG code=0
 
-  # realpath is not available on OSX.
+  ## realpath is not available on OSX.
   # [[ $(realpath $(which vim)) =~ nvim ]] && (( code+=1 ))
   HAS vim && (( code+=1 ))
   HAS nvim && (( code+=2 ))
@@ -46,11 +46,11 @@ install::vim_settings () {
 
   ECHO Installing Vim configuration..
 
-  # Make an "alias" for pip3
+  ## Make an "alias" for pip3
   (! HAS pip && HAS pip3) && pip () { pip3 $@; }
 
-  # NOTE: case fallthrough (;&) and resume (;;&) are available in bash >= 4.0
-  # NOTE: zsh's 'case resume' is different - `;|`
+  ## NOTE: case fallthrough (;&) and resume (;;&) are available in bash >= 4.0
+  ## NOTE: zsh's 'case resume' is different - `;|`
   case $code in
     1?)
       VIM=vim
@@ -85,12 +85,12 @@ install::vim_settings () {
       ;;&
 
     *)
-      # Copy new configs
+      ## Copy new configs
       cp -R conf/nvim "$XDG_CONFIG_HOME"
       ;;&
 
     ?0)
-      # Check if need to expand $EVANGELIST
+      ## Check if need to expand $EVANGELIST
       sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
         -e 's;(filereadable\()(.+\));\1"\2;' \
         -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
@@ -112,13 +112,22 @@ install::vim_settings () {
       ;;
   esac
 
-  # Install vim-plug if it is not there yet
-  if [[ ! -f "$VIMPLUG" ]]; then
+  ## Install vim-plug if it is not there yet
+  if ! [[ -f "$VIMPLUG" ]]
+  then
     sh -c "curl -sS -fLo $VIMPLUG --create-dirs \
       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
   fi
 
-  # Install Vim plugins silently (save installation summary)
+  if [[ -n $_EXTEND ]]
+  then
+    sed -i 's;^" ;;' "$XDG_CONFIG_HOME"/nvim/init.vim
+    ## CoC is chosen to be a default code-completion engine,
+    ## YCM is commented out, therefore.
+    sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME"/nvim/init.vim
+  fi
+
+  ## Install Vim plugins silently (save installation summary)
   $VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
 
   if [[ -s /tmp/vim-plug.log ]]
@@ -132,22 +141,22 @@ install::vim_settings () {
 
 
 install::jupyter_settings () {
-  # Check if pip and git are available
+  ## Check if pip and git are available
   (HAS pip || HAS pip3) || { ECHO2 Missing pip3; return; }
   HAS git || { ECHO2 Missing git; return; }
 
-  # Make an "alias" for pip3
+  ## Make an "alias" for pip3
   (! HAS pip && HAS pip3) && pip () { pip3 $@; }
 
   ECHO Installing Jupyter configuration..
 
   echo Checking required packages..
   echo "(Missing ones will be installed if possible)"
-  # - jupyter
-  # - jupyter_contrib_nbextensions
-  # - jupyter_nbextensions_configurator
+  ## - jupyter
+  ## - jupyter_contrib_nbextensions
+  ## - jupyter_nbextensions_configurator
 
-  # Install Jupyter if need be
+  ## Install Jupyter if need be
   HAS jupyter \
     || { pip install -q jupyter \
          && HAS jupyter && echo - Installed jupyter.; } \
@@ -159,7 +168,7 @@ install::jupyter_settings () {
     f:"$JUPCONFDIR/custom/custom.js" \
     f:"$JUPCONFDIR/nbconfig/notebook.json"
 
-  # Install nbextensions if need be
+  ## Install nbextensions if need be
   if ! pip show -qq jupyter_contrib_nbextensions
   then
     pip install -q jupyter_contrib_nbextensions \
@@ -167,7 +176,7 @@ install::jupyter_settings () {
       || return 1
   fi
 
-  # Add extension tab in Jupyter Notebook if need be
+  ## Add extension tab in Jupyter Notebook if need be
   if ! pip show -qq jupyter_nbextensions_configurator
   then
     pip install -q jupyter_nbextensions_configurator \
@@ -179,14 +188,14 @@ install::jupyter_settings () {
   local JUPVIM="$(jupyter --data-dir)/nbextensions/vim_binding"
   [[ -d "$JUPVIM" ]] && rm -rf "$JUPVIM"
 
-  # Install Vim in Jupyter Notebook
+  ## Install Vim in Jupyter Notebook
   {
     git clone -q https://github.com/lambdalisue/jupyter-vim-binding "$JUPVIM";
     jupyter nbextension enable vim_binding/vim_binding; # add log lvl control?
     jupyter contrib nbextension install --user --JupyterApp.log_level='WARN';
   } || return 1
 
-  # Copy new configs
+  ## Copy new configs
   mkdir -p "$JUPCONFDIR/custom"
   mkdir -p "$JUPCONFDIR/nbconfig"
   cp conf/jupyter/custom.js "$JUPCONFDIR/custom"
@@ -197,7 +206,7 @@ install::jupyter_settings () {
 
 
 install::tmux_settings () {
-  # Check if tmux is available
+  ## Check if Tmux is available
   HAS tmux || { ECHO2 Missing tmux; return; }
 
   ECHO Installing Tmux configuration..
@@ -205,10 +214,10 @@ install::tmux_settings () {
   utils::back_up_original_configs tmux \
     f:~/.tmux.conf f:"$XDG_CONFIG_HOME/tmux/tmux.conf"
 
-  # Version of tmux determines where to put tmux configs
+  ## Tmux version determines where to put Tmux configs
   local VERSION=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
 
-  # Copy new configs
+  ## Copy new configs
   utils::dummy_v1_gt_v2 $VERSION 3.1 \
     && cp -R conf/tmux "$XDG_CONFIG_HOME" \
     || cp conf/tmux/tmux.conf ~/.tmux.conf
@@ -223,21 +232,21 @@ install::bash_settings () {
   utils::back_up_original_configs bash \
     f:~/.bashrc f:~/.inputrc f:~/.condarc
 
-  # Copy new configs
+  ## Copy new configs
   cp conf/bash/bashrc ~/.bashrc
   cp conf/bash/inputrc ~/.inputrc
 
   write::file_header ~/.bashrc
 
-  # Add conda init to .bashrc
+  ## Add conda init to .bashrc
   conda &> /dev/null \
     && (conda init bash > /dev/null; conda config --set changeps1 False) \
     || ECHO2 "conda doesn't seem to work."
 
-  # Dynamic imports should make the last line in rc files.
+  ## Dynamic imports should make the last line in rc files.
   write::dynamic_imports ~/.bashrc
 
-  # Transfer the old history
+  ## Transfer the old history
   local NEWHISTFILE="$HOME/.bash_history"
   [[ -n "$HISTFILE" && "$HISTFILE" != "$NEWHISTFILE" ]] \
     && cp "$HISTFILE" "$NEWHISTFILE"
@@ -247,13 +256,13 @@ install::bash_settings () {
 
 
 install::zsh_settings () {
-  # Check if zsh and git are available
+  ## Check if zsh and git are available
   HAS zsh || { ECHO2 Missing zsh; return; }
   HAS git || { ECHO2 Missing git; return; }
 
   ECHO Installing ZSH configuration..
 
-  # Set ZPLUG env vars
+  ## Set ZPLUG env vars
   [[ -z "$ZDOTDIR" ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
   [[ -z "$ZPLUG_HOME" ]] && export ZPLUG_HOME="$XDG_DATA_HOME/zplug"
 
@@ -263,12 +272,12 @@ install::zsh_settings () {
   mkdir -p "$ZDOTDIR"
   mkdir -p "$ZPLUG_HOME"
 
-  # If there was no ~/.zshrc, remove it later
-  # (BUG: conda init generates dummy .zshrc in $HOME ignoring $ZDOTDIR)
+  ## If there was no ~/.zshrc, remove it later
+  ## (BUG: conda init generates dummy .zshrc in $HOME ignoring $ZDOTDIR)
   ls ~/.zshrc &> /dev/null
   local CODE=$?
 
-  # Copy new configs
+  ## Copy new configs
   cp conf/zsh/zshrc "$ZDOTDIR/.zshrc"
   cp conf/zsh/agkozakrc "$ZDOTDIR"
   cp conf/zsh/zshenv ~/.zshenv
@@ -282,27 +291,27 @@ install::zsh_settings () {
 
   write::file_header ~/.zshenv
 
-  # Install zplug
+  ## Install zplug
   [[ ! -d "$ZPLUG_HOME/.git" ]] \
     && git clone -q https://github.com/zplug/zplug "$ZPLUG_HOME" \
     && echo Installed zplug.
 
-  # Add conda init to .zshrc
+  ## Add conda init to .zshrc
   conda &> /dev/null \
     && conda init zsh > /dev/null \
     || ECHO2 "conda doesn't seem to work"
 
-  # Deal with miniconda's bug
+  ## Deal with miniconda's bug
   grep -q '>>> conda init >>>' "$ZDOTDIR/.zshrc" \
     || sed -n '/> conda init/,/< conda init/p' \
          ~/.zshrc >> "$ZDOTDIR/.zshrc" 2> /dev/null
 
   [[ $CODE -gt 0 ]] && rm -f ~/.zshrc
 
-  # Dynamic imports should make the last line in rc files.
+  ## Dynamic imports should make the last line in rc files.
   write::dynamic_imports "$ZDOTDIR/.zshrc"
 
-  # Transfer the old history
+  ## Transfer the old history
   local NEWHISTFILE="$XDG_DATA_HOME/zsh_history"
   [[ -n "$HISTFILE" && "$HISTFILE" != "$NEWHISTFILE" ]] \
     && cp "$HISTFILE" "$NEWHISTFILE"

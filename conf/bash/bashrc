@@ -1,6 +1,6 @@
 # .:!:. >SED-UPDATE .:!:.
 
-# Set initialization file for Vim
+## Set initialization file for Vim
 if ! which nvim &> /dev/null && which vim &> /dev/null \
   && grep -qE '^n?vim' "$EVANGELIST/.update-list"
 then
@@ -8,7 +8,7 @@ then
   export VIMINIT=":source $MYVIMRC"
 fi
 
-# Finish configuring locales.
+## Finish configuring locales.
 if [[ -z $LANG ]]
 then
   if locale -a | grep -qi 'en_us.utf8'
@@ -33,11 +33,11 @@ export VISUAL
 export EDITOR=$VISUAL
 
 
-# Standard bash settings
-## No need to export these variables, since
-## - unlikely you will use them in your scripts
-## - a different shell (spawned as child process)
-##   will use its own history settings
+## Standard bash settings
+### No need to export these variables, since
+### - unlikely you will use them in your scripts
+### - a different shell (spawned as child process)
+###   will use its own history settings
 HISTSIZE=10000
 HISTFILESIZE=20000
 HISTFILE=~/.bash_history
@@ -76,12 +76,12 @@ type dircolors &> /dev/null && eval "$(dircolors -b)"
 export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=33:ln=32:bn=32:se=36'
 
 
-# Some bash specific aliases
+## Some bash specific aliases
 alias ls='ls --color=auto'
 alias _bashrc='vim ~/.bashrc'
 alias bashrc="vim $EVANGELIST/custom/custom.bash"
 
-# Add visited dirs to the dir stack (doesn't work on macOS).
+## Add visited dirs to the dir stack (doesn't work on macOS).
 [[ $(uname) != Darwin ]] && alias cd=_autopushd
 
 _autopushd () {
@@ -98,11 +98,11 @@ _autopushd () {
 
   for DIR in $(dirs -p)
   do
-    # `dirs -p` prints dir stack with one entry per line.
-    # `dirs -l` prints longer listing substituting tilde with the home dir.
-    # the latter option seems more suitable in for-loop but we can't use it
-    # with dir names containing a space. Instead, we go with `dirs -p`,
-    # change IFS (with a backup), and substitute tilde manually.
+    ## `dirs -p` prints dir stack with one entry per line.
+    ## `dirs -l` prints longer listing substituting tilde with the home dir.
+    ## the latter option seems more suitable in for-loop but we can't use it
+    ## with dir names containing a space. Instead, we go with `dirs -p`,
+    ## change IFS (with a backup), and substitute tilde manually.
 
     DIR=${DIR//'~'/$HOME}
     INDIR=${INDIR//'~'/$HOME}
@@ -127,15 +127,15 @@ then
   alias vimdiff='nvim -d'
 fi
 
-# Static imports
-## Import more aliases.
+## Static imports
+### Import more aliases.
 source "$EVANGELIST/conf/bash/aliases-functions.sh"
-## evangelist completions for bash
+### evangelist completions for bash
 source "$EVANGELIST/completions/evn-compl.bash"
 
-# Misc
-## Increase key repeat rate with xset if it is available.
-## Ignore "unable to open display" error that appears in docker.
+## Misc
+### Increase key repeat rate with xset if it is available.
+### Ignore "unable to open display" error that appears in docker.
 which xset &> /dev/null && xset r rate 250 70 2> /dev/null
 
 # .:!:. <SED-UPDATE .:!:.

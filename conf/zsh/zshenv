@@ -1,11 +1,11 @@
 # .:!:. >SED-UPDATE .:!:.
 
-# aspell (used by vim spell checker)
+## aspell (used by vim spell checker)
 export ASPELL_CONF="per-conf $XDG_CONFIG_HOME/aspell/aspell.conf; \
     personal $XDG_CONFIG_HOME/aspell/en.pws; \
     repl $XDG_CONFIG_HOME/aspell/en.prepl"
 
-# nvim
+## nvim
 if which nvim &> /dev/null
 then
   VISUAL=nvim
@@ -17,7 +17,7 @@ fi
 export VISUAL
 export EDITOR=$VISUAL
 
-# Finish configuring locales.
+## Finish configuring locales.
 if [[ -z $LANG ]]
 then
   if locale -a | grep -qi 'en_us.utf8'
@@ -30,13 +30,13 @@ then
   fi
 fi
 
-# grep
+## grep
 ## set the color of 'file name' section in grep's output
 ## fn=33 (default is 35); 33 is more visible on a white background of
 ## transparent dark terminal window.
 export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=33:ln=32:bn=32:se=36'
 
-# Set initialization file for Vim
+## Set initialization file for Vim
 if ! which nvim &> /dev/null && which vim &> /dev/null \
   && grep -qE '^n?vim' "$EVANGELIST/.update-list"
 then

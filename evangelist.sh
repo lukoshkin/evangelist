@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
+## Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
 
-# Vim (8.1 and older) sources its rc file when running +PlugInstall.
-# So, if dealing with Vim, we need to export the variables below.
+## Vim (8.1 and older) sources its rc file when running +PlugInstall.
+## So, if dealing with Vim, we need to export the variables below.
 
 export EVANGELIST=${EVANGELIST:-.}
 export XDG_CACHE_HOME=${XDG_CACHE_HOME:-"$HOME/.cache"}
@@ -20,6 +20,9 @@ main() {
   cd "$EVANGELIST"
   case $1 in
     install)        shift; control::install $@ ;;
+    install+)       shift; _EXTEND=+; control::install $@ ;;
+                    ## _EXTEND ─ to install with extensions.
+
     update)         control::update $2 ;;
     reinstall)      control::reinstall $2 ;;
     uninstall)      control::uninstall ;;

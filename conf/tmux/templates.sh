@@ -1,5 +1,5 @@
 #!/bin/bash
-# Original: https://stackoverflow.com/questions/60330838
+## Original: https://stackoverflow.com/questions/60330838
 
 vip () {
   type vim &> /dev/null || { echo Neovim/Vim not found.; return 1; }

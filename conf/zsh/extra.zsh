@@ -1,5 +1,5 @@
-# ZSH ALIASES
-# -----------
+## ZSH ALIASES
+## -----------
 alias -g ...=../..
 alias -g ....=../../..
 alias -g .....=../../../..
@@ -12,8 +12,8 @@ alias zshrc="vim $EVANGELIST/custom/custom.zsh"
 
 
 
-# CONSOLE INPUT
-# -------------
+## CONSOLE INPUT
+## -------------
 ## Key repeat rate (to navigate faster with a key pressed)
 xset r rate 250 70 2> /dev/null
 
@@ -90,8 +90,8 @@ zstyle ':completion:*' completer _expand_alias _complete _match #_ignored
 # zstyle ':completion:*' ignored-patterns '<pattern-to-ignore>'
 
 
-# STYLE CONTROL
-# -------------
+## STYLE CONTROL
+## -------------
 ## The following settings allow to change the terminal window transparency
 ## from the command line (not from an editor or another app opened in the console).
 ## Requires 'transset' to be installed. One can change the transparency
@@ -121,8 +121,8 @@ bindkey -M viins '^[-' decr-transp
 
 
 
-# CLEAN HISTORY LOOKUP
-# --------------------
+## CLEAN HISTORY LOOKUP
+## --------------------
 ## Not able to set up the functionality of this section with HISTORY_IGNORE
 ## Exporting HISTORY_IGNORE ruins everything (why?)
 
@@ -161,8 +161,8 @@ zshaddhistory() {
 
 
 
-# ZSH OPTIONS
-# -----------
+## ZSH OPTIONS
+## -----------
 ## zsh options are case insensitive and ignore underscores in the name.
 setopt autopushd
 setopt pushdignoredups
@@ -184,7 +184,7 @@ setopt extendedglob
 ## - qualifiers             ls foo/*(#q@)   finds all symblic links (@) in foo
 ## more info by googling article: 37-ZSH-Gem-2-Extended-globbing-and-expansion.html
 
-# EVANGELIST COMPLETIONS (ZSH)
-# ----------------------------
+## EVANGELIST COMPLETIONS (ZSH)
+## ----------------------------
 fpath+=( "$EVANGELIST/completions" )
 compinit
