@@ -118,16 +118,46 @@ install::vim_settings () {
       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
   fi
 
+  set_assembly=minimal
   if [[ -n $_EXTEND ]]
   then
     sed -i 's;^" ;;' "$XDG_CONFIG_HOME"/nvim/init.vim
+    sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME"/nvim/init.vim
     ## CoC is chosen to be a default code-completion engine,
     ## YCM is commented out, therefore.
-    sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME"/nvim/init.vim
+    set_assembly=extended
+  fi
+
+  assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
+  if [[ $set_assembly != $assembly ]]
+  then
+    sed -i "/^Installed/i VIM ASSEMBLY:$set_assembly" .update-list
+    [[ -n $assembly ]] && sed -i "/VIM ASSEMBLY:$assembly/d" .update-list
   fi
 
   ## Install Vim plugins silently (save installation summary)
-  $VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
+  if [[ $TERM != dumb ]]
+  then
+    $VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
+  else
+    ## For non-interactive installation, either one of two commands
+    ## is used, depending on whether Vim or Neovim is chosen:
+    # nvim --headless +PlugInstall +qa
+    # vim +PlugInstall +qa > /dev/null
+    ## The latter command produces the warnings:
+
+    ## Vim: Warning: Output is not to a terminal
+    ## Vim: Warning: Input is not from a terminal
+
+    ## Though it does the work. Check for a better solution
+    ## that might appear with the upcoming package releases.
+
+    cmd="$VIM "
+    [[ $VIM = nvim ]] && cmd+='--headless '
+    cmd+='+PlugInstall +qa'
+    [[ $VIM = vim ]] && cmd+=' > /dev/null'
+    eval "$cmd"
+  fi
 
   if [[ -s /tmp/vim-plug.log ]]
   then

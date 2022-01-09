@@ -23,6 +23,7 @@ control::help () {
   echo -e '\nCommands:\n'
   printf '  %-18s Show the installation status or readiness to install.\n' 'checkhealth'
   printf '  %-18s Install one or all of the specified setups: bash zsh vim tmux jupyter.\n' 'install'
+  printf '  %-18s Install with extensions if they are provided (beta). \n' 'install+'
   printf '  %-18s Update the repository and installed configs.\n' 'update'
   printf '  %-18s Force update of the repository in case of merge conflicts.\n' 'reinstall'
   printf '  %-18s Roll back to the original settings.\n' 'uninstall'
@@ -107,7 +108,7 @@ control::install () {
   ## to subroutines, i.e. global to internal function calls.
 
   ## Let user select login shell
-  if [[ $@ = *bash* && $@ = *zsh* ]]
+  if [[ $@ = *bash* ]] && [[ $@ = *zsh* ]]
   then
     msg+="Since you are installing BOTH the shells' settings,\n"
     msg+='please type in which one will be used as a login shell.\n'
@@ -140,14 +141,17 @@ control::install () {
       jupyter)     install::jupyter_settings; shift ;;
       bash)        install::bash_settings; shift ;;
       zsh)         install::zsh_settings; shift ;;
-      *)           echo Infinite loop; exit ;;
+      *)           echo Infinite loop.; exit ;;
     esac
   done
 
   ## NOTE: if installing Vim configuration w/o shell settings,
   ## while both Vim and Neovim are available, `_SHELL` var changes
   ## from '' to "${SHELL##*/}" in vim_settings subroutine.
-  [[ -n $_SHELL ]] && write::instructions_after_install $_SHELL || :
+  if [[ $TERM != dumb ]] && [[ -n $_SHELL ]]
+  then
+    write::instructions_after_install $_SHELL
+  fi
 }
 
 
@@ -280,11 +284,13 @@ control::uninstall () {
     rm -f ~/.zshenv
   fi
 
-  rm -rf "$XDG_CONFIG_HOME/nvim"
   rm -f ~/.condarc
   rm -f ~/.tmux.conf
-  [[ -n "$XDG_CONFIG_HOME" ]] \
-    && rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
+  if [[ -n "$XDG_CONFIG_HOME" ]]
+  then
+    rm -rf "$XDG_CONFIG_HOME/nvim"
+    rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
+  fi
 
   if grep -q '^jupyter' .update-list
   then
@@ -341,6 +347,8 @@ control::uninstall () {
 control::reinstall () {
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
+  assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
+  [[ $assembly = extended ]] && _EXTEND=-
 
   if [[ $1 = --no-reset ]]
   then

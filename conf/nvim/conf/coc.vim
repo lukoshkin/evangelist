@@ -8,13 +8,13 @@ let g:coc_global_extensions = [
       \ 'coc-clangd' ]
 
 "" Make linting popups readable in the colorscheme used by evangelist
-hi! CocErrorSign ctermfg=DarkRed
-hi! CocWarningSign ctermfg=Yellow
-hi! CocHintSign ctermfg=Blue
+hi CocErrorSign ctermfg=DarkRed
+hi CocWarningSign ctermfg=Yellow
+hi CocHintSign ctermfg=Blue
 
-hi! CocErrorFloat guifg=#6D0604
-hi! CocWarningFloat guifg=#D1CD66
-hi! CocHintFloat guifg=#04376D
+hi CocErrorFloat guifg=#6D0604
+hi CocWarningFloat guifg=#D1CD66
+hi CocHintFloat guifg=#04376D
 
 "" Highlight a symbol and its references when holding the cursor over it.
 "" A 'symbol' in computer programming is a primitive data type whose

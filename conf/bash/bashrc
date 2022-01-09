@@ -9,7 +9,9 @@ then
 fi
 
 ## Finish configuring locales.
-if [[ -z $LANG ]]
+## NOTE: the necessity of the second condition in 'if-statement'
+##       should be tested by time.
+if [[ -z $LANG ]] && which locale-gen &> /dev/null
 then
   if locale -a | grep -qi 'en_us.utf8'
   then

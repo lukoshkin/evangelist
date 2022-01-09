@@ -34,7 +34,8 @@ alias rexgrep="grep -rIn --exclude-dir='.?*'"
 # alias v="vim +'e #<1'"
 # alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
 v () {
-  if [[ $# -gt 0 ]]; then
+  if [[ $# -gt 0 ]]
+  then
     vim "$@"
     return
   fi

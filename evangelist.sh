@@ -20,7 +20,7 @@ main() {
   cd "$EVANGELIST"
   case $1 in
     install)        shift; control::install $@ ;;
-    install+)       shift; _EXTEND=+; control::install $@ ;;
+    install+)       shift; _EXTEND=-; control::install $@ ;;
                     ## _EXTEND ─ to install with extensions.
 
     update)         control::update $2 ;;

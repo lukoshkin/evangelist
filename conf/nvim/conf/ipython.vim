@@ -1,6 +1,6 @@
 Plug 'hanschen/vim-ipython-cell', { 'for': 'python' }
 
-let g:ipython_cell_tag = ['# %%', '#%%', '## <codecell>']
+let g:ipython_cell_tag = ['# %%', '#%%', '## <codecell>', '# In[']
 
 "" The setting below work only in a tmux session when
 "" Vim is open in the left pane, and Ipython in the right one.

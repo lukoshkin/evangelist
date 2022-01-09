@@ -1,5 +1,13 @@
 #!/bin/bash
 
+## in `docker build` command `TERM=dumb` is used
+if [[ $TERM = dumb ]]
+then
+  tput () {
+    :
+  }
+fi
+
 RED='\033[0;31m'
 GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)
@@ -21,16 +29,19 @@ ECHO () {
   echo -e "${BOLD}${PURPLE}EVANGELIST ~>$RESET ${RAIN}$@${RESET}"
 }
 
+
 NOTE () {
   local COLOR=$(tput setaf $1)
   echo -e "\n${BOLD}${COLOR}$2${RESET}"
 }
+
 
 ECHO2 () {
   local SALMON=$(tput setaf 210)
   local BUFF=$(tput setaf 186)
   >&2 echo -e "${BOLD}${SALMON}EVANGELIST:${RED}PROBLEM:$RESET ${BUFF}$@${RESET}"
 }
+
 
 ## NOTE: stderr-pipe redirection (|&) doesn't work on old shells
 HAS () {
@@ -85,6 +96,7 @@ write::dynamic_imports () {
   fi
 }
 
+
 ## Takes one argument - shell for which to install settings: bash or zsh
 write::instructions_after_install () {
   NOTE 210 '\nFURTHER INSTRUCTIONS:'
@@ -123,6 +135,7 @@ write::instructions_after_install () {
   fi
 }
 
+
 ## Operates on '.update-list' file
 write::instructions_after_removal () {
   local shell curr orig msg
@@ -136,7 +149,7 @@ write::instructions_after_removal () {
   ## is available on the OS. Still, it is good to have this extra sanity
   ## check here.
 
-  if [[ -n $shell && ${SHELL##*/} != $shell ]]
+  if [[ -n $shell ]] && [[ ${SHELL##*/} != $shell ]]
   then
     printf 'RESTORE THE ORIGINAL VALUE OF THE LOGIN SHELL.'
     printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $shell)${RESET}\n\n"
@@ -145,7 +158,7 @@ write::instructions_after_removal () {
     curr=$(update-alternatives --query vim | grep 'Value:' | cut -d ' ' -f2)
     orig=$(grep 'VIM-ALTERNATIVE' .update-list 2> /dev/null | cut -d: -f2)
 
-    if [[ -n $orig && $curr != $orig ]]
+    if [[ -n $orig ]] && [[ $curr != $orig ]]
     then
       msg="${BOLD}${WHITE}sudo update-alternatives --set vim ${orig}${RESET}"
       printf 'RESTORE THE ORIGINAL VALUE OF THE VIM ALTERNATIVE.'
@@ -172,6 +185,7 @@ $2\\
     sed -i "1i $2" $1
   fi
 }
+
 
 ## Takes one argument - shell for which to install settings: bash or zsh
 write::file_header () {
@@ -266,6 +280,7 @@ write::modulecheck () {
   done
   echo
 }
+
 
 write::how_to_install_conda () {
   link=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh

@@ -1,7 +1,8 @@
 #!/bin/bash
 
 up_hierarchy_search() {
-  if [[ -z $1 || -z $2 ]]; then
+  if [[ -z $1 || -z $2 ]]
+  then
     echo up_hierarchy_search: missing args.
     echo 'Try: up_hierarchy_search <dir> <file>`'
     return 1
@@ -16,7 +17,7 @@ up_hierarchy_search() {
     ## (by default, zsh prints an error msg to stdout on a failed globbing).
     found=$(find "$1" -maxdepth 1 -type f -name "$2")
 
-    if [[ -z $found && $max_recursion_depth -gt 0 ]]
+    if [[ -z $found ]] && [[ $max_recursion_depth -gt 0 ]]
     then
       (( max_recursion_depth-- ))
       _up_hierarchy_search "$(dirname "$1")" "$2"
@@ -27,7 +28,7 @@ up_hierarchy_search() {
   ## Solve this via env variable -
   ## Too slow to check conditions every time.
   parent=$(realpath "$1" 2> /dev/null)
-  [[ $? -ne 0 ]] && local parent=$(readlink -f "$1" &> /dev/null) || :
+  [[ $? -ne 0 ]] && parent=$(readlink -f "$1" 2> /dev/null) || :
   [[ $? -ne 0 ]] && return
 
   _up_hierarchy_search "$parent" "$2"

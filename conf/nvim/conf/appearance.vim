@@ -1,6 +1,11 @@
 "" Colors
 set background=dark
 colorscheme ron
+syntax on
+"" `syntax on` is used here to enforce the order of settings declaration
+"" in Neovim 0.4.3 (no information about earlier versions). Without it,
+"" colors for `ColorColumn` and etc. (defined below) are overwritten by
+"" `colorscheme ron`, though the former appear after the latter.
 
 "" 80 character width marker
 set colorcolumn=80
@@ -49,7 +54,7 @@ endif
 
 
 "" Trailing whitespace highlighting
-highlight ExtraWhitespace ctermbg=red guibg=red
+highlight! ExtraWhitespace ctermbg=red guibg=red
 au! FileType markdown hi ExtraWhitespace ctermbg=brown guibg=brown
 
 "" Pattern matching for au is different:
