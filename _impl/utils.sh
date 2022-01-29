@@ -123,10 +123,10 @@ utils::resolve_vim_alternatives () {
 
     if [[ $(grep -c 'Alternative:' <<< "$alternatives") -ge 2 ]]
     then
-      ## `MSG_` and `SHELL_` are local to `controll::install` function
+      ## `_MSG` and `_SHELL` are local to `controll::install` function
       ##  but accessible from `utils::resolve_vim_alternatives`.
-      MSG_="sudo update-alternatives --set vim \$(which nvim)"
-      SHELL_='--'
+      _MSG="sudo update-alternatives --set vim \$(which nvim)"
+      _SHELL='--'
       return
     fi
   fi
@@ -147,5 +147,5 @@ utils::resolve_vim_alternatives () {
   # echo -e "alias ex='nvim -E' # added by EVANGELIST" >> "$reply"
   # echo -e "alias view='nvim -R' # added by EVANGELIST" >> "$reply"
 
-  SHELL_=${SHELL##*/}
+  _SHELL=${SHELL##*/}
 }

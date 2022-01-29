@@ -141,11 +141,13 @@ swap () {
 
 
 vrmswp () {
+  [[ -z $1 ]] && "Pass the name of swap file to delete."
   rm $XDG_DATA_HOME/nvim/swap/*$1*
 }
 
 
 (grep -qE '^n?vim' "$EVANGELIST"/.update-list \
-  && grep -q '^Plug .*vim-slime' "$XDG_CONFIG_HOME"/nvim/init.vim) \
+  && grep -q '^source .*slime\.vim' "$XDG_CONFIG_HOME"/nvim/init.vim \
+  && grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME"/nvim/init.vim) \
   && source "$EVANGELIST"/conf/tmux/templates.sh
 

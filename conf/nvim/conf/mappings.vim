@@ -76,3 +76,6 @@ nnoremap <Space>bb ;li<CR><Esc>
 
 xnoremap <Space>b<Space> :s/ /\r/g<CR>
 xnoremap <Space>bb :s//\0\r/g<CR>
+
+"" Note, here we use concatenation as is usual in shell.
+command! Rmswp :silent !rm "$XDG_DATA_HOME"/nvim/swap/*'%:t'*

@@ -8,12 +8,10 @@
 install::check_arguments () {
   local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter'
 
-  if [[ $# -ne 0 ]]
-  then
+  if [[ $# -ne 0 ]]; then
     local ok=true
 
-    for arg in $@
-    do
+    for arg in $@; do
       [[ " $(tr ,/ ' ' <<< $allowed)" =~ " $arg" ]] || { ok=false; break; }
     done
 
@@ -112,15 +110,13 @@ install::vim_settings () {
   esac
 
   ## Install vim-plug if it is not there yet
-  if ! [[ -f "$VIMPLUG" ]]
-  then
+  if ! [[ -f "$VIMPLUG" ]]; then
     sh -c "curl -sS -fLo $VIMPLUG --create-dirs \
       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
   fi
 
   set_assembly=minimal
-  if [[ -n $_EXTEND ]]
-  then
+  if [[ -n $_EXTEND ]]; then
     sed -i 's;^" ;;' "$XDG_CONFIG_HOME"/nvim/init.vim
     sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME"/nvim/init.vim
     ## CoC is chosen to be a default code-completion engine,
@@ -129,15 +125,13 @@ install::vim_settings () {
   fi
 
   assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
-  if [[ $set_assembly != $assembly ]]
-  then
+  if [[ $set_assembly != $assembly ]]; then
     sed -i "/^Installed/i VIM ASSEMBLY:$set_assembly" .update-list
     [[ -n $assembly ]] && sed -i "/VIM ASSEMBLY:$assembly/d" .update-list
   fi
 
   ## Install Vim plugins silently (save installation summary)
-  if [[ $TERM != dumb ]]
-  then
+  if [[ $TERM != dumb ]]; then
     $VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
   else
     ## For non-interactive installation, either one of two commands
@@ -159,8 +153,7 @@ install::vim_settings () {
     eval "$cmd"
   fi
 
-  if [[ -s /tmp/vim-plug.log ]]
-  then
+  if [[ -s /tmp/vim-plug.log ]]; then
     echo Vim plugin installation summary:
     cat /tmp/vim-plug.log && rm -f /tmp/vim-plug.log
   fi
@@ -291,15 +284,12 @@ install::zsh_settings () {
 
   ECHO Installing ZSH configuration..
 
-  ## Set ZPLUG env vars
   [[ -z "$ZDOTDIR" ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
-  [[ -z "$ZPLUG_HOME" ]] && export ZPLUG_HOME="$XDG_DATA_HOME/zplug"
 
   utils::back_up_original_configs zsh \
-    f:~/.zshenv f:~/.zshrc d:"$ZDOTDIR:zdotdir"
+    f:~/.zshenv f:~/.zshrc d:"$ZDOTDIR":zdotdir
 
   mkdir -p "$ZDOTDIR"
-  mkdir -p "$ZPLUG_HOME"
 
   ## If there was no ~/.zshrc, remove it later
   ## (BUG: conda init generates dummy .zshrc in $HOME ignoring $ZDOTDIR)
@@ -311,8 +301,7 @@ install::zsh_settings () {
   cp conf/zsh/agkozakrc "$ZDOTDIR"
   cp conf/zsh/zshenv ~/.zshenv
 
-  if [[ $(uname) == Darwin ]]
-  then
+  if [[ $(uname) == Darwin ]]; then
     cp conf/zsh/macos.zsh "$ZDOTDIR/extra.zsh"
   else
     cp conf/zsh/extra.zsh "$ZDOTDIR"
@@ -320,10 +309,10 @@ install::zsh_settings () {
 
   write::file_header ~/.zshenv
 
-  ## Install zplug
-  [[ ! -d "$ZPLUG_HOME/.git" ]] \
-    && git clone -q https://github.com/zplug/zplug "$ZPLUG_HOME" \
-    && echo Installed zplug.
+  if [[ ! -f "$ZDOTDIR/.zcomet/bin/zcomet.zsh" ]]; then
+    git clone https://github.com/agkozak/zcomet.git "$ZDOTDIR/.zcomet/bin"
+    echo Installed zcomet.
+  fi
 
   ## Add conda init to .zshrc
   conda &> /dev/null \

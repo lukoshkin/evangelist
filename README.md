@@ -101,27 +101,6 @@ Run this command from the directory where `Dockerfile` resides.
 docker build --build-arg IMG_NAME=<name_of_the_base_image> -t <new_image_name> .
 ```
 
-By default, `~/.bashrc` is replaced by `bash/bashrc`.  
-You can keep some of your settings by wrapping them with delimiting comments:
-
-1. in a running container (then saving it with `docker commit <container> <image>`)
-
-  ```bash
-  # >>> RESERVED-CONFS >>>
-  your settings
-  # <<< RESERVED-CONFS <<<
-  ```
-
-2. in the Dockerfile of a "base image" (before the latter is built)
-
-  ```Dockerfile
-  RUN some commands \
-      && echo "# >>> RESERVED-CONFS >>>" >> ~/.bashrc \
-      && ... appending required configs to ~/.bashrc ... \
-      && echo "# <<< RESERVED-CONFS <<<" >> ~/.bashrc \
-      && other commands
-  ```
-
 If installing zsh-settings with the **evangelist** inside a docker container,
 run the latter with `-e TERM=xterm-256color` option. Otherwise, you will end up
 with broken colors during the process of both the installation and exploitation.
@@ -159,7 +138,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.2.7 (!)
+Patch 1.2.11 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -194,6 +173,7 @@ Patch 1.2.7 (!)
   | `v` | open the last file closed (in Vim) |
   | `vv` | start Vim from the list of recently edited files |
   | `vip` | initiate the "vim-ipython" split in tmux <br> (available only if tmux settings are installed) |
+  | `vrmswp [name]` | delete swap file by name or part of its name |
   | `d` | show directories visited by user (autocd zsh option) |
   | `(gg\|G)` | go through the dir stack in (forward \| backward) direction |
   | `gg n` | go to n-th directory in the list obtained with `d` <br> &emsp;&emsp;&emsp;&emsp;&emsp; (starting from 0) |
@@ -231,6 +211,7 @@ Patch 1.2.7 (!)
   | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss a message in the cmd line below |
   | normal | `<M-(h\|j\|k\|l)>` | insert an empty line or space in the direction <br> which a movement key specifies |
   | command | Trim | remove all trailing spaces in the file |
+  | command | Rmswp | delete the corresponding to open buffer swap file |
   | visual | `//` | search for selected text <br> (doesn't work in `VISUAL LINE` mode) |
   | any | `<A-m>` | toggle mouse |
   </details>

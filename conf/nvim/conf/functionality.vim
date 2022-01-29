@@ -63,3 +63,7 @@ set splitright
 "" Start scrolling before reaching the screen borders.
 " set scrolloff=8
 " set sidescrolloff=8
+
+"" // at the end makes vim use abs. file path,
+"" thus, avoiding name collisions.
+set directory="$XDG_DATA_HOME"./nvim/swap//

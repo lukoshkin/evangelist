@@ -26,3 +26,19 @@ let g:vimspector_sign_priority = {
   \    'vimspectorBPDisabled':    200,
   \   'vimspectorCurrentThread':  200
   \ }
+
+
+"" Should `vim-maximizer` be added in a separate file?
+Plug 'szw/vim-maximizer'
+nnoremap <silent><Space>mm :MaximizerToggle<CR>
+nnoremap <Space>vv :silent! call ToggleVimspectorVariables()<CR>
+
+function! ToggleVimspectorVariables()
+  if bufname() == 'vimspector.Variables'
+    MaximizerToggle
+    call win_gotoid(g:vimspector_session_windows.code)
+  else
+    call win_gotoid(g:vimspector_session_windows.variables)
+    MaximizerToggle
+  endif
+endfunc

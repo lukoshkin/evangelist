@@ -56,8 +56,8 @@ HAS () {
 
 ## Takes one argument - shell rc-file where to append imports
 write::dynamic_imports () {
-  grep -q '# Dynamic (on-install) imports' $1 \
-    || echo -e '\n# Dynamic (on-install) imports' >> $1
+  grep -q '## Dynamic (on-install) imports' $1 \
+    || echo -e '\n## Dynamic (on-install) imports' >> $1
 
   [[ $1 =~ bash ]] && ! grep -q 'source .*/conf/bash/ps1.bash' $1 \
     && echo 'source "$EVANGELIST/conf/bash/ps1.bash"' >> $1
@@ -87,7 +87,8 @@ write::dynamic_imports () {
     if [[ $1 =~ zsh ]]
     then
       echo '[[ -f "$EVANGELIST/custom/custom.zsh" ]] \' >> $1
-      echo '  && source "$EVANGELIST/custom/custom.zsh" || :' >> $1
+      echo '  && source "$EVANGELIST/custom/custom.zsh"' >> $1
+      echo -e '\nzcomet compinit' >> $1
     elif [[ $1 =~ bash ]]
     then
       echo '[[ -f "$EVANGELIST/custom/custom.bash" ]] \' >> $1
@@ -102,11 +103,13 @@ write::instructions_after_install () {
   NOTE 210 '\nFURTHER INSTRUCTIONS:'
   printf 'TO FINISH THE INSTALLATION, '
 
-  if [[ -n $MSG_ ]]
+  if [[ -n $_MSG ]]
   then
     printf "SET VIM'S ALTERNATIVE TO USE, e.g.,\n"
     printf '(One can google other ways to do it w/o sudo)\n\n'
-    printf "\t${BOLD}${WHITE}$MSG_${RESET}\n\n"
+    printf "\t${BOLD}${WHITE}$_MSG${RESET}\n\n"
+    printf "Or simply: \t${BOLD}${WHITE}exec ${SHELL##*/}${RESET},\n"
+    printf 'since currently, there are aliases like vim=nvim defined.\n\n'
   fi
 
   [[ $1 == '--' ]] && return
@@ -195,14 +198,14 @@ write::file_header () {
     prepend_text $1 'export ZPLUG_CACHE_DIR="$XDG_CACHE_HOME/zplug"'
     prepend_text $1 "export ZPLUG_HOME=\"$ZPLUG_HOME\""
     prepend_text $1 "export ZDOTDIR=\"$ZDOTDIR\""
-    prepend_text $1 '# ZSH'
+    prepend_text $1 '## ZSH'
   fi
 
   prepend_text $1 ''
   prepend_text $1 "export XDG_CACHE_HOME=\"$XDG_CACHE_HOME\""
   prepend_text $1 "export XDG_DATA_HOME=\"$XDG_DATA_HOME\""
   prepend_text $1 "export XDG_CONFIG_HOME=\"$XDG_CONFIG_HOME\""
-  prepend_text $1 '# XDG bash directory specification'
+  prepend_text $1 '## XDG bash directory specification'
 
   prepend_text $1 ''
   prepend_text $1 "export EVANGELIST=\"$PWD\""
@@ -211,7 +214,7 @@ write::file_header () {
   then
     prepend_text $1 ''
     prepend_text $1 '[ -z "$PS1" ] && return'
-    prepend_text $1 '# If not running interactively, do not do anything.'
+    prepend_text $1 '## If not running interactively, do not do anything.'
   fi
 }
 

@@ -56,13 +56,22 @@ HISTIGNORE="v:d:l:G:cd:ll:ls:pwd:tmux:clear \
 ## Append to the history file, don't overwrite it.
 shopt -s histappend
 
-## erasedups prevents adding dups encountered during a single bash session.
-## Still, cmds run across several sessions may duplicate each other
-## in the HISTFILE. So, the correct history merge is needed:
-_historymerge () {
-    history -n; history -w; history -c; history -r
-}
-trap _historymerge EXIT
+## Add entries to $HISTFILE immediately if running ssh.
+if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+  if [[ -z "$PROMPT_COMMAND" ]]; then
+    PROMPT_COMMAND="history -a"
+  else
+    PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+  fi
+else
+  ## erasedups prevents adding dups encountered during a single bash session.
+  ## Still, cmds run across several sessions may duplicate each other
+  ## in the HISTFILE. So, the correct history merge is needed:
+  _historymerge () {
+      history -n; history -w; history -c; history -r
+  }
+  trap _historymerge EXIT
+fi
 
 ## Check the window size after each command and, if necessary,
 ## Update the values of LINES and COLUMNS.

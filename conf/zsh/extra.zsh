@@ -127,13 +127,12 @@ bindkey -M viins '^[-' decr-transp
 ## Exporting HISTORY_IGNORE ruins everything (why?)
 
 _ignorecommon="(\
-^v ?$|\
 ^d ?$|\
 ^gg ?[0-9-]*$|\
 ^G ?$|\
 ^cd ?$|\
-^l[las]? ?$|\
-^vi[m]? ?$|\
+^l[lst]? ?$|\
+^vi?m? ?$|\
 ^echo ?$|\
 ^pwd ?$|\
 ^clear ?$|\
@@ -172,9 +171,12 @@ setopt nobeep
 setopt noflow_control
 ## The last one is for unbinding flow control keys: C-s and C-q
 
-setopt hist_ignore_space
+setopt histignorespace
 setopt histignorealldups
 setopt histreduceblanks
+
+## Add entries to $HISTFILE immediately if running ssh.
+[[ -n $SSH_CLIENT ]] || [[ -n $SSH_TTY ]] && setopt sharehistory
 
 setopt extendedglob
 ## quite powerful option which enables:
@@ -187,4 +189,3 @@ setopt extendedglob
 ## EVANGELIST COMPLETIONS (ZSH)
 ## ----------------------------
 fpath+=( "$EVANGELIST/completions" )
-compinit
