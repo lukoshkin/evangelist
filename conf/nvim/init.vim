@@ -10,6 +10,7 @@ call plug#begin()
 source $XDG_CONFIG_HOME/nvim/conf/nerdtree.vim
 source $XDG_CONFIG_HOME/nvim/conf/ctrlp.vim
 source $XDG_CONFIG_HOME/nvim/conf/mundo.vim
+Plug 'mhinz/vim-startify'
 
 "" Extra plugins that one might find useful
 " source $XDG_CONFIG_HOME/nvim/conf/tex.vim

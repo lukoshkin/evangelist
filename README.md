@@ -138,7 +138,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.2.11 (!)
+Patch 1.2.12 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -171,7 +171,6 @@ Patch 1.2.11 (!)
   | `tree` | draw a project tree (files and directories); <br> if not installed `dtree` is called instead <br> (a "safe" wrapper around Unix `tree`) |
   | `dtree` | draw a project tree (folders only) |
   | `v` | open the last file closed (in Vim) |
-  | `vv` | start Vim from the list of recently edited files |
   | `vip` | initiate the "vim-ipython" split in tmux <br> (available only if tmux settings are installed) |
   | `vrmswp [name]` | delete swap file by name or part of its name |
   | `d` | show directories visited by user (autocd zsh option) |
@@ -383,8 +382,8 @@ This work is based primarily on leveraging the following projects.
   </tr>
 
   <tr>
-    <td> - <a href="https://github.com/zplug/zplug"> zplug </a> </td>
-    <td> zsh plugin Manager </td>
+    <td> - <a href="https://github.com/agkozak/zcomet"> zcomet </a> </td>
+    <td> Zsh plugin manager </td>
   </tr>
 
   <tr>
@@ -403,4 +402,3 @@ This work is based primarily on leveraging the following projects.
  - [x] Add `EVANGELIST` environment variable
  - [x] Write bash/zsh completions
  - [ ] Write Wiki evangelist
- - [ ] Add [Vim-tutor](https://github.com/lukoshkin/vim-tutor) to evangelist as a submodule

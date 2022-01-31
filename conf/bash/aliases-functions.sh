@@ -43,9 +43,6 @@ v () {
   vim +'execute "normal \<C-P>\<Enter>"'
 }
 
-type nvim &> /dev/null \
-  && alias vv="vim +'browse filter !/__\|NERD_tree\|ControlP/ oldfiles'"
-
 alias _vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
 alias vimrc="vim $EVANGELIST/custom/custom.vim"
 

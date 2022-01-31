@@ -66,4 +66,4 @@ set splitright
 
 "" // at the end makes vim use abs. file path,
 "" thus, avoiding name collisions.
-set directory="$XDG_DATA_HOME"./nvim/swap//
+set directory=$XDG_DATA_HOME./nvim/swap//

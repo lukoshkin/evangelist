@@ -9,7 +9,8 @@
 ## inconsistent in the project, it never leads to an error (I hope).
 
 control::version () {
-  echo evangelist $(git describe --abbrev=0)
+  echo -e "evangelist $(git describe --abbrev=0)\n"
+  echo "Maintained by <lukoshkin@phystech.edu>"
   sed -n '3p' LICENSE
 }
 
@@ -44,22 +45,32 @@ control::checkhealth () {
     NOTE 147 'None of the listed configs is installed yet.'
   fi
 
-  ## modulecheck's syntaxis: MODIFIER:COMMAND[:PACKAGE]
-  ## - MODIFIER is either 'r' (required) or 'o' (optional).
-  ##
+  ## modulecheck's syntaxis: MODIFIER[l]:COMMAND[:PACKAGE][:VERSION]
+
+  ## - MODIFIER is either 'r' (required), 'o' (optional), or '+' (extensions).
+  ##   If modifier is used with l, COMMAND is considered to be a library,
+  ##   and thus, is checked with HASLIB function.
+
   ## - COMMAND is a shell command that can be passed to
-  ## which/whence/type commands as argument.
-  ##
+  ##   which/whence/type commands as argument.
+
   ## - PACKAGE is the name of an installation package
-  ## which contains the comannd. If the command name and
-  ## package name coincide, one can omit the latter.
-  ##
-  ## Substitutable packages or a package and managers
+  ##   which contains the comannd. If the command name and
+  ##   package name coincide, one can omit the latter.
+
+  ## - VERSION is the minimal required version of a package.
+
+
+  ## "Substitutable packages" or "a package and managers"
   ## that will install it in case of absence can be specified
-  ## in a single-quoted space-separated string:
+  ## in a quoted space-separated string:
+
   ##     'nvim vim' (precedence to the 1st)
   ##         or
   ##     'npm conda' (npm can be installed via conda)
+
+  ## If falling under the latter example, installation with the
+  ## manager should be reflected in the code.
 
   BASH_DEPS=(o:conda o:tree)
   ZSH_DEPS=(r:zsh r:git o:conda o:fzf o:tree)
@@ -75,7 +86,8 @@ control::checkhealth () {
   write::modulecheck ZSH ${ZSH_DEPS[@]}
   write::modulecheck VIM \
     r:'nvim vim':neovim r:curl \
-    o:'pip pip3':pip3 o:'npm conda':npm o:xclip
+    o:'pip pip3':pip3 o:'npm conda':npm o:xclip \
+    +:node::12.12 +l:libxcb-xinerama0
   write::modulecheck JUPYTER r:'pip pip3':pip3 r:git
   write::modulecheck TMUX r:tmux
 

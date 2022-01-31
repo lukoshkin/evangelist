@@ -12,6 +12,8 @@ RED='\033[0;31m'
 GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)
 WHITE=$(tput setaf 15)
+BLUE=$(tput setaf 33)
+GRAY=$(tput setaf 246)
 
 ## NOTE: tput bold text modifier doesn't affect
 ## ####  colors defined not with tput.
@@ -31,8 +33,8 @@ ECHO () {
 
 
 NOTE () {
-  local COLOR=$(tput setaf $1)
-  echo -e "\n${BOLD}${COLOR}$2${RESET}"
+  local color=$(tput setaf $1)
+  echo -e "\n${BOLD}${color}$2${RESET}"
 }
 
 
@@ -47,6 +49,11 @@ ECHO2 () {
 HAS () {
   [[ $(type $@ 2>&1 | grep -c 'not found') -lt $# ]] && return 0
   return 1
+}
+
+
+HASLIB () {
+  dpkg-query -W $1 &> /dev/null
 }
 
 ##########################
@@ -177,7 +184,7 @@ write::instructions_after_removal () {
 }
 
 
-prepend_text () {
+_prepend_text () {
   if [[ $(uname) == Darwin ]]
   then
     sed -i '' "1i\\
@@ -194,28 +201,77 @@ $2\\
 write::file_header () {
   if [[ $1 =~ zsh ]]
   then
-    prepend_text $1 ''
-    prepend_text $1 'export ZPLUG_CACHE_DIR="$XDG_CACHE_HOME/zplug"'
-    prepend_text $1 "export ZPLUG_HOME=\"$ZPLUG_HOME\""
-    prepend_text $1 "export ZDOTDIR=\"$ZDOTDIR\""
-    prepend_text $1 '## ZSH'
+    _prepend_text $1 ''
+    _prepend_text $1 "export ZDOTDIR=\"$ZDOTDIR\""
+    _prepend_text $1 '## ZSH'
   fi
 
-  prepend_text $1 ''
-  prepend_text $1 "export XDG_CACHE_HOME=\"$XDG_CACHE_HOME\""
-  prepend_text $1 "export XDG_DATA_HOME=\"$XDG_DATA_HOME\""
-  prepend_text $1 "export XDG_CONFIG_HOME=\"$XDG_CONFIG_HOME\""
-  prepend_text $1 '## XDG bash directory specification'
+  _prepend_text $1 ''
+  _prepend_text $1 "export XDG_CACHE_HOME=\"$XDG_CACHE_HOME\""
+  _prepend_text $1 "export XDG_DATA_HOME=\"$XDG_DATA_HOME\""
+  _prepend_text $1 "export XDG_CONFIG_HOME=\"$XDG_CONFIG_HOME\""
+  _prepend_text $1 '## XDG bash directory specification'
 
-  prepend_text $1 ''
-  prepend_text $1 "export EVANGELIST=\"$PWD\""
+  _prepend_text $1 ''
+  _prepend_text $1 "export EVANGELIST=\"$PWD\""
 
   if [[ $1 =~ bash ]]
   then
-    prepend_text $1 ''
-    prepend_text $1 '[ -z "$PS1" ] && return'
-    prepend_text $1 '## If not running interactively, do not do anything.'
+    _prepend_text $1 ''
+    _prepend_text $1 '[ -z "$PS1" ] && return'
+    _prepend_text $1 '## If not running interactively, do not do anything.'
   fi
+}
+
+
+_register_package () {
+  local out
+  local newer=false
+  local v1 v2=$1
+
+  if [[ -n $v2 ]] && HAS $package
+  then
+    v1=$(dpkg-query -W -f '${Version}\n' $package 2> /dev/null)
+    [[ -z $v1 ]] && v1=$(eval "$package --version 2> /dev/null")
+    ## NOTE: `grep -E` doesn't work with non-capturing groups.
+    v1=$(grep -oE '[0-9]+(\.[0-9]+)+' <<< $v1)
+
+    if [[ -n $v1 ]]; then
+      [[ $v1 = $v2 ]] && newer=true
+      utils::dummy_v1_gt_v2 $v1 $v2 && newer=true
+    fi
+  else
+    newer=true
+  fi
+
+  case $mode in
+    [ro+]l) has () { HASLIB $1; } ;;
+    *) has () { HAS $@; } ;;
+  esac
+
+  if ! has $package || ! $newer
+  then
+    [[ -n $v2 ]] && v2="${GRAY}>=${v2}$RESET"
+    ## NOTE: There should be no spaces in `out`, and thus, `v2`,
+    ## since the former is an element of an array with default IFS.
+    [[ -z $name ]] && out=(${package}$v2) || out=(${name}$v2)
+  fi
+
+  echo $out
+}
+
+
+_diagnostics () {
+  local title=$1
+  local color=$2
+  shift 2
+
+  [[ $# -ne 0 ]] && echo -e "$color[$title]$RESET"
+
+  for p in $@
+  do
+    echo -e "  $p"
+  done
 }
 
 
@@ -228,24 +284,23 @@ write::modulecheck () {
 
   local required=()
   local optional=()
+  local extended=()
+  local mode name package version
 
-  local m v n
   while [[ -n $1 ]]
   do
-    m=$(cut -d ':' -f1 <<< $1)
-    v=$(cut -d ':' -f2 <<< $1)
-    n=$(cut -d ':' -f3 <<< $1)
+    mode=$(cut -d ':' -f1 <<< $1)
+    name=$(cut -d ':' -f3 <<< $1)
+    package=$(cut -d ':' -f2 <<< $1)
+    version=$(cut -d ':' -f4 <<< $1)
 
-    if [[ $m == r ]]
-    then
-      HAS $v || { [[ -z $n ]] && required+=($v) || required+=($n); }
-    elif [[ $m == o ]]
-    then
-      HAS $v || { [[ -z $n ]] && optional+=($v) || optional+=($n); }
-    else
-      echo Wrong argument specification
-      exit 1
-    fi
+    case $mode in
+      r*) required+=($(_register_package $version)) ;;
+      o*) optional+=($(_register_package $version)) ;;
+      +*) extended+=($(_register_package $version)) ;;
+      *) echo Wrong argument specification; exit 1 ;;
+    esac
+
     shift
   done
 
@@ -259,28 +314,20 @@ write::modulecheck () {
       ;;
     1)
       echo -e "${YELLOW}Some of features may not work.$RESET"
-      local COLOR=$YELLOW
+      local color=$YELLOW
       ;;
     *)
       echo -e "${RED}Cannot be installed.$RESET"
-      local COLOR=$RED
+      local color=$RED
       ;;
   esac
 
-  [[ $ok -gt 0 ]] && echo -e "${COLOR}Missing the following packages:\n$RESET"
-  [[ ${#required[@]} -ne 0 ]] && echo -e "${RED}[required]$RESET"
+  [[ $ok -gt 0 ]] && echo -e "${color}Missing the following packages:$RESET"
 
-  for p in ${required[@]}
-  do
-    echo -e "  $p"
-  done
-
-  [[ ${#optional[@]} -ne 0 ]] && echo -e "${YELLOW}[optional]$RESET"
-
-  for p in ${optional[@]}
-  do
-    echo -e "  $p"
-  done
+  echo
+  _diagnostics required $RED ${required[@]}
+  _diagnostics optional $YELLOW ${optional[@]}
+  _diagnostics 'for extensions' $BLUE ${extended[@]}
   echo
 }
 

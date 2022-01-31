@@ -20,8 +20,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get -qq update \
     && apt-get install -yq \
         python3 python3-dev python3-pip \
-        git neovim tmux curl npm nodejs \
-        ruby-full locales x11-xserver-utils tree \
+        git neovim tmux curl npm nodejs ruby-full \
+        locales x11-xserver-utils uuid-runtime tree \
         # zsh \
     && npm install -g neovim \
     && gem install neovim \
