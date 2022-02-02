@@ -299,11 +299,8 @@ the ones defined by ***evangelist***.
 
 * **IDE**
 
-  If you are not going to use Vim, and prefer IDE apps instead. You need to
-  expand the export of `ZPLUG_HOME` in `.zshrc` file (assuming your login shell is zsh)
-  to be able to use the configured terminal emulator in your IDE. If for some reason
-  you want to use Vim in the IDE, you will have to define XDG base directory specification
-  in `.zshrc` as well (since some IDEs don't read `~/.zshenv`).
+  If for some reason you want to use Vim in the IDE, you will have to define
+  XDG base directory specification in `.zshrc` (since some IDEs don't read `~/.zshenv`).
 
 * **Vim vs Neovim**
 

@@ -13,6 +13,7 @@
 
 ## Check out the commented code section below.
 
+
 utils::back_up_original_configs () {
   if ! grep -q "^$1" .update-list
   then
@@ -24,12 +25,16 @@ utils::back_up_original_configs () {
     #   rm -f /tmp/update-evn-list
     # fi
 
-    echo $1 >> .update-list
+    echo $1:0 >> .update-list
     shift
 
-    local m v n
-    for arg in $@
-    do
+    local arg m v n
+    ## `arg` is made local, because it previously overwrote
+    ## the value of the outer `arg` used in `control::install`.
+    ## Though, the outer was renamed to `_ARG` (it is used within
+    ## `install::vim_settings` now), it is better to separate
+    ## eponymous variables with `local` specifier.
+    for arg in $@; do
       m=$(cut -d ':' -f1 <<< $arg)
       v=$(cut -d ':' -f2 <<< $arg)
       n=$(cut -d ':' -f3 <<< $arg)
@@ -53,12 +58,28 @@ utils::back_up_original_configs () {
 }
 
 
+utils::update_status () {
+  for p in ${_PARAMS[@]}; do
+    sed -i "s;\(^$p:\)[01];\11;" .update-list
+  done
+}
+
+
+utils::status_info () {
+  components=$(sed '1,/Installed/d' .update-list 2> /dev/null)
+  ## sed: comma specifies the operating range, where endpoints are included
+  ## and can be patterns. If called without args, sed prints the current
+  ## buffer. One can use $ as the EOF marker.
+
+  components=$(sed -n 's;\(.*\):1;\1;p' <<< $components | tr '\n' ' ')
+}
+
+
 utils::str_has_any () {
   local intersection=0
   local stringset=$1
 
-  while [[ -n $2 ]]
-  do
+  while [[ -n $2 ]]; do
     [[ $stringset =~ $2 ]] && (( intersection+=1))
     shift
   done
@@ -70,13 +91,11 @@ utils::str_has_any () {
 
 utils::dummy_v1_gt_v2 () {
   declare -a version1 version2
-  if [[ $(readlink /proc/$$/exe) == *bash ]]
-  then
+  if [[ $(readlink /proc/$$/exe) = *bash ]]; then
     IFS='.' read -ra version1 <<< $1
     IFS='.' read -ra version2 <<< $2
     local shear=0
-  elif [[ $(readlink /proc/$$/exe) == *zsh ]]
-  then
+  elif [[ $(readlink /proc/$$/exe) = *zsh ]]; then
     IFS='.' read -rA version1 <<< $1
     IFS='.' read -rA version2 <<< $2
     local shear=1
@@ -85,14 +104,12 @@ utils::dummy_v1_gt_v2 () {
     exit 1
   fi
 
-  for ((i=shear; i<3+shear; ++i ))
-  do
-    if [[ ${version1[$i]} == ${version2[$i]} ]]
-    then
+  for ((i=shear; i<3+shear; ++i )); do
+    if [[ ${version1[$i]} = ${version2[$i]} ]]; then
       continue
     fi
 
-    if [[ ${version1[$i]} =~ ^[0-9]+$ && ${version2[$i]} =~ ^[0-9]+$ ]]
+    if [[ ${version1[$i]} =~ ^[0-9]+$ ]] && [[ ${version2[$i]} =~ ^[0-9]+$ ]]
     then
       [[ ${version1[$i]} -gt ${version2[$i]} ]] && return 0
     else
@@ -119,14 +136,15 @@ utils::resolve_vim_alternatives () {
       sed -i "/^Installed/i VIM-ALTERNATIVE:$value" .update-list
     fi
 
-    ([[ -z "$value" ]] || grep -q 'nvim' <<< "$value") && return
+    ## 1st condition = there is no way to get value with update-alternatives.
+    ## 2nd one = it is already the value we want to see.
+    ## In both cases, we don't go futher.
+    [[ -z $value ]] || [[ $value =~ nvim ]] && return
 
-    if [[ $(grep -c 'Alternative:' <<< "$alternatives") -ge 2 ]]
-    then
-      ## `_MSG` and `_SHELL` are local to `controll::install` function
-      ##  but accessible from `utils::resolve_vim_alternatives`.
+    if [[ $(grep -c 'Alternative:' <<< "$alternatives") -ge 2 ]]; then
+      ## `_MSG` is local to `controll::install` function
+      ## but accessible from `utils::resolve_vim_alternatives`.
       _MSG="sudo update-alternatives --set vim \$(which nvim)"
-      _SHELL='--'
       return
     fi
   fi
@@ -146,6 +164,4 @@ utils::resolve_vim_alternatives () {
   ## ex (improved Ex mode) and view (read only mode):
   # echo -e "alias ex='nvim -E' # added by EVANGELIST" >> "$reply"
   # echo -e "alias view='nvim -R' # added by EVANGELIST" >> "$reply"
-
-  _SHELL=${SHELL##*/}
 }

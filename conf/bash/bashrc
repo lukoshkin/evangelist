@@ -122,8 +122,7 @@ _autopushd () {
   done
   IFS=$ifs_bak
 
-  if [[ $CNT -lt $(dirs -p | wc -l) ]]
-  then
+  if [[ $CNT -lt $(dirs -p | wc -l) ]]; then
     pushd +$CNT > /dev/null
     return
   fi

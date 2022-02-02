@@ -5,8 +5,10 @@
 ## NOTE: better to surround expansions with double quotes
 ## ####  if they might contain spaces.
 
+
 install::check_arguments () {
   local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter'
+  local arg
 
   if [[ $# -ne 0 ]]; then
     local ok=true
@@ -38,8 +40,8 @@ install::vim_settings () {
   HAS vim && (( code+=1 ))
   HAS nvim && (( code+=2 ))
 
-  [[ $code -eq 0 ]] && { ECHO2 Missing: vim, neovim; return; }
-  ! grep -qE '^(ba|z)sh' .update-list
+  [[ $code -eq 0 ]] && { ECHO2 Missing: vim, neovim; return 1; }
+  ! grep -qE '^(z|ba)sh' .update-list
   code+="$?"
 
   ECHO Installing Vim configuration..
@@ -160,14 +162,17 @@ install::vim_settings () {
     cat /tmp/vim-plug.log && rm -f /tmp/vim-plug.log
   fi
 
+  ## _ARG can be any, but VIM is specific.
+  _PARAMS=( ${_PARAMS[@]/$_ARG/$VIM} )
+
   ECHO Successfully installed: Vim configuration.
 }
 
 
 install::jupyter_settings () {
   ## Check if pip and git are available
-  (HAS pip || HAS pip3) || { ECHO2 Missing pip3; return; }
-  HAS git || { ECHO2 Missing git; return; }
+  (HAS pip || HAS pip3) || { ECHO2 Missing pip3; return 1; }
+  HAS git || { ECHO2 Missing git; return 1; }
 
   ## Make an "alias" for pip3
   (! HAS pip && HAS pip3) && pip () { pip3 $@; }
@@ -231,7 +236,7 @@ install::jupyter_settings () {
 
 install::tmux_settings () {
   ## Check if Tmux is available
-  HAS tmux || { ECHO2 Missing tmux; return; }
+  HAS tmux || { ECHO2 Missing tmux; return 1; }
 
   ECHO Installing Tmux configuration..
 
@@ -281,8 +286,8 @@ install::bash_settings () {
 
 install::zsh_settings () {
   ## Check if zsh and git are available
-  HAS zsh || { ECHO2 Missing zsh; return; }
-  HAS git || { ECHO2 Missing git; return; }
+  HAS zsh || { ECHO2 Missing zsh; return 1; }
+  HAS git || { ECHO2 Missing git; return 1; }
 
   ECHO Installing ZSH configuration..
 
@@ -303,7 +308,7 @@ install::zsh_settings () {
   cp conf/zsh/agkozakrc "$ZDOTDIR"
   cp conf/zsh/zshenv ~/.zshenv
 
-  if [[ $(uname) == Darwin ]]; then
+  if [[ $(uname) = Darwin ]]; then
     cp conf/zsh/macos.zsh "$ZDOTDIR/extra.zsh"
   else
     cp conf/zsh/extra.zsh "$ZDOTDIR"

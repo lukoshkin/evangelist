@@ -2,11 +2,18 @@
 
 ## Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
 
-## About coding style and 'local' in particular.
-## No use of `local` specifier if variable does not appear
-## in nested (internal) function calls, and the program finishes
-## after this routine. Though the way 'local' being used may seem
-## inconsistent in the project, it never leads to an error (I hope).
+## About use of 'local' specifier in the code.
+## There is no difference between using `local` or disregarding it,
+## 1) if the function (which contains this `local`) is not sourced on
+##    a shell startup, so the variable exists only within the script.
+## 2) AND when declaring the variable at the top of the nested structure
+##    of the function and its subroutine calls. While in subroutines,
+##    we shadow the variable with `local` if want to reuse the name,
+##    or prepend it to preserve the value.
+
+## If met BOTH the conditions, there is no difference because being local
+## at the top means being global at lower levels of the described hierarchy.
+
 
 control::version () {
   echo -e "evangelist $(git describe --abbrev=0)\n"
@@ -33,13 +40,9 @@ control::help () {
 
 
 control::checkhealth () {
-  components=$(sed '1,/Installed/d' .update-list 2> /dev/null | tr '\n' ' ')
-  ## sed: comma specifies the operating range, where endpoints are included
-  ## and can be patterns. If called without args, sed prints the current
-  ## buffer. One can use $ as the EOF marker.
+  utils::status_info  # extracts `components`
 
-  if [[ -n $components ]]
-  then
+  if [[ -n $components ]]; then
     NOTE 147 "Installed: $components"
   else
     NOTE 147 'None of the listed configs is installed yet.'
@@ -112,21 +115,28 @@ control::install () {
     echo Installed components: >> .update-list
   fi
 
-  ## 'local msg' not only does shadow the eponymous variable
-  ## in control::reinstall function, but also makes `msg` empty,
-  ## if the latter had any value before the statement.
-  local msg _MSG _SHELL=$(grep -oE '(z|ba)sh' <<< $@)
-  ## uppercase with leading underscore show that the variable is exposed
+  ## 'local msg' below not only does shadow the eponymous variable in
+  ## control::reinstall function (if `install` is invoked from there), but
+  ## also makes `msg` empty, if the latter had any value before the statement.
+
+  ## HOWEVER, feel the difference:
+  ##   <.. in the body of some function ..>
+  ##
+  ##   msg=10                          local msg=10
+  ##   local msg                       local msg
+  ##   echo "<$msg>"  # prints <>      echo "<$msg>"  # prints <10>
+
+  local msg _MSG shell=$(grep -oE '(z|ba)sh' <<< $@)
+  ## UPPERCASE WITH LEADING UNDERSCORE show that the variable is exposed
   ## to subroutines, i.e. global to internal function calls.
 
   ## Let user select login shell
-  if [[ $@ = *bash* ]] && [[ $@ = *zsh* ]]
-  then
+  if [[ $@ = *bash* ]] && [[ $@ = *zsh* ]]; then
     msg+="Since you are installing BOTH the shells' settings,\n"
     msg+='please type in which one will be used as a login shell.\n'
 
     NOTE 210 "$msg"
-    read -p '(zsh|bash): ' _SHELL
+    read -p '(zsh|bash): ' shell
   fi
 
   ## Ensure shell settings are installed first
@@ -137,32 +147,36 @@ control::install () {
   [[ $@ =~ zsh ]] && params=( zsh ${params[@]/zsh} )
 
   ## Discard duplicates
-  declare -a newparams
+  declare -a _PARAMS
   for arg in ${params[@]}
   do
-    [[ ${newparams[@]} =~ $arg ]] || newparams+=( $arg )
+    [[ ${_PARAMS[@]} =~ $arg ]] || _PARAMS+=( $arg )
   done
-  set -- ${newparams[@]}
-  unset params newparams
+  set -- ${_PARAMS[@]}
+  unset params
 
-  while [[ $# -gt 0 ]]
-  do
-    case $1 in
-      nvim|vim)    install::vim_settings; shift ;;
-      tmux)        install::tmux_settings; shift ;;
-      jupyter)     install::jupyter_settings; shift ;;
-      bash)        install::bash_settings; shift ;;
-      zsh)         install::zsh_settings; shift ;;
-      *)           echo Infinite loop.; exit ;;
+  for _ARG in $@; do
+    case $_ARG in
+      nvim|vim)    install::vim_settings ;;
+      tmux)        install::tmux_settings ;;
+      jupyter)     install::jupyter_settings ;;
+      bash)        install::bash_settings ;;
+      zsh)         install::zsh_settings ;;
+      *)
+        echo Impl.error: "<$_ARG>" should have thrown an error earlier.
+        exit ;;
     esac
+
+    [[ $? -ne 0 ]] && _PARAMS=( ${_PARAMS[@]/$_ARG} )
   done
 
-  ## NOTE: if installing Vim configuration w/o shell settings,
-  ## while both Vim and Neovim are available, `_SHELL` var changes
-  ## from '' to "${SHELL##*/}" in vim_settings subroutine.
-  if [[ $TERM != dumb ]] && [[ -n $_SHELL ]]
-  then
-    write::instructions_after_install $_SHELL
+  ## Set 1 next to successfully installed settings in `.update-list`.
+  utils::update_status
+
+  ## Don't print "further instructions" if installing non-interactively
+  ## (e.g., when installing in a docker container).
+  if [[ $TERM != dumb ]]; then
+    write::instructions_after_install $shell
   fi
 }
 
@@ -201,8 +215,7 @@ control::update () {
   git merge origin/$BRANCH || exit 1
 
   ## TODO: Rewrite 'case + if' to 'if + case' ? too cumbersome now
-  for OBJ in $(sed '/nvim/d' <<< "$UPD")
-  do
+  for OBJ in $(sed '/nvim/d' <<< "$UPD"); do
     case ${OBJ##*/} in
       inputrc)
         grep -q '^bash' .update-list \
@@ -269,8 +282,7 @@ control::update () {
 
   if grep -qE '^n?vim' .update-list
   then
-    for OBJ in $(sed -n '/nvim/p' <<< "$UPD")
-    do
+    for OBJ in $(sed -n '/nvim/p' <<< "$UPD"); do
       ## lstrip 'conf/' in names of the form 'conf/nvim/conf/...'
       cp $OBJ "$XDG_CONFIG_HOME/${OBJ#*/}"
     done
@@ -289,17 +301,16 @@ control::uninstall () {
   grep -q '^bash' .update-list && rm ~/.{bashrc,inputrc}
 
   ## Completely eradicate the possibility of removing '/'
-  if grep -q '^zsh' .update-list
+  if grep -q '^zsh' .update-list  # grep -q '^zsh:1' ?
   then
-    ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
+    ZDOTDIR=$(zsh -c 'echo $ZDOTDIR' 2> /dev/null)
     [[ -n "$ZDOTDIR" ]] && rm -rf "$ZDOTDIR"
     rm -f ~/.zshenv
   fi
 
   rm -f ~/.condarc
   rm -f ~/.tmux.conf
-  if [[ -n "$XDG_CONFIG_HOME" ]]
-  then
+  if [[ -n "$XDG_CONFIG_HOME" ]]; then
     rm -rf "$XDG_CONFIG_HOME/nvim"
     rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
   fi
@@ -312,8 +323,7 @@ control::uninstall () {
   fi
 
   setopt nonomatch 2> /dev/null
-  for OBJ in .bak/{*,.*}
-  do
+  for OBJ in .bak/{*,.*}; do
     case ${OBJ##*/} in
       .bashrc | .inputrc | .condarc | .zshenv | .zshrc | .tmux.conf)
         cp $OBJ ~
@@ -352,7 +362,7 @@ control::uninstall () {
   ## the login shell and Vim alternatives.
   write::instructions_after_removal
   rm .update-list
-  rm -r .bak
+  rm -rf .bak
 }
 
 
@@ -362,8 +372,7 @@ control::reinstall () {
   assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
   [[ $assembly = extended ]] && _EXTEND=-
 
-  if [[ $1 = --no-reset ]]
-  then
+  if [[ $1 = --no-reset ]]; then
     control::install $(sed '1,/Installed/d' .update-list | tr '\n' ' ')
     return
   fi

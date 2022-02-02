@@ -1,11 +1,9 @@
 ## Setting search path for `cd` command properly.
-if ! [[ $CDPATH =~ ':?\.:' ]]
-then
+if ! [[ $CDPATH =~ ':?\.:' ]]; then
   [[ -z $CDPATH ]] && CDPATH=. || CDPATH=.:$CDPATH
 fi
 
-if ! [[ $CDPATH =~ ~ ]]
-then
+if ! [[ $CDPATH =~ ~ ]]; then
   CDPATH=$CDPATH:~
 fi
 
@@ -34,8 +32,7 @@ alias rexgrep="grep -rIn --exclude-dir='.?*'"
 # alias v="vim +'e #<1'"
 # alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
 v () {
-  if [[ $# -gt 0 ]]
-  then
+  if [[ $# -gt 0 ]]; then
     vim "$@"
     return
   fi
@@ -51,19 +48,19 @@ alias d='dirs -v'
 alias G='gg 0'
 
 gg () {
-  if [[ -z $1 ]]
-  then
+  if [[ -z $1 ]]; then
     pushd +1 &> /dev/null
     [[ $? -ne 0 ]] && echo Singular dir stack || :
-  elif [[ $1 == 0 ]]
-  then
+
+  elif [[ $1 = 0 ]]; then
     pushd -0 > /dev/null
-  elif [[ $1 =~ ^[0-9]+$ ]]
-  then
+
+  elif [[ $1 =~ ^[0-9]+$ ]]; then
     pushd +$1 > /dev/null
-  elif [[ $1 =~ ^-[0-9]+$ ]]
-  then
+
+  elif [[ $1 =~ ^-[0-9]+$ ]]; then
     popd +${1:1}
+
   else
     echo Wrong args
   fi
@@ -85,8 +82,7 @@ dtree () {
   timeout $w8 find . ! -path '*/\.*' -type d &> /dev/null
 
   ## 124 - command timed out
-  if [[ $? -eq 124 ]]
-  then
+  if [[ $? -eq 124 ]]; then
     echo 'Try to run it in one of subfolders.'
     return
   fi
@@ -116,8 +112,7 @@ tree () {
   hierarchy=$(script -eqc "timeout --preserve-status $w8 tree" /dev/null)
 
   ## 143 - SIGTERM (process was killed by another one)
-  if [[ $? -eq 143 ]]
-  then
+  if [[ $? -eq 143 ]]; then
     echo 'Try to run it in one of subfolders.'
     return
   fi
@@ -143,7 +138,8 @@ vrmswp () {
 }
 
 
-(grep -qE '^n?vim' "$EVANGELIST"/.update-list \
+(which tmux &> /dev/null \
+  && grep -qE '^n?vim' "$EVANGELIST"/.update-list \
   && grep -q '^source .*slime\.vim' "$XDG_CONFIG_HOME"/nvim/init.vim \
   && grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME"/nvim/init.vim) \
   && source "$EVANGELIST"/conf/tmux/templates.sh

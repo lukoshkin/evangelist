@@ -1,8 +1,7 @@
 #!/bin/bash
 
 ## in `docker build` command `TERM=dumb` is used
-if [[ $TERM = dumb ]]
-then
+if [[ $TERM = dumb ]]; then
   tput () {
     :
   }
@@ -74,8 +73,7 @@ write::dynamic_imports () {
     local line GITIGNORE
     line=$(git config -l | grep 'core.excludesfile')
 
-    if [[ -n $line ]]
-    then
+    if [[ -n $line ]]; then
       GITIGNORE=$(cut -d '=' -f2 <<< $line)
     else
       GITIGNORE="$XDG_CONFIG_HOME/git/ignore"
@@ -91,13 +89,12 @@ write::dynamic_imports () {
 
   if ! grep -q 'source "$EVANGELIST/custom/custom\..*sh"' $1
   then
-    if [[ $1 =~ zsh ]]
-    then
+    if [[ $1 =~ zsh ]]; then
       echo '[[ -f "$EVANGELIST/custom/custom.zsh" ]] \' >> $1
       echo '  && source "$EVANGELIST/custom/custom.zsh"' >> $1
       echo -e '\nzcomet compinit' >> $1
-    elif [[ $1 =~ bash ]]
-    then
+
+    elif [[ $1 =~ bash ]]; then
       echo '[[ -f "$EVANGELIST/custom/custom.bash" ]] \' >> $1
       echo '  && source "$EVANGELIST/custom/custom.bash" || :' >> $1
     fi
@@ -107,11 +104,12 @@ write::dynamic_imports () {
 
 ## Takes one argument - shell for which to install settings: bash or zsh
 write::instructions_after_install () {
-  NOTE 210 '\nFURTHER INSTRUCTIONS:'
-  printf 'TO FINISH THE INSTALLATION, '
+  if [[ -n $_MSG ]] || [[ -n $_PARAMS ]]; then
+    NOTE 210 '\nFURTHER INSTRUCTIONS:'
+    printf 'TO FINISH THE INSTALLATION, '
+  fi
 
-  if [[ -n $_MSG ]]
-  then
+  if [[ -n $_MSG ]]; then
     printf "SET VIM'S ALTERNATIVE TO USE, e.g.,\n"
     printf '(One can google other ways to do it w/o sudo)\n\n'
     printf "\t${BOLD}${WHITE}$_MSG${RESET}\n\n"
@@ -119,29 +117,38 @@ write::instructions_after_install () {
     printf 'since currently, there are aliases like vim=nvim defined.\n\n'
   fi
 
-  [[ $1 == '--' ]] && return
-  locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
-  local code=$?
+  if [[ -n $_PARAMS ]]; then
+    if [[ -n $1 ]]; then
+      locale -a | grep -qiE '^[a-z]{2}_?[a-z]*\.utf8$'
+      local code=$?
 
-  if [[ ${SHELL##*/} != $1 ]]
-  then
-    printf "CHANGE THE CURRENT SHELL TO $(tr a-z A-Z <<< $1),\n\n"
-    printf "\t${BOLD}${WHITE}chsh -s $(which $1)${RESET}\n\n"
-  fi
+      if [[ ${SHELL##*/} != $1 ]]; then
+        printf "CHANGE THE CURRENT SHELL TO $(tr a-z A-Z <<< $1),\n\n"
+        printf "\t${BOLD}${WHITE}chsh -s $(which $1)${RESET}\n\n"
+      fi
 
-  if [[ $code -eq 1 ]]
-  then
-    printf "GENERATE 'en_US' LOCALES,\n"
-    printf '(You can choose other ones)\n\n'
-    printf "\t${BOLD}${WHITE}sudo locale-gen en_US.UTF-8$RESET\n\n"
-  fi
+      if [[ $code -eq 1 ]]; then
+        printf "GENERATE AND UPDATE LOCALES\n"
+        printf "(You can choose other than 'en_US'),\n\n"
+        printf "\t${BOLD}${WHITE}sudo locale-gen en_US.UTF-8$RESET\n"
+        printf "\t${BOLD}${WHITE}sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8$RESET\n\n"
+      fi
+    fi
 
-  if [[ ${SHELL##*/} != $1 ]]
-  then
-    printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
-  else
-    printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.'
-    printf "\n\n\t${BOLD}${WHITE}exec $1${RESET}\n\n"
+    ## When to echo `exec *sh`? Almost in any case where re-login
+    ## is not a necessity. This is because Vim settings based on some
+    ## environment variables, and some aliases related to Vim are being
+    ## sourced on the shell startup. Tmux and Jupyter settings might
+    ## require in future re-launching the shell due the same reasons.
+    ## Another approach is to "parse" _PARAMS, and print instructions
+    ## for each case. It is better in terms of functionality, but not
+    ## if we consider "functionality - implementation efforts" trade-off.
+    if [[ -n $1 ]] && [[ ${SHELL##*/} != $1 ]]; then
+      printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
+    else
+      printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.'
+      printf "\n\n\t${BOLD}${WHITE}exec ${SHELL##*/}$RESET\n\n"
+    fi
   fi
 }
 
@@ -159,8 +166,7 @@ write::instructions_after_removal () {
   ## is available on the OS. Still, it is good to have this extra sanity
   ## check here.
 
-  if [[ -n $shell ]] && [[ ${SHELL##*/} != $shell ]]
-  then
+  if [[ -n $shell ]] && [[ ${SHELL##*/} != $shell ]]; then
     printf 'RESTORE THE ORIGINAL VALUE OF THE LOGIN SHELL.'
     printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $shell)${RESET}\n\n"
     printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
@@ -168,8 +174,7 @@ write::instructions_after_removal () {
     curr=$(update-alternatives --query vim | grep 'Value:' | cut -d ' ' -f2)
     orig=$(grep 'VIM-ALTERNATIVE' .update-list 2> /dev/null | cut -d: -f2)
 
-    if [[ -n $orig ]] && [[ $curr != $orig ]]
-    then
+    if [[ -n $orig ]] && [[ $curr != $orig ]]; then
       msg="${BOLD}${WHITE}sudo update-alternatives --set vim ${orig}${RESET}"
       printf 'RESTORE THE ORIGINAL VALUE OF THE VIM ALTERNATIVE.'
       printf "\n\n\t$msg\n\n"
@@ -185,8 +190,7 @@ write::instructions_after_removal () {
 
 
 _prepend_text () {
-  if [[ $(uname) == Darwin ]]
-  then
+  if [[ $(uname) = Darwin ]]; then
     sed -i '' "1i\\
 $2\\
 " $1
@@ -199,8 +203,7 @@ $2\\
 
 ## Takes one argument - shell for which to install settings: bash or zsh
 write::file_header () {
-  if [[ $1 =~ zsh ]]
-  then
+  if [[ $1 =~ zsh ]]; then
     _prepend_text $1 ''
     _prepend_text $1 "export ZDOTDIR=\"$ZDOTDIR\""
     _prepend_text $1 '## ZSH'
@@ -215,8 +218,7 @@ write::file_header () {
   _prepend_text $1 ''
   _prepend_text $1 "export EVANGELIST=\"$PWD\""
 
-  if [[ $1 =~ bash ]]
-  then
+  if [[ $1 =~ bash ]]; then
     _prepend_text $1 ''
     _prepend_text $1 '[ -z "$PS1" ] && return'
     _prepend_text $1 '## If not running interactively, do not do anything.'
@@ -268,8 +270,7 @@ _diagnostics () {
 
   [[ $# -ne 0 ]] && echo -e "$color[$title]$RESET"
 
-  for p in $@
-  do
+  for p in $@; do
     echo -e "  $p"
   done
 }
@@ -287,8 +288,7 @@ write::modulecheck () {
   local extended=()
   local mode name package version
 
-  while [[ -n $1 ]]
-  do
+  while [[ -n $1 ]]; do
     mode=$(cut -d ':' -f1 <<< $1)
     name=$(cut -d ':' -f3 <<< $1)
     package=$(cut -d ':' -f2 <<< $1)
@@ -335,8 +335,7 @@ write::modulecheck () {
 write::how_to_install_conda () {
   link=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 
-  if [[ $(uname) != Linux ]]
-  then
+  if [[ $(uname) != Linux ]]; then
     link='https://repo.anaconda.com/miniconda/<find-propper-link>'
   fi
 
@@ -361,7 +360,7 @@ write::commit_messages () {
 
   local nrows format branch=$1
   nrows=$(git rev-list HEAD..origin/$branch | wc -l)
-  [[ $nrows == 1 ]] && format=%B || format=%s
+  [[ $nrows = 1 ]] && format=%B || format=%s
   git log HEAD..origin/$branch --format=$format
 }
 
