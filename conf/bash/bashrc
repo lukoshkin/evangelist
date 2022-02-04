@@ -1,6 +1,6 @@
 # .:!:. >SED-UPDATE .:!:.
 
-# Set initialization file for Vim
+## Set initialization file for Vim
 if ! which nvim &> /dev/null && which vim &> /dev/null \
   && grep -qE '^n?vim' "$EVANGELIST/.update-list"
 then
@@ -8,8 +8,10 @@ then
   export VIMINIT=":source $MYVIMRC"
 fi
 
-# Finish configuring locales.
-if [[ -z $LANG ]]
+## Finish configuring locales.
+## NOTE: the necessity of the second condition in 'if-statement'
+##       should be tested by time.
+if [[ -z $LANG ]] && which locale-gen &> /dev/null
 then
   if locale -a | grep -qi 'en_us.utf8'
   then
@@ -33,11 +35,11 @@ export VISUAL
 export EDITOR=$VISUAL
 
 
-# Standard bash settings
-## No need to export these variables, since
-## - unlikely you will use them in your scripts
-## - a different shell (spawned as child process)
-##   will use its own history settings
+## Standard bash settings
+### No need to export these variables, since
+### - unlikely you will use them in your scripts
+### - a different shell (spawned as child process)
+###   will use its own history settings
 HISTSIZE=10000
 HISTFILESIZE=20000
 HISTFILE=~/.bash_history
@@ -54,13 +56,22 @@ HISTIGNORE="v:d:l:G:cd:ll:ls:pwd:tmux:clear \
 ## Append to the history file, don't overwrite it.
 shopt -s histappend
 
-## erasedups prevents adding dups encountered during a single bash session.
-## Still, cmds run across several sessions may duplicate each other
-## in the HISTFILE. So, the correct history merge is needed:
-_historymerge () {
-    history -n; history -w; history -c; history -r
-}
-trap _historymerge EXIT
+## Add entries to $HISTFILE immediately if running ssh.
+if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+  if [[ -z "$PROMPT_COMMAND" ]]; then
+    PROMPT_COMMAND="history -a"
+  else
+    PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+  fi
+else
+  ## erasedups prevents adding dups encountered during a single bash session.
+  ## Still, cmds run across several sessions may duplicate each other
+  ## in the HISTFILE. So, the correct history merge is needed:
+  _historymerge () {
+      history -n; history -w; history -c; history -r
+  }
+  trap _historymerge EXIT
+fi
 
 ## Check the window size after each command and, if necessary,
 ## Update the values of LINES and COLUMNS.
@@ -76,12 +87,12 @@ type dircolors &> /dev/null && eval "$(dircolors -b)"
 export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=33:ln=32:bn=32:se=36'
 
 
-# Some bash specific aliases
+## Some bash specific aliases
 alias ls='ls --color=auto'
 alias _bashrc='vim ~/.bashrc'
 alias bashrc="vim $EVANGELIST/custom/custom.bash"
 
-# Add visited dirs to the dir stack (doesn't work on macOS).
+## Add visited dirs to the dir stack (doesn't work on macOS).
 [[ $(uname) != Darwin ]] && alias cd=_autopushd
 
 _autopushd () {
@@ -93,19 +104,30 @@ _autopushd () {
   esac
 
   local CNT=0
-  for DIR in $(dirs -l)
+  local ifs_bak=$IFS
+  IFS=$'\n'
+
+  for DIR in $(dirs -p)
   do
+    ## `dirs -p` prints dir stack with one entry per line.
+    ## `dirs -l` prints longer listing substituting tilde with the home dir.
+    ## the latter option seems more suitable in for-loop but we can't use it
+    ## with dir names containing a space. Instead, we go with `dirs -p`,
+    ## change IFS (with a backup), and substitute tilde manually.
+
+    DIR=${DIR//'~'/$HOME}
+    INDIR=${INDIR//'~'/$HOME}
     [[ $(readlink -f $DIR) = $(readlink -f $INDIR) ]] && break
     (( CNT++ ))
   done
+  IFS=$ifs_bak
 
-  if [[ $CNT -lt $(dirs -p | wc -l) ]]
-  then
+  if [[ $CNT -lt $(dirs -p | wc -l) ]]; then
     pushd +$CNT > /dev/null
     return
   fi
 
-  pushd $INDIR > /dev/null
+  pushd "$INDIR" > /dev/null
 }
 
 ## Enforce the use of Neovim.
@@ -115,18 +137,15 @@ then
   alias vimdiff='nvim -d'
 fi
 
-# Static imports
-## Import more aliases.
+## Static imports
+### Import more aliases.
 source "$EVANGELIST/conf/bash/aliases-functions.sh"
+### evangelist completions for bash
+source "$EVANGELIST/completions/evn-compl.bash"
 
-## Import user-defined settings.
-[[ -f "$EVANGELIST/custom/custom.bash" ]] \
-  && source "$EVANGELIST/custom/custom.bash"
-
-
-# Misc
-## Increase key repeat rate with xset if it is available.
-## Ignore "unable to open display" error that appears in docker.
+## Misc
+### Increase key repeat rate with xset if it is available.
+### Ignore "unable to open display" error that appears in docker.
 which xset &> /dev/null && xset r rate 250 70 2> /dev/null
 
 # .:!:. <SED-UPDATE .:!:.

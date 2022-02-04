@@ -33,7 +33,7 @@ _evangelist() {
       ;;
 
     (subcmds)
-      if [[ ${line[1]} == 'install' ]]
+      if [[ ${line[1]} = 'install' ]]
       then
         _describe 'arguments' subcmds
       fi
@@ -56,5 +56,6 @@ _evangelist() {
   esac
 }
 
+compdef evn=evangelist
 _evangelist
 

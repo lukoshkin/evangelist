@@ -12,6 +12,8 @@ No need to manually restore your configs each time you buy a new laptop or reins
 Give it a shot! And if you don't like `evangelist`, you can always revert to
 your previous settings with its uninstall command.
 
+[More information on the first wiki page!](https://github.com/lukoshkin/evangelist/wiki/Philosophy)
+
 ---
 <sup>\*</sup> the settings shipped by **evangelist**. Their similarity on different machines  
 &ensp;will depend on the similarity of installed components among those machines.
@@ -75,8 +77,7 @@ chosen in the previous step). For help, run `./evangelist.sh checkhealth`
 <br>
 
 Since Vim keeps all changes made to files with its help, on Linux, one might consider
-adding anacron job (or its equivalent on macOS) by running the following command
-in `evangelist/anacron` folder
+adding anacron job (or its equivalent on macOS) by running `anacron/anacron.sh` script.
 
 * to remove old undofiles  
 `./anacron.sh old @monthly`
@@ -86,6 +87,10 @@ in `evangelist/anacron` folder
 
 Note, if you are a user of a different OS, you will have to set up 'auto-purge' of the undodir manually.  
 To get more information about what arguments `anacron.sh` takes, type `./anacron.sh`.
+
+Also, check the `develop` branch for recent updates. If there are any,
+you may want to incorporate them by typing `git checkout develop` before
+going to the step 2.
 
 
 ### Docker
@@ -97,27 +102,6 @@ Run this command from the directory where `Dockerfile` resides.
 ```bash
 docker build --build-arg IMG_NAME=<name_of_the_base_image> -t <new_image_name> .
 ```
-
-By default, `~/.bashrc` is replaced by `bash/bashrc`.  
-You can keep some of your settings by wrapping them with delimiting comments:
-
-1. in a running container (then saving it with `docker commit <container> <image>`)
-
-  ```bash
-  # >>> RESERVED-CONFS >>>
-  your settings
-  # <<< RESERVED-CONFS <<<
-  ```
-
-2. in the Dockerfile of a "base image" (before the latter is built)
-
-  ```Dockerfile
-  RUN some commands \
-      && echo "# >>> RESERVED-CONFS >>>" >> ~/.bashrc \
-      && ... appending required configs to ~/.bashrc ... \
-      && echo "# <<< RESERVED-CONFS <<<" >> ~/.bashrc \
-      && other commands
-  ```
 
 If installing zsh-settings with the **evangelist** inside a docker container,
 run the latter with `-e TERM=xterm-256color` option. Otherwise, you will end up
@@ -135,7 +119,7 @@ with broken colors during the process of both the installation and exploitation.
 - Light implementation of [conda-autoenv](https://github.com/sharonzhou/conda-autoenv)
   which supports both bash and zsh
 - Efficient navigation in the project directory (commands: `tree`, `d`, `gg`, `G`)
-- Interactive command history search (key-bindings: `jjk`, `<M-k>`, `/`)
+- Interactive command history search (key-bindings: `jjk`, `<M-kk>`, `/`)
 - Jupyter empowered by Vim and basic set of notebook extensions
 - Minimal configurations for Vim and Tmux
 
@@ -156,7 +140,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.1.0 (!)
+Patch 1.2.12 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -168,7 +152,7 @@ Patch 1.1.0 (!)
   |:----:|:--------:|:----------|
   | ins | `jj` | exit insert mode |
   | cmd | `(j\|k)` | go to the (next \| previous) matching substring in cmd history <br> _provided no substring,_ go to the (next \| previous) cmd |
-  | any | `<M-(j\|k)>` | go to the (next \| previous) cmd matching the current buffer from the beginning |
+  | any <br>  | `<M-(j\|k)>` | go to the (next \| previous) cmd matching the current buffer from <br> the beginning (Note: one more `<j/k>` press to exit from ins mode) |
   | any | `<C-q>` | deletes the current buffer, so one can execute another cmd, <br> after which the original one would be restored |
   | cmd | `/` | start interactive fuzzy search over cmds in the history file |
 
@@ -186,17 +170,22 @@ Patch 1.1.0 (!)
   |:--------------:|:-----------|
   | `mkenv [env]` | remember the environment used in a folder to <br> [de]activate the former when [leaving]/entering the latter <br> ***(supports only conda environments)*** |
   | `md` | create a directory (or nested folders) and cd there |
-  | `tree` | draw a project tree <br> (a "safe" wrapper around Unix `tree`) |
+  | `tree` | draw a project tree (files and directories); <br> if not installed `dtree` is called instead <br> (a "safe" wrapper around Unix `tree`) |
+  | `dtree` | draw a project tree (folders only) |
   | `v` | open the last file closed (in Vim) |
-  | `vv` | start Vim from the list of recently edited files |
+  | `vip` | initiate the "vim-ipython" split in tmux <br> (available only if tmux settings are installed) |
+  | `vrmswp [name]` | delete swap file by name or part of its name |
   | `d` | show directories visited by user (autocd zsh option) |
   | `(gg\|G)` | go through the dir stack in (forward \| backward) direction |
   | `gg n` | go to n-th directory in the list obtained with `d` <br> &emsp;&emsp;&emsp;&emsp;&emsp; (starting from 0) |
   | `gg -n` | remove n-th directory from the dir stack |
+  | `swap` | swap names of two targets |
+  | `rexgrep <str>` | is equivalent to `grep -r --exclude-dir='.?*' <str>`, <br> which excludes hidden directories from recursive search |
   | `(bash\|zsh\|vim)rc`\* | edit user-defined settings for the specified target |
   | `_(bash\|zsh\|vim)rc` | open main config file for the specified target |
+  | `evn\|evangelist` | alias for evangelist.sh executable script |
 
-  \* Note, priority is given to custom settings. Also, they will not be overwritten by
+  \* Note, the priority is given to custom settings. Also, they will not be overwritten by
   updates or new installations.
 
   </details>
@@ -214,13 +203,16 @@ Patch 1.1.0 (!)
   | normal | `<leader>en` | toggle spell-check |
   | normal | `<leader>y` | yank current buffer |
   | visual | `<leader>y` | yank selected text |
-  | normal <br> (.py extension) | `<leader>py` | run the current buffer in python |
-  | visual <br> (.py extension) | `<leader>py` | run the selected block of code in python |
   | normal | `<leader>t` | paste date and time before the cursor |
   | normal | `<leader>nu` | toggle line numbering |
-  | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss message in the cmd line below |
+  | normal | `<Space>b<Space>` | split line at the next space after the cursor position |
+  | visual | `<Space>b<Space>` | split the entire line at spaces |
+  | normal | `<Space>bb` | split line at the next char you previously searched with `f` |
+  | visual | `<Space>bb` | split the entire line at a separator you searched with `/` |
+  | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss a message in the cmd line below |
   | normal | `<M-(h\|j\|k\|l)>` | insert an empty line or space in the direction <br> which a movement key specifies |
   | command | Trim | remove all trailing spaces in the file |
+  | command | Rmswp | delete the corresponding to open buffer swap file |
   | visual | `//` | search for selected text <br> (doesn't work in `VISUAL LINE` mode) |
   | any | `<A-m>` | toggle mouse |
   </details>
@@ -289,6 +281,7 @@ Check the rest settings with `<F1>` or `H` (`<Shift-h>`) while running Jupyter s
 | `<C-b> + (h\|j\|k\|l)` | go to the window (on the left \| below \| above \| on the right) |
 | `<M-S-(h\|j\|k\|l)>` | resize pane moving the border (to the left \| down \| up \| to the right) |
 | `<C-b> + (H\|J\|K\|L)` | swap the window that has input focus with <br> the one (on the left \| below \| above \| on the right) |
+| `<C-b>Q` | close vim buffers (saving them first if modified) and terminate tmux session |
 | `<C-b>y` | toggle synchronous input in all panes |
 | `<C-b>m` | toggle mouse support |
 
@@ -308,11 +301,8 @@ the ones defined by ***evangelist***.
 
 * **IDE**
 
-  If you are not going to use Vim, and prefer IDE apps instead. You need to
-  expand the export of `ZPLUG_HOME` in `.zshrc` file (assuming your login shell is zsh)
-  to be able to use the configured terminal emulator in your IDE. If for some reason
-  you want to use Vim in the IDE, you will have to define XDG base directory specification
-  in `.zshrc` as well (since some IDEs don't read `~/.zshenv`).
+  If for some reason you want to use Vim in the IDE, you will have to define
+  XDG base directory specification in `.zshrc` (since some IDEs don't read `~/.zshenv`).
 
 * **Vim vs Neovim**
 
@@ -391,8 +381,8 @@ This work is based primarily on leveraging the following projects.
   </tr>
 
   <tr>
-    <td> - <a href="https://github.com/zplug/zplug"> zplug </a> </td>
-    <td> zsh plugin Manager </td>
+    <td> - <a href="https://github.com/agkozak/zcomet"> zcomet </a> </td>
+    <td> Zsh plugin manager </td>
   </tr>
 
   <tr>
@@ -410,5 +400,8 @@ This work is based primarily on leveraging the following projects.
  - [x] Add `install`, `update`, `reinstall`, `uninstall` control functions
  - [x] Add `EVANGELIST` environment variable
  - [x] Write bash/zsh completions
- - [ ] Write Wiki evangelist
- - [ ] Add [Vim-tutor](https://github.com/lukoshkin/vim-tutor) to evangelist as a submodule
+ - [x] Write Wiki evangelist
+ ---
+ - [ ] Switch from `init.vim` to `init.lua` (for Neovim)
+ - [ ] Switch from CoC to configs with Native LSP (for Neovim)
+ - [ ] Test LunarVim / SpaceVim

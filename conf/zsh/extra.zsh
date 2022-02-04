@@ -1,5 +1,5 @@
-# ZSH ALIASES
-# -------
+## ZSH ALIASES
+## -----------
 alias -g ...=../..
 alias -g ....=../../..
 alias -g .....=../../../..
@@ -12,8 +12,8 @@ alias zshrc="vim $EVANGELIST/custom/custom.zsh"
 
 
 
-# CONSOLE INPUT
-# -------------
+## CONSOLE INPUT
+## -------------
 ## Key repeat rate (to navigate faster with a key pressed)
 xset r rate 250 70 2> /dev/null
 
@@ -53,21 +53,16 @@ autoload -U down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 
-function from-ins-beginning-search-up() {
+function insert-space-cmd-mode() {
+  zle magic-space
   zle vi-cmd-mode
-  zle up-line-or-beginning-search
+  zle vi-forward-char
 }
 
-function from-ins-beginning-search-down() {
-  zle vi-cmd-mode
-  zle down-line-or-beginning-search
-}
+zle -N insert-space-cmd-mode
 
-zle -N from-ins-beginning-search-up
-zle -N from-ins-beginning-search-down
-
-bindkey -M viins '^[k' from-ins-beginning-search-up
-bindkey -M viins '^[j' from-ins-beginning-search-down
+bindkey -M viins '^[k' insert-space-cmd-mode
+bindkey -M viins '^[j' insert-space-cmd-mode
 bindkey -M vicmd '^[k' up-line-or-beginning-search
 bindkey -M vicmd '^[j' down-line-or-beginning-search
 ### -------- block ends --------
@@ -95,8 +90,8 @@ zstyle ':completion:*' completer _expand_alias _complete _match #_ignored
 # zstyle ':completion:*' ignored-patterns '<pattern-to-ignore>'
 
 
-# STYLE CONTROL
-# -------------
+## STYLE CONTROL
+## -------------
 ## The following settings allow to change the terminal window transparency
 ## from the command line (not from an editor or another app opened in the console).
 ## Requires 'transset' to be installed. One can change the transparency
@@ -126,24 +121,24 @@ bindkey -M viins '^[-' decr-transp
 
 
 
-# CLEAN HISTORY LOOKUP
-# --------------------
+## CLEAN HISTORY LOOKUP
+## --------------------
 ## Not able to set up the functionality of this section with HISTORY_IGNORE
 ## Exporting HISTORY_IGNORE ruins everything (why?)
 
 _ignorecommon="(\
-^v ?$|\
 ^d ?$|\
 ^gg ?[0-9-]*$|\
 ^G ?$|\
 ^cd ?$|\
-^l[las]? ?$|\
-^vi[m]? ?$|\
+^l[lst]? ?$|\
+^vi?m? ?$|\
 ^echo ?$|\
 ^pwd ?$|\
 ^clear ?$|\
 ^man \S*$|\
-^tmux ?$"
+^tmux ?$|\
+\.unknowno"
 
 _ignorecommon+="|\
 ^vi[m]? ~?\/?\.?\w+[^/ ]*$|\
@@ -165,8 +160,8 @@ zshaddhistory() {
 
 
 
-# ZSH OPTIONS
-#------------
+## ZSH OPTIONS
+## -----------
 ## zsh options are case insensitive and ignore underscores in the name.
 setopt autopushd
 setopt pushdignoredups
@@ -176,9 +171,12 @@ setopt nobeep
 setopt noflow_control
 ## The last one is for unbinding flow control keys: C-s and C-q
 
-setopt hist_ignore_space
+setopt histignorespace
 setopt histignorealldups
 setopt histreduceblanks
+
+## Add entries to $HISTFILE immediately if running ssh.
+[[ -n $SSH_CLIENT ]] || [[ -n $SSH_TTY ]] && setopt sharehistory
 
 setopt extendedglob
 ## quite powerful option which enables:
@@ -187,3 +185,7 @@ setopt extendedglob
 ## - approximate matching   ls (#a1)foobar  fobar,
 ## - qualifiers             ls foo/*(#q@)   finds all symblic links (@) in foo
 ## more info by googling article: 37-ZSH-Gem-2-Extended-globbing-and-expansion.html
+
+## EVANGELIST COMPLETIONS (ZSH)
+## ----------------------------
+fpath+=( "$EVANGELIST/completions" )

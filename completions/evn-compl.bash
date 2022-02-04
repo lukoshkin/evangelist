@@ -47,3 +47,4 @@ _evangelist () {
 }
 
 complete -F _evangelist evangelist
+complete -F _evangelist evn

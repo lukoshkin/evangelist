@@ -1,52 +1,30 @@
-# PLUGINS
-## The sourcing below might fail for IDEs.
-## If this is the case, you will need to expand $ZPLUG_HOME variable.
-source "$ZPLUG_HOME/init.zsh"
+source "$ZDOTDIR"/.zcomet/bin/zcomet.zsh
 
-zplug 'zsh-users/zsh-autosuggestions'
-zplug 'zsh-users/zsh-syntax-highlighting', defer:2
-zplug 'zsh-users/zsh-history-substring-search', defer:3
-zplug 'zplug/zplug', hook-build:'zplug --self-manage'
-zplug 'zsh-users/zsh-completions', depth:1
+zcomet load zsh-users/zsh-autosuggestions
+zcomet load zsh-users/zsh-syntax-highlighting
+zcomet load zsh-users/zsh-history-substring-search
+zcomet load zsh-users/zsh-completions
 
-# and THEME
-## If you don't face any bugs,
-## (particularly the one related to resizing terminal window)
-## powerlevel10k is a good choice.
-# zplug 'romkatv/powerlevel10k', as:theme, depth:1
-## Otherwise, you can use minimalistic 'agkozak' theme.
-zplug 'agkozak/agkozak-zsh-theme'
-[[ -n $(zplug list | grep agkozak) ]] && source "$ZDOTDIR/agkozakrc"
+## One can use more configurable 'powerlvl10k', but be aware of its bugs.
+zcomet load agkozak/agkozak-zsh-theme && source "$ZDOTDIR"/agkozakrc
 
-if ! zplug check --verbose; then
-  printf "Install? [y/N]: "
-  if read -q; then
-    echo; zplug install
-  fi
-fi
-
-zplug load
-
-# OTHER SETTINGS
-## No need to export the following variables, since
-## - unlikely you will use them in your scripts
-## - a different shell (spawned as child process)
-##   will use its own history settings
-HISTFILE="$XDG_DATA_HOME/zsh_history"
+HISTFILE="$XDG_DATA_HOME"/zsh_history
 HISTSIZE=100000
 SAVEHIST=$HISTSIZE
-
-source "$ZDOTDIR/extra.zsh"
-source "$EVANGELIST/conf/bash/aliases-functions.sh"
-
-## Import user-defined settings.
-[[ -f "$EVANGELIST/custom/custom.zsh" ]] \
-  && source "$EVANGELIST/custom/custom.zsh"
+## No need to export the these variables, since:
+## - unlikely you will use them in your scripts;
+## - different shell (e.g. bash, spawned as a child process)
+##   will use its own history settings.
 
 ## Enforce the use of Neovim.
+## This block should go before imports that might use it.
 if which nvim &> /dev/null
 then
   alias vim=nvim
   alias vimdiff='nvim -d'
 fi
+
+## Static imports.
+source "$ZDOTDIR"/extra.zsh
+source "$EVANGELIST"/conf/bash/aliases-functions.sh
 
