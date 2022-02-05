@@ -12,6 +12,8 @@ No need to manually restore your configs each time you buy a new laptop or reins
 Give it a shot! And if you don't like `evangelist`, you can always revert to
 your previous settings with its uninstall command.
 
+[More information on the first wiki page!](https://github.com/lukoshkin/evangelist/wiki/Philosophy)
+
 ---
 <sup>\*</sup> the settings shipped by **evangelist**. Their similarity on different machines  
 &ensp;will depend on the similarity of installed components among those machines.
@@ -398,4 +400,8 @@ This work is based primarily on leveraging the following projects.
  - [x] Add `install`, `update`, `reinstall`, `uninstall` control functions
  - [x] Add `EVANGELIST` environment variable
  - [x] Write bash/zsh completions
- - [ ] Write Wiki evangelist
+ - [x] Write Wiki evangelist
+ ---
+ - [ ] Switch from `init.vim` to `init.lua` (for Neovim)
+ - [ ] Switch from CoC to configs with Native LSP (for Neovim)
+ - [ ] Test LunarVim / SpaceVim
