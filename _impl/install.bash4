@@ -1,4 +1,5 @@
 #!/bin/bash
+## Shebang helps the editor to correctly render colors.
 
 ## Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
 
@@ -67,15 +68,23 @@ install::vim_settings () {
         conda install -yc conda-forge nodejs &> /dev/null \
           && echo - Installed nodejs. \
           || echo Failed to install with conda: nodejs
+      else
+        echo Checking if possible to update 'node' via conda..
+        conda update -y nodejs
       fi
 
       ## Optional deps of Neovim providers (npm and python)
       echo "Checking optional providers' deps.."
       echo "(Missing ones will be installed if possible)"
-      ( npm ls -g | grep neovim || npm install -g neovim ) &> /dev/null \
+
+      ## It turns out to be faster to check whether the package
+      ## is installed by re-executing teh installation command rather
+      ## than querying its installation status with a special command.
+
+      npm install -g neovim &> /dev/null \
         && echo - [OK] neovim-client. \
         || echo "Cannot execute: npm install -g neovim"
-      ( pip show pynvim || pip install pynvim ) &> /dev/null \
+      pip install pynvim &> /dev/null \
         && echo - [OK] pynvim. \
         || echo "Cannot execute: pip install pynvim"
 
@@ -125,6 +134,12 @@ install::vim_settings () {
     sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME"/nvim/init.vim
     ## CoC is chosen to be a default code-completion engine,
     ## YCM is commented out, therefore.
+
+    if utils::dummy_v1_gt_v2 $(node --version) v12.12
+    then
+      ## `&` in the following line means "use the whole text matched".
+      sed -i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME"/nvim/init.vim
+    fi
     set_assembly=extended
   fi
 
@@ -137,11 +152,17 @@ install::vim_settings () {
   ## Install Vim plugins silently (save installation summary)
   if [[ $TERM != dumb ]]; then
     $VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
+    ## NOTE: During interactive installation, the hanging happens
+    ## if some of the plugins being installed throw an error. If the latter
+    ## is the case, evangelist will not finish the procedure unless the user
+    ## hits ENTER the necessary number of times (one, two, or more).
   else
     ## For non-interactive installation, either one of two commands
     ## is used, depending on whether Vim or Neovim is chosen:
+
     # nvim --headless +PlugInstall +qa
     # vim +PlugInstall +qa > /dev/null
+
     ## The latter command produces the warnings:
 
     ## Vim: Warning: Output is not to a terminal
