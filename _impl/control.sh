@@ -1,4 +1,5 @@
 #!/bin/bash
+## Shebang helps the editor to correctly render colors.
 
 ## Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
 
@@ -32,7 +33,7 @@ control::help () {
   printf '  %-18s Show the installation status or readiness to install.\n' 'checkhealth'
   printf '  %-18s Install one or all of the specified setups: bash zsh vim tmux jupyter.\n' 'install'
   printf '  %-18s Install with extensions if they are provided (beta). \n' 'install+'
-  printf '  %-18s Update the repository and installed configs.\n' 'update'
+  printf '  %-18s Update the repository and installed configs (beta).\n' 'update'
   printf '  %-18s Force update of the repository in case of merge conflicts.\n' 'reinstall'
   printf '  %-18s Roll back to the original settings.\n' 'uninstall'
   echo
@@ -40,7 +41,7 @@ control::help () {
 
 
 control::checkhealth () {
-  utils::status_info  # extracts `components`
+  utils::get_installed_components
 
   if [[ -n $components ]]; then
     NOTE 147 "Installed: $components"
@@ -373,7 +374,8 @@ control::reinstall () {
   [[ $assembly = extended ]] && _EXTEND=-
 
   if [[ $1 = --no-reset ]]; then
-    control::install $(sed '1,/Installed/d' .update-list | tr '\n' ' ')
+    utils::get_installed_components
+    control::install $components
     return
   fi
 

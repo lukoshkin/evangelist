@@ -9,7 +9,10 @@ vip () {
   [[ -n $TMUX ]] && { eval "$vcmd"; return; }
 
   icmd=ipython
-  pip list | grep -qP 'matplotlib(?!-inline)' \
+  ## 'grep -qP' results in broken pipe error.
+  ## So we use '> /dev/null' instead.
+  ( pip3 --disable-pip-version-check list \
+      | grep -P 'matplotlib(?!-inline)' > /dev/null ) \
     && icmd+=' --matplotlib' \
     || echo Install 'matplotlib' package for visualization.
 

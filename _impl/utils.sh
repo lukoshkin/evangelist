@@ -1,4 +1,5 @@
 #!/bin/bash
+## Shebang helps the editor to correctly render colors.
 
 ## This function should be called only once
 ## within the body of an install::*_settings function
@@ -65,7 +66,7 @@ utils::update_status () {
 }
 
 
-utils::status_info () {
+utils::get_installed_components () {
   components=$(sed '1,/Installed/d' .update-list 2> /dev/null)
   ## sed: comma specifies the operating range, where endpoints are included
   ## and can be patterns. If called without args, sed prints the current
@@ -90,14 +91,16 @@ utils::str_has_any () {
 
 
 utils::dummy_v1_gt_v2 () {
+  [[ -z $1 || -z $2 ]] && return 1
   declare -a version1 version2
+
   if [[ $(readlink /proc/$$/exe) = *bash ]]; then
-    IFS='.' read -ra version1 <<< $1
-    IFS='.' read -ra version2 <<< $2
+    IFS='.' read -ra version1 <<< ${1//v}
+    IFS='.' read -ra version2 <<< ${2//v}
     local shear=0
   elif [[ $(readlink /proc/$$/exe) = *zsh ]]; then
-    IFS='.' read -rA version1 <<< $1
-    IFS='.' read -rA version2 <<< $2
+    IFS='.' read -rA version1 <<< ${1//v}
+    IFS='.' read -rA version2 <<< ${2//v}
     local shear=1
   else
     >&2 echo evangelist supports only bash and zsh.

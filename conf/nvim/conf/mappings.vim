@@ -74,8 +74,36 @@ nnoremap <silent><leader>nu :set invnu invrnu <Bar> silent! ToggleDiag<CR>
 nnoremap <Space>b<Space> f<Space>r<CR>
 nnoremap <Space>bb ;li<CR><Esc>
 
-xnoremap <Space>b<Space> :s/ /\r/g<CR>
-xnoremap <Space>bb :s//\0\r/g<CR>
+fun! SplitBySep (...)
+  "" '...' is like '*args' in Python.
+
+  "" Note: the content of register l will be lost after the function call.
+  "" Key 'l' is chosen as "the least convenient" for register use.
+
+  "" I believe there is no need to check the num of args.
+  " if a:0 > 1
+  "   echoerr 'More than one argument passed'
+  "   return
+  " endif
+
+  let l:sep = get(a:, 1, ' ')
+
+  normal ml
+  normal 0"ldw
+  silent! execute 's;\('.l:sep.'\)\(\S\)\@=;\1\r;g'
+  normal mL
+
+  'l,'Ls;^;\=@l;
+  normal 'l
+  silent 'l,'LTrim
+  delmarks lL
+  let @l=''
+endfun
+
+"" The last one splits by the '/'-register's content, i.e.,
+"" the last searched pattern.
+xnoremap <Space>b<Space> :call SplitBySep()<CR>
+xnoremap <Space>bb :call SplitBySep(getreg('/'))<CR>
 
 "" Note, here we use concatenation as is usual in shell.
 command! Rmswp :silent !rm "$XDG_DATA_HOME"/nvim/swap/*'%:t'*
