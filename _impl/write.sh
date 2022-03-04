@@ -231,17 +231,16 @@ _register_package () {
   local newer=false
   local v1 v2=$1
 
+  ## It is not necessary to check these two conditions since
+  ## `utils::v1_ge_v2` handles these cases (empty variables, to be exact).
+  ## However, it slightly reduces exec. time and prevents error messages.
   if [[ -n $v2 ]] && HAS $package
   then
     v1=$(dpkg-query -W -f '${Version}\n' $package 2> /dev/null)
     [[ -z $v1 ]] && v1=$(eval "$package --version 2> /dev/null")
     ## NOTE: `grep -E` doesn't work with non-capturing groups.
     v1=$(grep -oE '[0-9]+(\.[0-9]+)+' <<< $v1)
-
-    if [[ -n $v1 ]]; then
-      [[ $v1 = $v2 ]] && newer=true
-      utils::dummy_v1_gt_v2 $v1 $v2 && newer=true
-    fi
+    utils::v1_ge_v2 $v1 $v2 && newer=true
   else
     newer=true
   fi

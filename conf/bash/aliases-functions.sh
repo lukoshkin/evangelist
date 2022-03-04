@@ -134,7 +134,8 @@ swap () {
 
 vrmswp () {
   [[ -z $1 ]] && "Pass the name of swap file to delete."
-  rm $XDG_DATA_HOME/nvim/swap/*$1*
+  local swp=${1//\//%}
+  rm $XDG_DATA_HOME/nvim/swap/*$swp*
 }
 
 

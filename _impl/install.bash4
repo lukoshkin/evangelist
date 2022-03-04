@@ -33,6 +33,8 @@ install::check_arguments () {
 
 
 install::vim_settings () {
+  ECHO Installing Vim configuration..
+
   ## Go on with Neovim if available, otherwise with Vim
   local VIM VIMPLUG code=0
 
@@ -41,11 +43,9 @@ install::vim_settings () {
   HAS vim && (( code+=1 ))
   HAS nvim && (( code+=2 ))
 
-  [[ $code -eq 0 ]] && { ECHO2 Missing: vim, neovim; return 1; }
+  [[ $code -eq 0 ]] && { ECHO2 Missing: vim, neovim. Aborted.; return 1; }
   ! grep -qE '^(z|ba)sh' .update-list
   code+="$?"
-
-  ECHO Installing Vim configuration..
 
   ## Make an "alias" for pip3
   (! HAS pip && HAS pip3) && pip () { pip3 $@; }
@@ -62,18 +62,19 @@ install::vim_settings () {
       ;;&
 
     [23]?)
-      if ! HAS npm
+      if ! HAS nodejs
       then
-        echo Installing npm..
-        conda install -yc conda-forge nodejs &> /dev/null \
+        echo Installing nodejs..
+        ## NOTE: hard-coded minimal version of Node.
+        conda install -yc conda-forge "nodejs>=12.12" &> /dev/null \
           && echo - Installed nodejs. \
-          || echo Failed to install with conda: nodejs
+          || echo - Failed to install with conda: nodejs
       else
         echo Checking if possible to update 'node' via conda..
-        conda update -y nodejs
+        conda update -y nodejs &> /dev/null || echo - Not possible.
       fi
 
-      ## Optional deps of Neovim providers (npm and python)
+      ## Optional deps of Neovim providers (node and python)
       echo "Checking optional providers' deps.."
       echo "(Missing ones will be installed if possible)"
 
@@ -135,7 +136,7 @@ install::vim_settings () {
     ## CoC is chosen to be a default code-completion engine,
     ## YCM is commented out, therefore.
 
-    if utils::dummy_v1_gt_v2 $(node --version) v12.12
+    if ! utils::v1_ge_v2 $(node --version) 12.12
     then
       ## `&` in the following line means "use the whole text matched".
       sed -i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME"/nvim/init.vim
@@ -191,14 +192,14 @@ install::vim_settings () {
 
 
 install::jupyter_settings () {
+  ECHO Installing Jupyter configuration..
+
   ## Check if pip and git are available
-  (HAS pip || HAS pip3) || { ECHO2 Missing pip3; return 1; }
-  HAS git || { ECHO2 Missing git; return 1; }
+  (HAS pip || HAS pip3) || { ECHO2 Missing pip3. Aborted.; return 1; }
+  HAS git || { ECHO2 Missing git. Aborted.; return 1; }
 
   ## Make an "alias" for pip3
   (! HAS pip && HAS pip3) && pip () { pip3 $@; }
-
-  ECHO Installing Jupyter configuration..
 
   echo Checking required packages..
   echo "(Missing ones will be installed if possible)"
@@ -210,7 +211,7 @@ install::jupyter_settings () {
   HAS jupyter \
     || { pip install -q jupyter \
          && HAS jupyter && echo - Installed jupyter.; } \
-      || { ECHO2 Jupyter is not accessible.; return 1; }
+      || { ECHO2 Jupyter is not accessible. Aborted.; return 1; }
 
   local JUPCONFDIR=$(jupyter --config-dir)
 
@@ -256,10 +257,10 @@ install::jupyter_settings () {
 
 
 install::tmux_settings () {
-  ## Check if Tmux is available
-  HAS tmux || { ECHO2 Missing tmux; return 1; }
-
   ECHO Installing Tmux configuration..
+
+  ## Check if Tmux is available
+  HAS tmux || { ECHO2 Missing tmux. Aborted.; return 1; }
 
   utils::back_up_original_configs tmux \
     f:~/.tmux.conf f:"$XDG_CONFIG_HOME/tmux/tmux.conf"
@@ -268,7 +269,7 @@ install::tmux_settings () {
   local VERSION=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
 
   ## Copy new configs
-  utils::dummy_v1_gt_v2 $VERSION 3.1 \
+  utils::v1_ge_v2 $VERSION 3.1 \
     && cp -R conf/tmux "$XDG_CONFIG_HOME" \
     || cp conf/tmux/tmux.conf ~/.tmux.conf
 
@@ -306,11 +307,11 @@ install::bash_settings () {
 
 
 install::zsh_settings () {
-  ## Check if zsh and git are available
-  HAS zsh || { ECHO2 Missing zsh; return 1; }
-  HAS git || { ECHO2 Missing git; return 1; }
-
   ECHO Installing ZSH configuration..
+
+  ## Check if zsh and git are available
+  HAS zsh || { ECHO2 Missing zsh. Aborted.; return 1; }
+  HAS git || { ECHO2 Missing git. Aborted.; return 1; }
 
   [[ -z "$ZDOTDIR" ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 

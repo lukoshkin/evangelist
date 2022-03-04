@@ -8,6 +8,8 @@ LABEL description="This Dockerfile is a part of 'evangelist' project"
 ENV XDG_CONFIG_HOME="$HOME"/.config
 ENV XDG_CACHE_HOME="$HOME"/.cache
 ENV XDG_DATA_HOME="$HOME"/.local/share
+## Set SHELL to get rid of errors in Tmux.
+ENV SHELL /bin/bash
 
 RUN mkdir -p "$XDG_CONFIG_HOME" \
     && mkdir -p "$XDG_CACHE_HOME" \
@@ -38,8 +40,12 @@ RUN pip3 install --no-cache-dir --upgrade \
         jupyter_nbextensions_configurator
 
 USER $USER
-COPY . "$XDG_CONFIG_HOME"/evangelist/
+COPY --chown=$USER . "$XDG_CONFIG_HOME"/evangelist/
+## To source ~/.bashrc (sh cannot execute bash files in general)
+SHELL ["/bin/bash", "-c"]
 
-RUN cd $XDG_CONFIG_HOME/evangelist \
+## We need to source ~/.bashrc if conda is used.
+RUN . ~/.bashrc \
+    && cd $XDG_CONFIG_HOME/evangelist \
     && ./evangelist.sh install bash+ jupyter
     # && ./evangelist.sh install zsh+ jupyter

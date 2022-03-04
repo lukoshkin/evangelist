@@ -16,6 +16,7 @@ Plug 'mhinz/vim-startify'
 " source $XDG_CONFIG_HOME/nvim/conf/tex.vim
 " source $XDG_CONFIG_HOME/nvim/conf/regex.vim
 " source $XDG_CONFIG_HOME/nvim/conf/md-preview.vim
+" source $XDG_CONFIG_HOME/nvim/conf/translate.vim
 " Plug 'tpope/vim-surround'
 
 "" 'Towards IDE' plugins

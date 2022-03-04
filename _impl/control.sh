@@ -71,7 +71,7 @@ control::checkhealth () {
 
   ##     'nvim vim' (precedence to the 1st)
   ##         or
-  ##     'npm conda' (npm can be installed via conda)
+  ##     'nodejs conda' (nodejs can be installed via conda)
 
   ## If falling under the latter example, installation with the
   ## manager should be reflected in the code.
@@ -90,7 +90,7 @@ control::checkhealth () {
   write::modulecheck ZSH ${ZSH_DEPS[@]}
   write::modulecheck VIM \
     r:'nvim vim':neovim r:curl \
-    o:'pip pip3':pip3 o:'npm conda':npm o:xclip \
+    o:'pip pip3':pip3 o:'nodejs conda':npm o:xclip \
     +:node::12.12 +l:libxcb-xinerama0
   write::modulecheck JUPYTER r:'pip pip3':pip3 r:git
   write::modulecheck TMUX r:tmux
@@ -254,7 +254,7 @@ control::update () {
           ## A more stable way to determine the version of Tmux:
           # TMUXV=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
 
-          utils::dummy_v1_gt_v2 $(tmux -V | cut -d ' ' -f2) 3.1 \
+          utils::v1_ge_v2 $(tmux -V | cut -d ' ' -f2) 3.1 \
             && cp $OBJ "$XDG_CONFIG_HOME/tmux" \
             || cp $OBJ ~/.${OBJ##*/}
             ## lstrip all the parents in dir name
@@ -370,11 +370,15 @@ control::uninstall () {
 control::reinstall () {
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
+
   assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
   [[ $assembly = extended ]] && _EXTEND=-
 
+  utils::get_installed_components
+
   if [[ $1 = --no-reset ]]; then
-    utils::get_installed_components
+    ECHO Reinstalling..
+
     control::install $components
     return
   fi
@@ -384,11 +388,11 @@ control::reinstall () {
   NOTE 210 "$msg"
 
   read -sn 1 -r
-  ! [[ $REPLY = n ]] && { echo -e Aborted.; exit 0; }
+  ! [[ $REPLY = n ]] && { echo -e Aborted.; exit; }
 
   ECHO Reinstalling..
 
   git fetch -q || { echo Unable to fetch.; exit 1; }
   git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
-  control::install $(sed '1,/Installed/d' .update-list | tr '\n' ' ')
+  control::install $components
 }

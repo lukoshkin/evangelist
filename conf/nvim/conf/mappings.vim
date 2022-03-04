@@ -45,14 +45,14 @@ nnoremap <leader>y :%y+<CR>
 "" the misspelled words
 map <leader>en :setlocal spell! spelllang=en_us<CR>
 
-"Make a timestamp ("Russian" format)
-nmap <leader>t i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>
+"" Make a timestamp ("Russian" format)
+nmap <leader>ts i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>
 
-" Press Space two times to turn off highlighting
-" and clear any message already displayed.
+"" Press Space two times to turn off highlighting
+"" and clear any message already displayed.
 nnoremap <silent><Space><Space> :nohlsearch <Bar> echo<CR>
 
-" Change the bg's transparency with terminal/tmux mappings <Alt-+> and <Alt-->
+"" Change the bg's transparency with terminal/tmux mappings <Alt-+> and <Alt-->
 noremap <silent><A-+> :silent !transset -a --inc .02<CR>
 noremap <silent><A--> :silent !transset -a --dec .02<CR>
 "" :silent discards the output of a command that follows it.
