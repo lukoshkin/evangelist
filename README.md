@@ -10,7 +10,7 @@ from now on, a couple of commands and they all have the same settings<sup>\*</su
 No need to manually restore your configs each time you buy a new laptop or reinstall the OS.
 
 Give it a shot! And if you don't like `evangelist`, you can always revert to
-your previous settings with its uninstall command.
+your previous settings with its `uninstall` command.
 
 [More information on the first wiki page!](https://github.com/lukoshkin/evangelist/wiki/Philosophy)
 
@@ -140,7 +140,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.2.12 (!)
+Patch 1.3.3 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -152,7 +152,7 @@ Patch 1.2.12 (!)
   |:----:|:--------:|:----------|
   | ins | `jj` | exit insert mode |
   | cmd | `(j\|k)` | go to the (next \| previous) matching substring in cmd history <br> _provided no substring,_ go to the (next \| previous) cmd |
-  | any <br>  | `<M-(j\|k)>` | go to the (next \| previous) cmd matching the current buffer from <br> the beginning (Note: one more `<j/k>` press to exit from ins mode) |
+  | any | `<M-(j\|k)>` | go to the (next \| previous) cmd matching the current buffer from <br> the beginning (Note: one more `<j/k>` press to exit from ins mode) |
   | any | `<C-q>` | deletes the current buffer, so one can execute another cmd, <br> after which the original one would be restored |
   | cmd | `/` | start interactive fuzzy search over cmds in the history file |
 
@@ -203,14 +203,16 @@ Patch 1.2.12 (!)
   | normal | `<leader>en` | toggle spell-check |
   | normal | `<leader>y` | yank current buffer |
   | visual | `<leader>y` | yank selected text |
-  | normal | `<leader>t` | paste date and time before the cursor |
-  | normal | `<leader>nu` | toggle line numbering |
+  | normal | `<leader>ts` | paste date and time before the cursor |
+  | normal | `<leader>nu` | toggle line numbering and diagnostics signs |
   | normal | `<Space>b<Space>` | split line at the next space after the cursor position |
   | visual | `<Space>b<Space>` | split the entire line at spaces |
   | normal | `<Space>bb` | split line at the next char you previously searched with `f` |
   | visual | `<Space>bb` | split the entire line at a separator you searched with `/` |
   | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss a message in the cmd line below |
-  | normal | `<M-(h\|j\|k\|l)>` | insert an empty line or space in the direction <br> which a movement key specifies |
+  | normal | `<leader>x` | open file under the cursor with xdg-open |
+  | any | `<C-s>` | save changes to a file |
+  | normal | `<M-(h\|j\|k\|l)>` | insert an empty line or space in the direction <br> which a movement key specifies. When shift is pressed, the cursor remains on the current char |
   | command | Trim | remove all trailing spaces in the file |
   | command | Rmswp | delete the corresponding to open buffer swap file |
   | visual | `//` | search for selected text <br> (doesn't work in `VISUAL LINE` mode) |
@@ -227,6 +229,8 @@ Patch 1.2.12 (!)
   | normal | `<leader>md` | open/close markdown preview |
   | normal | `<leader>u` | open undo-tree |
   | normal | `<C-p>` | open CtrlP (file navigation) |
+  | any <br> but insert | `<leader>tr` | translate the line under the cursor |
+  | any <br> but insert | `<A-t>` | open terminal in a floating window |
   <!--
   | ctrlP | `<C-j>`, `<C-k>` | navigation keys |
   | ctrlP | `<C-r>` | enable regex |

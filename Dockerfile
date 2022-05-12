@@ -5,16 +5,16 @@ LABEL maintainer="lukoshkin@phystech.edu"
 LABEL repository="https://github.com/lukoshkin/evangelist"
 LABEL description="This Dockerfile is a part of 'evangelist' project"
 
-ENV XDG_CONFIG_HOME="$HOME"/.config
-ENV XDG_CACHE_HOME="$HOME"/.cache
-ENV XDG_DATA_HOME="$HOME"/.local/share
+ENV XDG_CONFIG_HOME="$HOME/.config"
+ENV XDG_CACHE_HOME="$HOME/.cache"
+ENV XDG_DATA_HOME="$HOME/.local/share"
 ## Set SHELL to get rid of errors in Tmux.
 ENV SHELL /bin/bash
 
 RUN mkdir -p "$XDG_CONFIG_HOME" \
     && mkdir -p "$XDG_CACHE_HOME" \
     && mkdir -p "$XDG_DATA_HOME" \
-    && mkdir -p "$XDG_CONFIG_HOME"/evangelist
+    && mkdir -p "$XDG_CONFIG_HOME/evangelist"
 
 USER root
 ## Install all the libraries required by evangelist
@@ -40,7 +40,7 @@ RUN pip3 install --no-cache-dir --upgrade \
         jupyter_nbextensions_configurator
 
 USER $USER
-COPY --chown=$USER . "$XDG_CONFIG_HOME"/evangelist/
+COPY --chown=$USER . "$XDG_CONFIG_HOME/evangelist/"
 ## To source ~/.bashrc (sh cannot execute bash files in general)
 SHELL ["/bin/bash", "-c"]
 

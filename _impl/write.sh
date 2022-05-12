@@ -341,8 +341,8 @@ write::how_to_install_conda () {
   echo -e '\nTo install conda, you can copy-paste the following snippet:'
 
   cmd=( "\n\n\tcurl -o miniconda.sh $link\n" )
-  cmd+=( '\tbash miniconda.sh -b -p "$HOME"/miniconda\n' )
-  cmd+=( '\t"$HOME"/miniconda/bin/conda init'" ${SHELL##*/}\n" )
+  cmd+=( '\tbash miniconda.sh -b -p "$HOME/miniconda"\n' )
+  cmd+=( '\t"$HOME/miniconda/bin/conda" init'" ${SHELL##*/}\n" )
   cmd+=( "\texec ${SHELL##*/}\n\n" )
   echo -e ${BOLD}${WHITE}${cmd[@]}${RESET}
 

@@ -1,3 +1,33 @@
+"" Note that setting the 'cursorline' or 'cursorcolumn' options
+"" can cause Vim to respond slowly, especially for large files
+"" or files with long lines.
+"" See:
+"" - https://vim.fandom.com/wiki/Highlight_current_line
+"" - https://vim.fandom.com/wiki/Faster_loading_of_large_files
+set cursorline
+set colorcolumn=80
+set number relativenumber
+
+if has('nvim') || has('patch-8.0')
+  set termguicolors
+endif
+
+"" Default indentation
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
+set expandtab
+set smartindent
+
+"" Pattern searching (highlighting and search before <Enter> hit)
+set hlsearch
+set incsearch
+
+"" Incremental hl-search when replacing (for Neovim)
+if has('nvim')
+  set inccommand=nosplit
+endif
+
 "" Provide tab-completion for all file-related tasks.
 set path+=**
 
@@ -13,28 +43,6 @@ set lazyredraw
 ""  will be created in this case, so no data will be lost.)
 " set hidden
 
-
-"" Mouse support
-if !has('nvim')
-  execute "set <A-m>=\em"
-endif
-
-noremap <A-m> :call ToggleMouse()<CR>
-inoremap <A-m> <Esc>:call ToggleMouse()<CR>a
-
-"" https://unix.stackexchange.com/questions/156707
-function! ToggleMouse()
-    " check if mouse is enabled
-    if &mouse == 'a'
-        " disable mouse
-        set mouse=
-    else
-        " enable mouse everywhere
-        set mouse=a
-    endif
-endfunc
-
-
 "" ru2en mapping in all modes but insert.
 "" Change the symbols inserted (ru or en) with <C-^>.
 "" A good alternative would be 'lyokha/vim-xkbswitch' plugin.
@@ -42,7 +50,6 @@ set keymap=russian-jcukenwin
 "" start from 'en'
 set iminsert=0
 set imsearch=0
-
 
 "" Set case-insensitive search and command modes as default.
 set ignorecase

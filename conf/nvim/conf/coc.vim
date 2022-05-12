@@ -63,7 +63,7 @@ endfunction
 
 "" <C-Space> triggers the completion.
 if has('nvim')
-  inoremap <silent><expr> <c-space> coc#refresh()
+  inoremap <silent><expr> <C-Space> coc#refresh()
 else
   inoremap <silent><expr> <c-@> coc#refresh()
 endif

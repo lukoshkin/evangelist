@@ -75,5 +75,5 @@ help_msg () {
 
 
 
-main $@
+main "$@"
 

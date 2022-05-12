@@ -26,12 +26,43 @@ if !has('nvim')
   execute "set <A-k>=\ek"
   execute "set <A-h>=\eh"
   execute "set <A-l>=\el"
+
+  execute "set <S-A-j>=\eJ"
+  execute "set <S-A-k>=\eK"
+  execute "set <S-A-h>=\eH"
+  execute "set <S-A-l>=\eL"
 endif
 
 nnoremap <A-j> o<Esc>
 nnoremap <A-k> <S-o><Esc>
 nnoremap <A-h> i<Space><Esc>
 nnoremap <A-l> a<Space><Esc>
+
+nnoremap <S-A-j> o<Esc>k
+nnoremap <S-A-k> <S-o><Esc>j
+nnoremap <S-A-h> i<Space><Esc>l
+nnoremap <S-A-l> a<Space><Esc>h
+
+
+"" Mouse support
+if !has('nvim')
+  execute "set <A-m>=\em"
+endif
+
+noremap <A-m> :call ToggleMouse()<CR>
+inoremap <A-m> <Esc>:call ToggleMouse()<CR>a
+
+"" https://unix.stackexchange.com/questions/156707
+function! ToggleMouse()
+    " check if mouse is enabled
+    if &mouse == 'a'
+        " disable mouse
+        set mouse=
+    else
+        " enable mouse everywhere
+        set mouse=a
+    endif
+endfunc
 
 
 "" Copy to clipboard (the whole buffer or selected lines)
@@ -106,4 +137,10 @@ xnoremap <Space>b<Space> :call SplitBySep()<CR>
 xnoremap <Space>bb :call SplitBySep(getreg('/'))<CR>
 
 "" Note, here we use concatenation as is usual in shell.
-command! Rmswp :silent !rm "$XDG_DATA_HOME"/nvim/swap/*'%:t'*
+command! Rmswp :silent !rm "$XDG_DATA_HOME/nvim/swap/"*'%:t'*
+
+"" Open the file under the cursor.
+nnoremap <leader>x :!xdg-open <C-R>=expand("<cfile>")<CR><CR>
+
+"" Save changes to a file.
+map <C-s> :w<CR>

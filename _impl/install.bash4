@@ -106,11 +106,46 @@ install::vim_settings () {
         -e 's;(filereadable\()(.+\));\1"\2;' \
         -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
         "$XDG_CONFIG_HOME/nvim/init.vim"
+
+      local msg shell=${SHELL##*/}
+      ## -r -- do not allow backslashes to escape any chars.
+      ## -d -- change delim from '\n' delim to no delims.
+      read -r -d '' msg << END
+## Added by evangelist (#vim-only)
+if grep -qE '^n?vim' "\$EVANGELIST/.update-list"
+then
+  if [[ -f \$EVANGELIST/custom/custom.vim ]]; then
+    cd "\$EVANGELIST/custom" \\
+      && sed -n '/^Plug .*/p' custom.vim > .plugins.vim \\
+      && sed '/^Plug .*/d' custom.vim > .settings.vim \\
+      && cd - > /dev/null
+  fi
+fi
+END
+
+      case $shell in
+        bash|'')
+          grep -q "## Added by evangelist (#vim-only)" ~/.bashrc \
+            || echo -e "\n$msg\n" >> ~/.bashrc
+          ;;
+
+        zsh)
+          local zshrc
+          [[ -n $ZDOTDIR ]] && zshrc="$ZDOTDIR/zshrc" || zshrc=~/.zshrc
+          grep -q "## Added by evangelist (#vim-only)" "$zshrc" \
+            || echo -e "\n$msg\n" >> "$zshrc"
+          ;;
+
+        *)
+          echo Add this to your rc file:
+          echo -e "\n$msg\n"
+          ;;
+      esac
       ;;&
 
     10)
       rm -f ~/.vimrc
-      ln -s "$XDG_CONFIG_HOME"/nvim/init.vim ~/.vimrc
+      ln -s "$XDG_CONFIG_HOME/nvim/init.vim" ~/.vimrc
       ;;
 
     11)
@@ -131,15 +166,15 @@ install::vim_settings () {
 
   set_assembly=minimal
   if [[ -n $_EXTEND ]]; then
-    sed -i 's;^" ;;' "$XDG_CONFIG_HOME"/nvim/init.vim
-    sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME"/nvim/init.vim
+    sed -i 's;^" ;;' "$XDG_CONFIG_HOME/nvim/init.vim"
+    sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
     ## CoC is chosen to be a default code-completion engine,
     ## YCM is commented out, therefore.
 
     if ! utils::v1_ge_v2 $(node --version) 12.12
     then
       ## `&` in the following line means "use the whole text matched".
-      sed -i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME"/nvim/init.vim
+      sed -i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
     fi
     set_assembly=extended
   fi
@@ -152,6 +187,7 @@ install::vim_settings () {
 
   ## Install Vim plugins silently (save installation summary)
   if [[ $TERM != dumb ]]; then
+    echo Installing plugings..
     $VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
     ## NOTE: During interactive installation, the hanging happens
     ## if some of the plugins being installed throw an error. If the latter
@@ -183,6 +219,10 @@ install::vim_settings () {
     echo Vim plugin installation summary:
     cat /tmp/vim-plug.log && rm -f /tmp/vim-plug.log
   fi
+
+  ## Add Vim customization template, if installing from scratch.
+  ! [[ -f $EVANGELIST/custom/custom.vim ]] \
+    && cp "$EVANGELIST/conf/nvim/custom.vim" "$EVANGELIST/custom"
 
   ## _ARG can be any, but VIM is specific.
   _PARAMS=( ${_PARAMS[@]/$_ARG/$VIM} )
@@ -338,7 +378,7 @@ install::zsh_settings () {
 
   write::file_header ~/.zshenv
 
-  if [[ ! -f "$ZDOTDIR/.zcomet/bin/zcomet.zsh" ]]; then
+  if ! [[ -f "$ZDOTDIR/.zcomet/bin/zcomet.zsh" ]]; then
     git clone https://github.com/agkozak/zcomet.git "$ZDOTDIR/.zcomet/bin"
     echo Installed zcomet.
   fi
