@@ -12,4 +12,3 @@ let g:slime_default_config = {
 let g:slime_cell_delimiter = "#%%"
 nmap <leader><CR> <Plug>SlimeSendCell
 "" NOTE: <Plug>(SlimeSendCell) won't work.
-

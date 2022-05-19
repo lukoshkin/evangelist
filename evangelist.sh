@@ -18,9 +18,11 @@ source "$EVANGELIST/_impl/utils.sh"
 
 main() {
   cd "$EVANGELIST"
+  ## No need to cd back in child process.
+
   case $1 in
-    install)        shift; control::install $@ ;;
-    install+)       shift; _EXTEND=-; control::install $@ ;;
+    install)        shift; control::install "$@" ;;
+    install+)       shift; _EXTEND=-; control::install "$@" ;;
                     ## _EXTEND ─ to install with extensions.
 
     update)         control::update $2 ;;
@@ -36,11 +38,12 @@ main() {
 ctrl_c () {
   NOTE 210 '\nInterrupted by user. Aborting..'
   echo You may need to do a manual clean-up.
-  cd - > /dev/null
   kill -9 $$
 }
 
 
 trap ctrl_c SIGINT
-main $@
+main "$@"
+## using "$@" will substitute arguments as a list,
+## thus, avoiding potentially undesirable re-splitting on space.
 

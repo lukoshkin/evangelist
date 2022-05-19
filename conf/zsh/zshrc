@@ -1,14 +1,15 @@
-source "$ZDOTDIR"/.zcomet/bin/zcomet.zsh
+source "$ZDOTDIR/.zcomet/bin/zcomet.zsh"
 
 zcomet load zsh-users/zsh-autosuggestions
 zcomet load zsh-users/zsh-syntax-highlighting
 zcomet load zsh-users/zsh-history-substring-search
 zcomet load zsh-users/zsh-completions
+zcomet load agkozak/zsh-z
 
 ## One can use more configurable 'powerlvl10k', but be aware of its bugs.
-zcomet load agkozak/agkozak-zsh-theme && source "$ZDOTDIR"/agkozakrc
+zcomet load agkozak/agkozak-zsh-theme && source "$ZDOTDIR/agkozakrc"
 
-HISTFILE="$XDG_DATA_HOME"/zsh_history
+HISTFILE="$XDG_DATA_HOME/zsh_history"
 HISTSIZE=100000
 SAVEHIST=$HISTSIZE
 ## No need to export the these variables, since:
@@ -24,7 +25,19 @@ then
   alias vimdiff='nvim -d'
 fi
 
+## Separate plugin imports from all the rest.
+if grep -qE '^n?vim' "$EVANGELIST/.update-list"
+then
+  ## operands within [[]] are treated as strings.
+  if [[ -f $EVANGELIST/custom/custom.vim ]]; then
+    cd "$EVANGELIST/custom" \
+      && sed -n '/^Plug .*/p' custom.vim > .plugins.vim \
+      && sed '/^Plug .*/d' custom.vim > .settings.vim \
+      && cd - > /dev/null
+  fi
+fi
+
 ## Static imports.
-source "$ZDOTDIR"/extra.zsh
-source "$EVANGELIST"/conf/bash/aliases-functions.sh
+source "$ZDOTDIR/extra.zsh"
+source "$EVANGELIST/conf/bash/aliases-functions.sh"
 

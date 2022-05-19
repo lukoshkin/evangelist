@@ -1,5 +1,8 @@
 # .:!:. >SED-UPDATE .:!:.
 
+## Where to keep zsh-z data file
+export ZSHZ_DATA="$XDG_DATA_HOME/zshz.txt"
+
 ## aspell (used by vim spell checker)
 export ASPELL_CONF="per-conf $XDG_CONFIG_HOME/aspell/aspell.conf; \
     personal $XDG_CONFIG_HOME/aspell/en.pws; \
@@ -37,8 +40,7 @@ fi
 export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=33:ln=32:bn=32:se=36'
 
 ## Set initialization file for Vim
-if ! which nvim &> /dev/null && which vim &> /dev/null \
-  && grep -qE '^n?vim' "$EVANGELIST/.update-list"
+if grep -qE '^vim' "$EVANGELIST/.update-list"
 then
   export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
   export VIMINIT=":source $MYVIMRC"

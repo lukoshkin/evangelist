@@ -90,24 +90,33 @@ utils::str_has_any () {
 }
 
 
-utils::dummy_v1_gt_v2 () {
+utils::v1_ge_v2 () {
   [[ -z $1 || -z $2 ]] && return 1
+  [[ ${1//v} = ${2//v} ]] && return 0
+
+  local sep=$3
+  [[ -z $sep ]] && sep=.
   declare -a version1 version2
 
   if [[ $(readlink /proc/$$/exe) = *bash ]]; then
-    IFS='.' read -ra version1 <<< ${1//v}
-    IFS='.' read -ra version2 <<< ${2//v}
+    IFS=$sep read -ra version1 <<< ${1//v}
+    IFS=$sep read -ra version2 <<< ${2//v}
     local shear=0
   elif [[ $(readlink /proc/$$/exe) = *zsh ]]; then
-    IFS='.' read -rA version1 <<< ${1//v}
-    IFS='.' read -rA version2 <<< ${2//v}
+    IFS=$sep read -rA version1 <<< ${1//v}
+    IFS=$sep read -rA version2 <<< ${2//v}
     local shear=1
   else
     >&2 echo evangelist supports only bash and zsh.
     exit 1
   fi
 
-  for ((i=shear; i<3+shear; ++i )); do
+  local minlen
+  [[ ${#version1[@]} < ${#version2[@]} ]] \
+    && minlen=${#version1[@]} \
+    || minlen=${#version2[@]}
+
+  for ((i=shear; i<minlen+shear; ++i )); do
     if [[ ${version1[$i]} = ${version2[$i]} ]]; then
       continue
     fi
@@ -119,9 +128,10 @@ utils::dummy_v1_gt_v2 () {
       [[ ${version1[$i]} > ${version2[$i]} ]] && return 0
     fi
 
-    break
+    return 1
   done
-  return 1
+
+  return 0
 }
 
 

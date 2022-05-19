@@ -26,12 +26,43 @@ if !has('nvim')
   execute "set <A-k>=\ek"
   execute "set <A-h>=\eh"
   execute "set <A-l>=\el"
+
+  execute "set <S-A-j>=\eJ"
+  execute "set <S-A-k>=\eK"
+  execute "set <S-A-h>=\eH"
+  execute "set <S-A-l>=\eL"
 endif
 
 nnoremap <A-j> o<Esc>
 nnoremap <A-k> <S-o><Esc>
 nnoremap <A-h> i<Space><Esc>
 nnoremap <A-l> a<Space><Esc>
+
+nnoremap <S-A-j> o<Esc>k
+nnoremap <S-A-k> <S-o><Esc>j
+nnoremap <S-A-h> i<Space><Esc>l
+nnoremap <S-A-l> a<Space><Esc>h
+
+
+"" Mouse support
+if !has('nvim')
+  execute "set <A-m>=\em"
+endif
+
+noremap <A-m> :call ToggleMouse()<CR>
+inoremap <A-m> <Esc>:call ToggleMouse()<CR>a
+
+"" https://unix.stackexchange.com/questions/156707
+function! ToggleMouse()
+    " check if mouse is enabled
+    if &mouse == 'a'
+        " disable mouse
+        set mouse=
+    else
+        " enable mouse everywhere
+        set mouse=a
+    endif
+endfunc
 
 
 "" Copy to clipboard (the whole buffer or selected lines)
@@ -45,14 +76,14 @@ nnoremap <leader>y :%y+<CR>
 "" the misspelled words
 map <leader>en :setlocal spell! spelllang=en_us<CR>
 
-"Make a timestamp ("Russian" format)
-nmap <leader>t i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>
+"" Make a timestamp ("Russian" format)
+nmap <leader>ts i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>
 
-" Press Space two times to turn off highlighting
-" and clear any message already displayed.
+"" Press Space two times to turn off highlighting
+"" and clear any message already displayed.
 nnoremap <silent><Space><Space> :nohlsearch <Bar> echo<CR>
 
-" Change the bg's transparency with terminal/tmux mappings <Alt-+> and <Alt-->
+"" Change the bg's transparency with terminal/tmux mappings <Alt-+> and <Alt-->
 noremap <silent><A-+> :silent !transset -a --inc .02<CR>
 noremap <silent><A--> :silent !transset -a --dec .02<CR>
 "" :silent discards the output of a command that follows it.
@@ -106,4 +137,47 @@ xnoremap <Space>b<Space> :call SplitBySep()<CR>
 xnoremap <Space>bb :call SplitBySep(getreg('/'))<CR>
 
 "" Note, here we use concatenation as is usual in shell.
-command! Rmswp :silent !rm "$XDG_DATA_HOME"/nvim/swap/*'%:t'*
+command! Rmswp :silent !rm "$XDG_DATA_HOME/nvim/swap/"*'%:t'*
+
+"" Open the file under the cursor.
+nnoremap <leader>x :!xdg-open <C-R>=expand("<cfile>")<CR><CR>
+
+"" Save changes to a file.
+map <C-s> :w<CR>
+
+"" Bottom terminal for a current window.
+fun BottomtermToggle()
+  if exists('t:bottom_term') && bufnr(t:bottom_term) >= 0
+    let l:winid = bufwinid(t:bottom_term)
+    if l:winid < 0
+      execute 'sb' t:bottom_term
+    else
+      call win_gotoid(l:winid)
+      return
+    endif
+  else
+    new
+    setlocal buftype=nofile bufhidden=hide noswapfile
+    terminal
+    let t:bottom_term = bufname()
+  endif
+
+  resize 8
+  startinsert
+endfun
+
+augroup TermInsert
+  "" Start insert mode when switching to term buffer.
+  autocmd!
+  autocmd BufEnter term://* norm i<CR>
+augroup END
+
+"" Note: The terminal mappings below are necessary only for Neovim.
+nnoremap <S-A-t> :call BottomtermToggle()<CR>
+tnoremap <silent><S-A-t> <C-\><C-n>:q<Bar>echo<CR>
+tnoremap <C-t> <C-\><C-n><C-w>Li
+tnoremap <C-w> <C-\><C-n><C-w>
+tnoremap <Esc> <C-\><C-n>
+
+"" List available buffers and choose one to switch to.
+noremap <leader>b :buffers<CR>:buffer<Space>

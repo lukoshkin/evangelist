@@ -32,7 +32,7 @@ _evangelist () {
 
       # If $line contains '+', the maximum number of options falls to 3
       # Plus, command and program names (i.e., evangelist install ...).
-      [[ "${COMP_WORDS[@]}" = *'+'* ]] && maxopts=5
+      [[ ${COMP_WORDS[*]} = *'+'* ]] && maxopts=5
       [[ ${#COMP_WORDS[@]} -gt $maxopts ]] && return
       ;;
 

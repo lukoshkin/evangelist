@@ -1,5 +1,9 @@
+#!/bin/bash
+
 ## Setting search path for `cd` command properly.
-if ! [[ $CDPATH =~ ':?\.:' ]]; then
+if ! [[ $CDPATH =~ :?\.: ]]; then
+  ## NOTE: quotes is not used with =~, otherwise,
+  ## they are treated as a part of the pattern.
   [[ -z $CDPATH ]] && CDPATH=. || CDPATH=.:$CDPATH
 fi
 
@@ -14,7 +18,7 @@ fi
 ## we define `evangelist` as a function and `evn` as an alias to it.
 ## (in zsh this is also valid after adding `compdef evn=evangelist`).
 evangelist () {
-  "$EVANGELIST"/evangelist.sh $@
+  "$EVANGELIST/evangelist.sh" "$@"
 }
 
 alias evn=evangelist
@@ -63,6 +67,40 @@ gg () {
 
   else
     echo Wrong args
+  fi
+}
+
+
+mv () {
+  ## Something like 'gvfs-trash' implementation
+  ## When passing just one argument, it "removes" file or folder
+  ## backing up it at "trash bin" (/tmp).
+
+  ## This is an early implementation. Probably, the dummy one.
+  ## Some of concerns:
+  ## - /tmp is a limited in size partition
+  ## - there is a way to get rid of `while`-loop
+  if [[ $# -gt 1 ]]; then
+    command mv "$@"
+  else
+    local no copy_no
+    local name=$1 landing=/tmp
+
+    while [[ -e /tmp/$name ]]; do
+      no=$(sed -nr 's;.*\(([0-9]+)\)\.[^\.]*;\1;p' <<< $name)
+
+      if [[ -z $no ]]; then
+        name=$(sed -r 's;(.*)(\.[^\.]*);\1(1)\2;' <<< $name)
+      else
+        copy_no=$(( no + 1 ))
+        name=$(sed -r "s;(.*\()$no(\)\.[^\.]*);\1$copy_no\2;" <<< $name)
+      fi
+    done
+
+    [[ $name != $1 ]] && landing+="/$name"
+
+    mv "$1" "$landing" \
+      && echo $1 has been moved to $landing.
   fi
 }
 
@@ -134,13 +172,14 @@ swap () {
 
 vrmswp () {
   [[ -z $1 ]] && "Pass the name of swap file to delete."
-  rm $XDG_DATA_HOME/nvim/swap/*$1*
+  local swp=${1//\//%}
+  rm "$XDG_DATA_HOME/nvim/swap/"*$swp*
 }
 
 
 (which tmux &> /dev/null \
-  && grep -qE '^n?vim' "$EVANGELIST"/.update-list \
-  && grep -q '^source .*slime\.vim' "$XDG_CONFIG_HOME"/nvim/init.vim \
-  && grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME"/nvim/init.vim) \
-  && source "$EVANGELIST"/conf/tmux/templates.sh
+  && grep -qE '^n?vim' "$EVANGELIST/.update-list" \
+  && grep -q '^source .*slime\.vim' "$XDG_CONFIG_HOME/nvim/init.vim" \
+  && grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME/nvim/init.vim") \
+  && source "$EVANGELIST/conf/tmux/templates.sh"
 

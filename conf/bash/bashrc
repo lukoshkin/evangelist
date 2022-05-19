@@ -1,11 +1,22 @@
 # .:!:. >SED-UPDATE .:!:.
 
-## Set initialization file for Vim
-if ! which nvim &> /dev/null && which vim &> /dev/null \
-  && grep -qE '^n?vim' "$EVANGELIST/.update-list"
+## Set initialization file for Vim.
+if grep -qE '^vim' "$EVANGELIST/.update-list"
 then
   export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
   export VIMINIT=":source $MYVIMRC"
+fi
+
+## Separate plugin imports from all the rest.
+if grep -qE '^n?vim' "$EVANGELIST/.update-list"
+then
+  ## operands within [[]] are treated as strings.
+  if [[ -f $EVANGELIST/custom/custom.vim ]]; then
+    cd "$EVANGELIST/custom" \
+      && sed -n '/^Plug .*/p' custom.vim > .plugins.vim \
+      && sed '/^Plug .*/d' custom.vim > .settings.vim \
+      && cd - > /dev/null
+  fi
 fi
 
 ## Finish configuring locales.

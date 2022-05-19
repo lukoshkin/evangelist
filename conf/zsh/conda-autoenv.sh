@@ -40,7 +40,7 @@ _conda_autoenv_zsh() {
   first_elem_id=${1:-1}
   local -a found=( "$(up_hierarchy_search "$PWD" '.autoenv-evn.*')" )
 
-  if [[ -z ${found[@]} ]]
+  if [[ -z ${found[*]} ]]
   then
     conda activate base
     return 0
@@ -49,7 +49,7 @@ _conda_autoenv_zsh() {
   if [[ $(echo "${found[@]}" | wc -l) -gt 1 ]]
   then
     echo There are several autoenv-files found:
-    echo "${found[@]}"
+    echo ${found[*]}
     echo
     echo Note, the autoenv-script tries to activate only the environment
     echo 'corresponding to the first autoenv-file listed by `ls`.'

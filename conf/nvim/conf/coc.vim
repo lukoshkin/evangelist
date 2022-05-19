@@ -63,7 +63,7 @@ endfunction
 
 "" <C-Space> triggers the completion.
 if has('nvim')
-  inoremap <silent><expr> <c-space> coc#refresh()
+  inoremap <silent><expr> <C-Space> coc#refresh()
 else
   inoremap <silent><expr> <c-@> coc#refresh()
 endif
@@ -75,11 +75,15 @@ nmap <silent> [g <Plug>(coc-diagnostic-prev)
 nmap <silent> ]g <Plug>(coc-diagnostic-next)
 
 "" GoTo code navigation.
-"" Note 'gt' is mapped to 'go to the next tab page' in Vim defaults.
+"" Note: in Vim defaults
+"" - 'gt' is mapped to 'go to the next tab page',
+"" - 'gi' -- to 'insert in the same osition as where Insert mode
+""    was stopped last time.
 nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> ge <Plug>(coc-implementation)
+"" Thus, gt --> gy, gi --> ge.
 
 "" <S-k> to show documentation in a preview window.
 nnoremap <silent> K :call <SID>show_documentation()<CR>
