@@ -1,5 +1,7 @@
 # Vim Proliferation
 
+"I came up with evangelist and am developing it so I could configure everything less when I am dead."
+
 General settings of console and Jupyter that are empowered by Vim!  
 The package includes bash- and zsh-plugins, up-to-date Vim configurations,
 and Jupyter Notebook extensions.
@@ -50,8 +52,8 @@ and the setup script will become more universal and cross-platform.
     cd ~/.config/evangelist
     ```
 
-2. **Install minimal list of prerequisites** (The full list depends on the set of plugins you have
-chosen in the previous step). For help, run `./evangelist.sh checkhealth`
+2. **Install at least minimal list of prerequisites**  
+   Run `./evangelist.sh checkhealth` - this will help.
 
 3. In your console, **run from the project directory**:
     - `./evangelist.sh install <configs>`  
@@ -64,15 +66,8 @@ chosen in the previous step). For help, run `./evangelist.sh checkhealth`
 
 4. **Re-login in the shell.**
 
-5. **Confirm the installation of zsh-plugins** (if selected zsh in step 4).
-
-6. **Adjust for yourself** (optional):
-    - Go to `nvim` directory, look through the plugins to be installed
-      and their configs to be sourced. Comment out those lines you do not
-      agree with. Probably, you will have to google first what each plugin
-      is about.
-    - If the console you are going to work in is `zsh`, check also zsh-plugins
-      in `zsh/.zshrc` file.
+5. **Adjust for yourself** (optional).  
+    Use `vimrc`, `zshrc` or `bashrc` commands to customize settings.
 
 <br>
 
@@ -376,9 +371,14 @@ the ones defined by ***evangelist***.
 
 ## References
 
-This work is based primarily on leveraging the following projects.
+This work is based primarily on leveraging the following projects and resources.
 
 <table>
+  <tr>
+    <td> - <a href="https://github.com/jessarcher/dotfiles/tree/master/nvim"> Jess Archer's Vim settings </a> </td>
+    <td> custom settings of a public person I discovered on Git </td>
+  </tr>
+
   <tr>
     <td> - <a href="https://github.com/junegunn/vim-plug"> vim-plug </a> </td>
     <td> a minimalist Vim plugin manager </td>

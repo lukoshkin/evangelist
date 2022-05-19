@@ -6,6 +6,11 @@
 "" - https://vim.fandom.com/wiki/Faster_loading_of_large_files
 set cursorline
 set colorcolumn=80
+
+"" Title in terminal window bar; confirm before quitting
+"" if there are unsaved changes.
+set title
+set confirm
 set number relativenumber
 
 if has('nvim') || has('patch-8.0')
@@ -23,33 +28,22 @@ set smartindent
 set hlsearch
 set incsearch
 
-"" Incremental hl-search when replacing (for Neovim)
+"" Incremental hl-search when replacing.
+"" (for old Neovim versions)
 if has('nvim')
   set inccommand=nosplit
 endif
 
-"" Provide tab-completion for all file-related tasks.
-set path+=**
-
-"" Display all matching files when tab complete.
+"" Enable 'enhanced mode' of Vim cmd-line completion.
+"" By default, wildmenu is on in Neovim and off in Vim.
 set wildmenu
+set wildmode=longest:full,full
+"" longest:full,full stands for completing till the longest common string,
+"" on the first tab, also starting the 'wildmenu', and then completing next
+"" full match on subsequent tab presses.
 
 "" Buffer updates instead of updating all the time.
 set lazyredraw
-
-"" Switch to another buffer even if the current one is modified.
-"" (Can lead to closing of hidden buffers without saving if using
-""  such exit options like `<prefix>-Q` in Tmux. Likely, a swap file
-""  will be created in this case, so no data will be lost.)
-" set hidden
-
-"" ru2en mapping in all modes but insert.
-"" Change the symbols inserted (ru or en) with <C-^>.
-"" A good alternative would be 'lyokha/vim-xkbswitch' plugin.
-set keymap=russian-jcukenwin
-"" start from 'en'
-set iminsert=0
-set imsearch=0
 
 "" Set case-insensitive search and command modes as default.
 set ignorecase
@@ -66,10 +60,6 @@ set nojoinspaces
 "" taking the the place of the current buffer.
 set splitbelow
 set splitright
-
-"" Start scrolling before reaching the screen borders.
-" set scrolloff=8
-" set sidescrolloff=8
 
 "" '//' at the end makes vim use abs. file path,
 "" thus, avoiding name collisions.

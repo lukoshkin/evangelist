@@ -144,3 +144,40 @@ nnoremap <leader>x :!xdg-open <C-R>=expand("<cfile>")<CR><CR>
 
 "" Save changes to a file.
 map <C-s> :w<CR>
+
+"" Bottom terminal for a current window.
+fun BottomtermToggle()
+  if exists('t:bottom_term') && bufnr(t:bottom_term) >= 0
+    let l:winid = bufwinid(t:bottom_term)
+    if l:winid < 0
+      execute 'sb' t:bottom_term
+    else
+      call win_gotoid(l:winid)
+      return
+    endif
+  else
+    new
+    setlocal buftype=nofile bufhidden=hide noswapfile
+    terminal
+    let t:bottom_term = bufname()
+  endif
+
+  resize 8
+  startinsert
+endfun
+
+augroup TermInsert
+  "" Start insert mode when switching to term buffer.
+  autocmd!
+  autocmd BufEnter term://* norm i<CR>
+augroup END
+
+"" Note: The terminal mappings below are necessary only for Neovim.
+nnoremap <S-A-t> :call BottomtermToggle()<CR>
+tnoremap <silent><S-A-t> <C-\><C-n>:q<Bar>echo<CR>
+tnoremap <C-t> <C-\><C-n><C-w>Li
+tnoremap <C-w> <C-\><C-n><C-w>
+tnoremap <Esc> <C-\><C-n>
+
+"" List available buffers and choose one to switch to.
+noremap <leader>b :buffers<CR>:buffer<Space>

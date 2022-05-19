@@ -17,6 +17,7 @@ Plug 'mhinz/vim-startify'
 Plug 'farmergreg/vim-lastplace'
 Plug 'sickill/vim-pasta'
 Plug 'tpope/vim-sleuth'
+Plug 'tpope/vim-repeat'
 
 "" Extra plugins that one might find useful
 " source $XDG_CONFIG_HOME/nvim/conf/tex.vim
