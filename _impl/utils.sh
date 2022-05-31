@@ -35,7 +35,7 @@ utils::back_up_original_configs () {
     ## Though, the outer was renamed to `_ARG` (it is used within
     ## `install::vim_settings` now), it is better to separate
     ## eponymous variables with `local` specifier.
-    for arg in $@; do
+    for arg in "$@"; do
       m=$(cut -d ':' -f1 <<< $arg)
       v=$(cut -d ':' -f2 <<< $arg)
       n=$(cut -d ':' -f3 <<< $arg)
@@ -60,7 +60,7 @@ utils::back_up_original_configs () {
 
 
 utils::update_status () {
-  for p in ${_PARAMS[@]}; do
+  for p in "${_PARAMS[@]}"; do
     sed -i "s;\(^$p:\)[01];\11;" .update-list
   done
 }
@@ -94,29 +94,57 @@ utils::v1_ge_v2 () {
   [[ -z $1 || -z $2 ]] && return 1
   [[ ${1//v} = ${2//v} ]] && return 0
 
+  ## Check if there is more than one hyphen.
+
   local sep=$3
   [[ -z $sep ]] && sep=.
-  declare -a version1 version2
+  local verstr1=$1 verstr2=$2
 
+  local suf1 suf2
+  verstr1=$(cut -d- -f1 <<< $1)
+  suf1=$(cut -d- -f2 <<< $1)
+
+  verstr2=$(cut -d- -f1 <<< $2)
+  suf2=$(cut -d- -f2 <<< $2)
+
+  [[ $suf1 = $verstr1 ]] && suf1=
+  [[ $suf2 = $verstr2 ]] && suf2=
+
+  if [[ -z $suf1 ]] && [[ -z $suf2 ]]; then
+    :
+  elif [[ -z $suf1 ]]; then
+    suf1="${suf2}a"
+  elif [[ -z $suf2 ]]; then
+    suf2="${suf1}a"
+  fi
+
+  local shear
+  declare -a version1 version2
   if [[ $(readlink /proc/$$/exe) = *bash ]]; then
-    IFS=$sep read -ra version1 <<< ${1//v}
-    IFS=$sep read -ra version2 <<< ${2//v}
-    local shear=0
+    IFS=$sep read -ra version1 <<< "${verstr1//v}"
+    IFS=$sep read -ra version2 <<< "${verstr2//v}"
+    shear=0
   elif [[ $(readlink /proc/$$/exe) = *zsh ]]; then
-    IFS=$sep read -rA version1 <<< ${1//v}
-    IFS=$sep read -rA version2 <<< ${2//v}
-    local shear=1
+    IFS=$sep read -rA version1 <<< "${verstr1//v}"
+    IFS=$sep read -rA version2 <<< "${verstr2//v}"
+    shear=1
   else
     >&2 echo evangelist supports only bash and zsh.
     exit 1
   fi
 
-  local minlen
-  [[ ${#version1[@]} < ${#version2[@]} ]] \
-    && minlen=${#version1[@]} \
-    || minlen=${#version2[@]}
+  while [[ ${#version1[@]} < ${#version2[@]} ]]; do
+    version1+=( 0 )
+  done
 
-  for ((i=shear; i<minlen+shear; ++i )); do
+  while [[ ${#version2[@]} < ${#version1[@]} ]]; do
+    version2+=( 0 )
+  done
+
+  version1+=( $suf1 )
+  version2+=( $suf2 )
+
+  for ((i=shear; i<${#version1[@]}+shear; ++i )); do
     if [[ ${version1[$i]} = ${version2[$i]} ]]; then
       continue
     fi

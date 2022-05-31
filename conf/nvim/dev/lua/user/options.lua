@@ -1,3 +1,4 @@
+vim.g.maplocalleader = ' '
 --- Syntax highlighting for embeded code (e.g., in vim.cmd[[]])
 vim.g.vimsyn_embed = 'lP'
 
@@ -16,6 +17,7 @@ local options = {
   shiftwidth = 2,
   expandtab = true,
   smartindent = true,
+  foldenable = false,
   foldlevel = 2,
 
   ignorecase = true,
@@ -42,3 +44,12 @@ local options = {
 for k, v in pairs(options) do
   vim.opt[k] = v
 end
+
+
+--- ru2en mapping in all modes but insert.
+--- Change the symbols inserted (ru or en) with <C-^>.
+--- A good alternative would be 'lyokha/vim-xkbswitch' plugin.
+vim.opt.keymap = 'russian-jcukenwin'
+--- Start from 'en' (since we've changed defaults on the line above).
+vim.opt.iminsert = 0
+vim.opt.imsearch = 0

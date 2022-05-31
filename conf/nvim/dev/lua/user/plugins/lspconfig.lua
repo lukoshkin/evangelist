@@ -46,8 +46,8 @@ local on_attach = function(_, bufnr)
   buf_keymap(bufnr, 'n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>')
 
   --- Open full diagnostics in location-list + find symbols(primitive data type) using telescope.
-  -- buf_keymap(bufnr, 'n', '<Space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
-  -- buf_keymap(bufnr, 'n', '<leader>so', [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]])
+  buf_keymap(bufnr, 'n', '<Space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
+  buf_keymap(bufnr, 'n', '<leader>fs', [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]])
 
   vim.api.nvim_create_user_command(
     'Format',

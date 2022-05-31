@@ -41,10 +41,14 @@ v () {
     return
   fi
 
-  vim +'execute "normal \<C-P>\<Enter>"'
+  if [[ -f "$XDG_CONFIG_HOME/init.vim" ]]; then
+    vim +'execute "normal \<C-P>\<Enter>"'
+  else
+    vim +'normal \fo'
+  fi
 }
 
-alias _vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
+alias _vimrc="vim $XDG_CONFIG_HOME/nvim/init.*"
 alias vimrc="vim $EVANGELIST/custom/custom.vim"
 
 ## Folder stack navigation.
@@ -131,9 +135,9 @@ dtree () {
 
 
 tree () {
-  if command -v tree &> /dev/null
+  if ! command -v tree &> /dev/null
   then
-    dtree $1
+    dtree "$1"
     return
   fi
 
@@ -163,10 +167,10 @@ tree () {
 swap () {
   [[ -z $1 || -z $2 ]] && { echo 'Requires src and dest'; return 1; }
 
-  cp -R $1 /tmp/$1.bak \
-    && rm -rf $1 \
-    && mv $2 $1 \
-    && mv /tmp/$1.bak $2
+  cp -R "$1" "/tmp/$1.bak" \
+    && rm -rf "$1" \
+    && mv "$2" "$1" \
+    && mv "/tmp/$1.bak" "$2"
 }
 
 
@@ -181,5 +185,5 @@ vrmswp () {
   && grep -qE '^n?vim' "$EVANGELIST/.update-list" \
   && grep -q '^source .*slime\.vim' "$XDG_CONFIG_HOME/nvim/init.vim" \
   && grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME/nvim/init.vim") \
-  && source "$EVANGELIST/conf/tmux/templates.sh"
+  &> /dev/null && source "$EVANGELIST/conf/tmux/templates.sh"
 

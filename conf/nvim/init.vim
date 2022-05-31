@@ -13,10 +13,13 @@ source $XDG_CONFIG_HOME/nvim/conf/mundo.vim
 
 "" Easier Vim with startup page and resuming file from where you left off,
 "" pasting with auto-indentation, and auto-deduction of file indentation.
+"" `eunuch` plugin adds useful commands (like :SudoWrite), `repeat` allows
+"" to repeat actions that include plugin commands (<Plug> and so on).
 Plug 'mhinz/vim-startify'
 Plug 'farmergreg/vim-lastplace'
 Plug 'sickill/vim-pasta'
 Plug 'tpope/vim-sleuth'
+Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-repeat'
 
 "" Extra plugins that one might find useful

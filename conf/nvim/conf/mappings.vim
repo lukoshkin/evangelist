@@ -1,9 +1,10 @@
+"" Easier exit from Insert mode
 inoremap jj <Esc>
 "" 'autocmd' helps you make commands executed on some event.
 "" The two lines below mean: set timeout for all keystroke sequences
 "" to 200ms when entering 'insert' mode and 1000ms when leaving it.
 "" This applies to any file type as the asterisks below specify.
-augroup JJExit
+augroup EasierJJ
   "" The next line removes autocmds
   "" defined in the context of autogroup
   autocmd!
@@ -119,14 +120,20 @@ fun! SplitBySep (...)
 
   let l:sep = get(a:, 1, ' ')
 
-  normal ml
-  normal 0"ldw
+  mark l
+  normal 0"lyw
   silent! execute 's;\('.l:sep.'\)\(\S\)\@=;\1\r;g'
-  normal mL
+  mark L
 
-  'l,'Ls;^;\=@l;
-  normal 'l
+  " let l:len = strlen(getreg('l'))
+  " let l:indent = repeat(' ', l:len)
+
+  " 'l+1,'Ls;^;\=l:indent;
+
+  normal 'lj
+  normal ='L
   silent 'l,'LTrim
+
   delmarks lL
   let @l=''
 endfun
@@ -146,7 +153,7 @@ nnoremap <leader>x :!xdg-open <C-R>=expand("<cfile>")<CR><CR>
 map <C-s> :w<CR>
 
 "" Bottom terminal for a current window.
-fun BottomtermToggle()
+fun! BottomtermToggle()
   if exists('t:bottom_term') && bufnr(t:bottom_term) >= 0
     let l:winid = bufwinid(t:bottom_term)
     if l:winid < 0
@@ -174,10 +181,13 @@ augroup END
 
 "" Note: The terminal mappings below are necessary only for Neovim.
 nnoremap <S-A-t> :call BottomtermToggle()<CR>
-tnoremap <silent><S-A-t> <C-\><C-n>:q<Bar>echo<CR>
-tnoremap <C-t> <C-\><C-n><C-w>Li
-tnoremap <C-w> <C-\><C-n><C-w>
 tnoremap <Esc> <C-\><C-n>
+tmap <silent><S-A-t> <Esc>:q<Bar>echo<CR>
+tmap <C-w> <Esc><C-w>
+tmap <C-t> <C-w>Li
 
 "" List available buffers and choose one to switch to.
 noremap <leader>b :buffers<CR>:buffer<Space>
+
+"" Paste previously yanked text in place of selected one.
+vnoremap p "_dP

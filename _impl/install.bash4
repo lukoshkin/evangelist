@@ -14,7 +14,7 @@ install::check_arguments () {
   if [[ $# -ne 0 ]]; then
     local ok=true
 
-    for arg in $@; do
+    for arg in "$@"; do
       [[ " $(tr ,/ ' ' <<< $allowed)" =~ " $arg" ]] || { ok=false; break; }
     done
 
@@ -36,38 +36,58 @@ install::vim_settings () {
   ECHO Installing Vim configuration..
 
   ## Go on with Neovim if available, otherwise with Vim
-  local VIM VIMPLUG code=0
+  local _VIM packman install_packman
+  local ok version _CODE=0
+  version=$(nvim -v 2> /dev/null | head -1 | cut -d ' ' -f2)
 
   ## realpath is not available on OSX.
-  # [[ $(realpath $(which vim)) =~ nvim ]] && (( code+=1 ))
-  HAS vim && (( code+=1 ))
-  HAS nvim && (( code+=2 ))
+  # [[ $(realpath $(which vim)) =~ nvim ]] && (( _CODE+=1 ))
+  HAS vim && (( _CODE+=1 ))
+  HAS nvim && (( _CODE+=2 ))
 
-  [[ $code -eq 0 ]] && { ECHO2 Missing: vim, neovim. Aborted.; return 1; }
+  [[ $_CODE -eq 0 ]] && { ECHO2 Missing: vim, neovim. Aborted.; return 1; }
+
   ! grep -qE '^(z|ba)sh' .update-list
-  code+="$?"
+  _CODE+=$?
+
+  ! ([[ -n $_EXTEND ]] && utils::v1_ge_v2 "$version" 0.7)
+  _CODE+=$?
+
+  ## _CODE[0]:
+  ##   0: can't go further; return 1
+  ##   1: Vim is present, Neovim is not.
+  ##   2: Neovim is present, Vim is not.
+  ##   3: Both are present.
+
+  ## _CODE[1]:
+  ##   0: Only Vim settings are being installed.
+  ##   1: In addition to Vim settings, we install bash or zsh settings.
+
+  ## _CODE[2]:
+  ##   0: User is not going to use Neovim-Lua setup or it's not possible.
+  ##   1: Extend to Neovim-Lua setup.
 
   ## Make an "alias" for pip3
-  (! HAS pip && HAS pip3) && pip () { pip3 $@; }
+  (! HAS pip && HAS pip3) && pip () { pip3 "$@"; }
 
   ## NOTE: case fallthrough (;&) and resume (;;&) are available in bash >= 4.0
   ## NOTE: zsh's 'case resume' is different - `;|`
-  case $code in
-    1?)
-      VIM=vim
-      VIMPLUG=~/.vim/autoload/plug.vim
+  case $_CODE in
+    1??)
+      _VIM=vim
+      packman=~/.vim/autoload/plug.vim
       mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
-      utils::back_up_original_configs $VIM \
+      utils::back_up_original_configs $_VIM \
         f:~/.vimrc d:"$XDG_CONFIG_HOME/nvim"
       ;;&
 
-    [23]?)
+    [23]??)
       if ! HAS nodejs
       then
-        echo Installing nodejs..
+        echo Checking nodejs..
         ## NOTE: hard-coded minimal version of Node.
         conda install -yc conda-forge "nodejs>=12.12" &> /dev/null \
-          && echo - Installed nodejs. \
+          && echo - [OK] nodejs. \
           || echo - Failed to install with conda: nodejs
       else
         echo Checking if possible to update 'node' via conda..
@@ -89,9 +109,12 @@ install::vim_settings () {
         && echo - [OK] pynvim. \
         || echo "Cannot execute: pip install pynvim"
 
-      VIM=nvim
-      VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
-      utils::back_up_original_configs $VIM d:"$XDG_CONFIG_HOME/nvim"
+      _VIM=nvim
+      packman="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
+      install_packman="sh -c \"curl -sS -fLo $packman --create-dirs \
+        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim\""
+
+      utils::back_up_original_configs $_VIM d:"$XDG_CONFIG_HOME/nvim"
       grep -q '^vim' .update-list && sed -i '/^vim/d' .update-list
       ;;&
 
@@ -100,132 +123,57 @@ install::vim_settings () {
       cp -R conf/nvim "$XDG_CONFIG_HOME"
       ;;&
 
-    ?0)
-      ## Check if need to expand $EVANGELIST
-      sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
-        -e 's;(filereadable\()(.+\));\1"\2;' \
-        -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
-        "$XDG_CONFIG_HOME/nvim/init.vim"
+    [23]?1)
+      cd "$XDG_CONFIG_HOME/nvim" && ok=true
 
-      local msg shell=${SHELL##*/}
-      ## -r -- do not allow backslashes to escape any chars.
-      ## -d -- change delim from '\n' delim to no delims.
-      read -r -d '' msg << END
-## Added by evangelist (#vim-only)
-if grep -qE '^n?vim' "\$EVANGELIST/.update-list"
-then
-  if [[ -f \$EVANGELIST/custom/custom.vim ]]; then
-    cd "\$EVANGELIST/custom" \\
-      && sed -n '/^Plug .*/p' custom.vim > .plugins.vim \\
-      && sed '/^Plug .*/d' custom.vim > .settings.vim \\
-      && cd - > /dev/null
-  fi
-fi
-END
+      rm lua -rf
+      mv dev/{lua,init.lua} .
+      rm init.vim dev -rf
 
-      case $shell in
-        bash|'')
-          grep -q "## Added by evangelist (#vim-only)" ~/.bashrc \
-            || echo -e "\n$msg\n" >> ~/.bashrc
-          ;;
+      $ok && cd - > /dev/null \
+        && echo '- [OK] Neovim-Lua setup!' \
+        || echo Impl.error: broken dir hierarchy.
 
-        zsh)
-          local zshrc
-          [[ -n $ZDOTDIR ]] && zshrc="$ZDOTDIR/zshrc" || zshrc=~/.zshrc
-          grep -q "## Added by evangelist (#vim-only)" "$zshrc" \
-            || echo -e "\n$msg\n" >> "$zshrc"
-          ;;
+      packman="$XDG_DATA_HOME/nvim/site/pack/packer/start/packer.nvim"
+      install_packman="git clone \
+        --depth 1 https://github.com/wbthomason/packer.nvim $packman"
 
-        *)
-          echo Add this to your rc file:
-          echo -e "\n$msg\n"
-          ;;
-      esac
+      install::vim_settings::lua_lsp
       ;;&
 
-    10)
+    ?00)
+      install::vim_settings::without_modifying_shellrc
+      ;;&
+
+    100)
       rm -f ~/.vimrc
       ln -s "$XDG_CONFIG_HOME/nvim/init.vim" ~/.vimrc
       ;;
 
-    11)
+    110)
       export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
       export VIMINIT=":source $MYVIMRC"
       ;;
 
-    30)
+    30?)
       utils::resolve_vim_alternatives
       ;;
   esac
 
-  ## Install vim-plug if it is not there yet
-  if ! [[ -f "$VIMPLUG" ]]; then
-    sh -c "curl -sS -fLo $VIMPLUG --create-dirs \
-      https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-  fi
+  ## Install plugin manager if it is not there yet.
+  ! [[ -e "$packman" ]] && $install_packman
 
-  set_assembly=minimal
-  if [[ -n $_EXTEND ]]; then
-    sed -i 's;^" ;;' "$XDG_CONFIG_HOME/nvim/init.vim"
-    sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
-    ## CoC is chosen to be a default code-completion engine,
-    ## YCM is commented out, therefore.
+  ## Possible assembly options: minimal, extended, neovim-lua.
+  install::vim_settings::set_assembly
 
-    if ! utils::v1_ge_v2 $(node --version) 12.12
-    then
-      ## `&` in the following line means "use the whole text matched".
-      sed -i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
-    fi
-    set_assembly=extended
-  fi
-
-  assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
-  if [[ $set_assembly != $assembly ]]; then
-    sed -i "/^Installed/i VIM ASSEMBLY:$set_assembly" .update-list
-    [[ -n $assembly ]] && sed -i "/VIM ASSEMBLY:$assembly/d" .update-list
-  fi
-
-  ## Install Vim plugins silently (save installation summary)
-  if [[ $TERM != dumb ]]; then
-    echo Installing plugings..
-    $VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
-    ## NOTE: During interactive installation, the hanging happens
-    ## if some of the plugins being installed throw an error. If the latter
-    ## is the case, evangelist will not finish the procedure unless the user
-    ## hits ENTER the necessary number of times (one, two, or more).
+  if [[ $_CODE = ??1 ]]; then
+    install::vim_settings::packer_plugins
   else
-    ## For non-interactive installation, either one of two commands
-    ## is used, depending on whether Vim or Neovim is chosen:
-
-    # nvim --headless +PlugInstall +qa
-    # vim +PlugInstall +qa > /dev/null
-
-    ## The latter command produces the warnings:
-
-    ## Vim: Warning: Output is not to a terminal
-    ## Vim: Warning: Input is not from a terminal
-
-    ## Though it does the work. Check for a better solution
-    ## that might appear with the upcoming package releases.
-
-    cmd="$VIM "
-    [[ $VIM = nvim ]] && cmd+='--headless '
-    cmd+='+PlugInstall +qa'
-    [[ $VIM = vim ]] && cmd+=' > /dev/null'
-    eval "$cmd"
+    install::vim_settings::vim_plug_plugins
   fi
 
-  if [[ -s /tmp/vim-plug.log ]]; then
-    echo Vim plugin installation summary:
-    cat /tmp/vim-plug.log && rm -f /tmp/vim-plug.log
-  fi
-
-  ## Add Vim customization template, if installing from scratch.
-  ! [[ -f $EVANGELIST/custom/custom.vim ]] \
-    && cp "$EVANGELIST/conf/nvim/custom.vim" "$EVANGELIST/custom"
-
-  ## _ARG can be any, but VIM is specific.
-  _PARAMS=( ${_PARAMS[@]/$_ARG/$VIM} )
+  ## _ARG can be any, but _VIM is specific.
+  _PARAMS=( ${_PARAMS[@]/$_ARG/$_VIM} )
 
   ECHO Successfully installed: Vim configuration.
 }
@@ -239,7 +187,7 @@ install::jupyter_settings () {
   HAS git || { ECHO2 Missing git. Aborted.; return 1; }
 
   ## Make an "alias" for pip3
-  (! HAS pip && HAS pip3) && pip () { pip3 $@; }
+  (! HAS pip && HAS pip3) && pip () { pip3 "$@"; }
 
   echo Checking required packages..
   echo "(Missing ones will be installed if possible)"
@@ -306,10 +254,10 @@ install::tmux_settings () {
     f:~/.tmux.conf f:"$XDG_CONFIG_HOME/tmux/tmux.conf"
 
   ## Tmux version determines where to put Tmux configs
-  local VERSION=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
+  local version=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
 
   ## Copy new configs
-  utils::v1_ge_v2 $VERSION 3.1 \
+  utils::v1_ge_v2 $version 3.1 \
     && cp -R conf/tmux "$XDG_CONFIG_HOME" \
     || cp conf/tmux/tmux.conf ~/.tmux.conf
 
@@ -363,7 +311,7 @@ install::zsh_settings () {
   ## If there was no ~/.zshrc, remove it later
   ## (BUG: conda init generates dummy .zshrc in $HOME ignoring $ZDOTDIR)
   ls ~/.zshrc &> /dev/null
-  local CODE=$?
+  local code=$?
 
   ## Copy new configs
   cp conf/zsh/zshrc "$ZDOTDIR/.zshrc"
@@ -393,7 +341,7 @@ install::zsh_settings () {
     || sed -n '/> conda init/,/< conda init/p' \
          ~/.zshrc >> "$ZDOTDIR/.zshrc" 2> /dev/null
 
-  [[ $CODE -gt 0 ]] && rm -f ~/.zshrc
+  [[ $code -gt 0 ]] && rm -f ~/.zshrc
 
   ## Dynamic imports should make the last line in rc files.
   write::dynamic_imports "$ZDOTDIR/.zshrc"
@@ -406,3 +354,148 @@ install::zsh_settings () {
   ECHO Successfully installed: ZSH configuration.
 }
 
+
+#####################################
+##  Local helpers (vim_settings).  ##
+#####################################
+install::vim_settings::without_modifying_shellrc () {
+  ## Check if need to expand $EVANGELIST
+  # sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
+  #   -e 's;(filereadable\()(.+\));\1"\2;' \
+  #   -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
+  #   "$XDG_CONFIG_HOME/nvim/init.vim"
+  ## No need to expend after adding the snippet below!
+
+  local msg shell=${SHELL##*/}
+  ## -r -- do not allow backslashes to escape any chars.
+  ## -d -- change delim from '\n' delim to no delims.
+  read -r -d '' msg << END
+## Added by evangelist (#vim-only)
+export EVANGELIST="$EVANGELIST"
+
+if grep -qE '^n?vim' "\$EVANGELIST/.update-list"
+then
+  if [[ -f \$EVANGELIST/custom/custom.vim ]]; then
+  cd "\$EVANGELIST/custom" \\
+    && sed -n '/^Plug .*/p' custom.vim > .plugins.vim \\
+    && sed '/^Plug .*/d' custom.vim > .settings.vim \\
+    && cd - > /dev/null
+  fi
+fi
+END
+
+  case $shell in
+    bash|'')
+      grep -q "## Added by evangelist (#vim-only)" ~/.bashrc \
+        || echo -e "\n$msg\n" >> ~/.bashrc
+      ;;
+
+    zsh)
+      local zshrc
+      [[ -n $ZDOTDIR ]] && zshrc="$ZDOTDIR/zshrc" || zshrc=~/.zshrc
+      grep -q "## Added by evangelist (#vim-only)" "$zshrc" \
+        || echo -e "\n$msg\n" >> "$zshrc"
+      ;;
+
+    *)
+      echo Add this to your rc file:
+      echo -e "\n$msg\n"
+      ;;
+  esac
+}
+
+
+install::vim_settings::packer_plugins () {
+  nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+}
+
+
+install::vim_settings::vim_plug_plugins () {
+  ## Install Vim plugins silently (save installation summary)
+  if [[ $TERM != dumb ]]; then
+    echo Installing plugings..
+    $_VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
+    ## NOTE: During interactive installation, the hanging happens
+    ## if some of the plugins being installed throw an error. If the latter
+    ## is the case, evangelist will not finish the procedure unless the user
+    ## hits ENTER the necessary number of times (one, two, or more).
+  else
+    ## For non-interactive installation, either one of two commands
+    ## is used, depending on whether Vim or Neovim is chosen:
+
+    # nvim --headless +PlugInstall +qa
+    # vim +PlugInstall +qa > /dev/null
+
+    ## The latter command produces the warnings:
+
+    ## Vim: Warning: Output is not to a terminal
+    ## Vim: Warning: Input is not from a terminal
+
+    ## Though it does the work. Check for a better solution
+    ## that might appear with the upcoming package releases.
+
+    cmd="$_VIM "
+    [[ $_VIM = nvim ]] && cmd+='--headless '
+    cmd+='+PlugInstall +qa'
+    [[ $_VIM = vim ]] && cmd+=' > /dev/null'
+    eval "$cmd"
+  fi
+
+  if [[ -s /tmp/vim-plug.log ]]; then
+    echo Vim plugin installation summary:
+    cat /tmp/vim-plug.log && rm -f /tmp/vim-plug.log
+  fi
+
+  ## Add Vim customization template, if installing from scratch.
+  ! [[ -f $EVANGELIST/custom/custom.vim ]] \
+    && cp "$EVANGELIST/conf/nvim/custom.vim" "$EVANGELIST/custom"
+}
+
+
+install::vim_settings::lua_lsp () {
+  [[ -d "$XDG_DATA_HOME/lua-ls" ]] && return
+  HAS ninja || return
+
+  echo 'Installing Lua-LSP..'
+  git clone --depth=1 \
+    https://hub.fastgit.xyz/sumneko/lua-language-server \
+    "$XDG_DATA_HOME/lua-ls"
+
+  local back="$PWD"
+  cd "$XDG_DATA_HOME/lua-ls" \
+    && git submodule update --init --recursive \
+    && cd 3rd/luamake \
+    && compile/install.sh \
+    && cd ../.. \
+    && ./3rd/luamake/luamake rebuild
+
+  cd "$back" && { echo Impl.error: broken dir hierarchy; exit; }
+}
+
+
+install::vim_settings::set_assembly () {
+  local set_assembly=minimal
+  if [[ -n $_EXTEND ]]; then
+    if [[ $_CODE = ??0 ]]; then
+      sed -i 's;^" ;;' "$XDG_CONFIG_HOME/nvim/init.vim"
+      sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
+      ## CoC is chosen to be a default code-completion engine,
+      ## YCM is commented out, therefore.
+
+      if ! utils::v1_ge_v2 "$(node --version)" 12.12
+      then
+        ## `&` in the following line means "use the whole text matched".
+        sed -i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
+      fi
+      set_assembly=extended
+    else
+      set_assembly=neovim-lua
+    fi
+  fi
+
+  local assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
+  if [[ $set_assembly != $assembly ]]; then
+    sed -i "/^Installed/i VIM ASSEMBLY:$set_assembly" .update-list
+    [[ -n $assembly ]] && sed -i "/VIM ASSEMBLY:$assembly/d" .update-list
+  fi
+}

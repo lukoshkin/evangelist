@@ -27,7 +27,7 @@ end
 local keymap = vim.keymap.set
 vim.g.maplocalleader = '<Space>'
 
-local aug0 = vim.api.nvim_create_augroup('EasierJJK', {clear = true})
+local aug0 = vim.api.nvim_create_augroup('EasierJJ', {clear = true})
 vim.api.nvim_create_autocmd('InsertEnter', {
   command = 'set timeoutlen=200',
   group = aug0
@@ -39,8 +39,6 @@ vim.api.nvim_create_autocmd('InsertLeave', {
 })
 
 keymap('i', 'jj', '<Esc>')
-keymap('i', 'jk', '<Esc>')
-keymap('i', 'kj', '<Esc>')
 
 keymap('n', '<A-j>', 'o<Esc>')
 keymap('n', '<A-k>', '<S-o><Esc>')
@@ -191,3 +189,6 @@ keymap('t', '<Esc>', '<C-\\><C-n>')
 keymap('t', '<S-A-t>', '<Esc>:q<Bar>echo<CR>', {remap=true})
 keymap('t', '<C-w>', '<Esc><C-w>', {remap=true})
 keymap('t', '<C-t>', '<C-w>Li', {remap=true})
+
+--- Paste previously yanked text in place of selected one.
+keymap('v', 'p', '"_dP')

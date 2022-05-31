@@ -1,7 +1,8 @@
-vim.g.nvim_tree_highlight_opened_files = 1
-vim.g.nvim_tree_group_empty = 1
-
 require'nvim-tree'.setup {
+  renderer = {
+    highlight_opened_files = 'icon',
+    group_empty = true,
+  },
   view = {
     mappings = {
       list = {

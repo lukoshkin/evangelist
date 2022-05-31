@@ -137,7 +137,7 @@ Before to get into it, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.3.3 (!)
+Patch 1.3.4 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -213,7 +213,9 @@ Patch 1.3.3 (!)
   | command | Trim | remove all trailing spaces in the file |
   | command | Rmswp | delete the corresponding to open buffer swap file |
   | visual | `//` | search for selected text <br> (doesn't work in `VISUAL LINE` mode) |
-  | any | `<A-m>` | toggle mouse |
+  | terminal | <C-t> | flip terminal from horizontal to vertical orientation |
+  | terminal | <S-M-t> | Toggle bottom terminal |
+  | any | `<M-m>` | toggle mouse |
   </details>
 
 * <details>
@@ -227,7 +229,7 @@ Patch 1.3.3 (!)
   | normal | `<leader>u` | open undo-tree |
   | normal | `<C-p>` | open CtrlP (file navigation) |
   | any <br> but insert | `<leader>tr` | translate the line under the cursor |
-  | any <br> but insert | `<A-t>` | open terminal in a floating window |
+  | any <br> but insert | `<M-t>` | open terminal in a floating window |
   <!--
   | ctrlP | `<C-j>`, `<C-k>` | navigation keys |
   | ctrlP | `<C-r>` | enable regex |

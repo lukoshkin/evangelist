@@ -33,6 +33,14 @@ packer.startup(function (use)
   }
 
   use {
+    'puremourning/vimspector',
+    requires = 'szw/vim-maximizer',
+    config = function ()
+      require'user.plugins.vimspector'
+    end
+  }
+
+  use {
     'lervag/vimtex',
     ft = 'tex',
     setup = function ()
@@ -67,7 +75,7 @@ packer.startup(function (use)
   }
 
   use {
-    --- Required by telescope
+    --- Also required by telescope.
     'ahmedkhalf/project.nvim',
     config = function()
       require("project_nvim").setup { manual_mode = true }
@@ -160,7 +168,7 @@ packer.startup(function (use)
 
   use {
     'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate',
+    -- run = ':TSUpdate',
     requires = {
       'nvim-treesitter/playground',
       'nvim-treesitter/nvim-treesitter-textobjects',
@@ -202,6 +210,9 @@ packer.startup(function (use)
 
   use {
     'rafamadriz/friendly-snippets',
+    --- Check if the following setup is necessary;
+    --- The results of its application might have been cached somewhere,
+    --- so you might have to clear them first before checking it out.
     setup = function ()
       require'luasnip'.filetype_extend('cpp', {'clangd'})
     end

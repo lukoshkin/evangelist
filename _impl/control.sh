@@ -91,7 +91,7 @@ control::checkhealth () {
   write::modulecheck VIM \
     r:'nvim vim':neovim r:curl \
     o:'pip pip3':pip3 o:'nodejs conda':npm o:xclip \
-    +:node::12.12 +l:libxcb-xinerama0
+    +:node::12.12 +l:libxcb-xinerama0 +:ninja:ninja-build
   write::modulecheck JUPYTER r:'pip pip3':pip3 r:git
   write::modulecheck TMUX r:tmux
 
