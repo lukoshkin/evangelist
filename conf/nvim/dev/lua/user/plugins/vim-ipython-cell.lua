@@ -1,4 +1,4 @@
-vim.g.ipython_cell_tag = {'# %%', '#%%', '## <codecell>', '# In['}
+vim.g.ipython_cell_tag = { '# %%', '#%%', '## <codecell>', '# In[' }
 --- Use %cpaste "magic function" that allows for error-free pasting.
 --- Moreover, it sends all lines in a cell at once instead of one by one.
 vim.g.slime_python_ipython = 1
@@ -25,6 +25,7 @@ end
 --- Notice below and all other comments are from Neovim<0.5 settings.
 --- The code below is a dirty way to set local mapping. Define mappings
 --- instead in vim after/ftplugin/python.vim, using <localleader>.
+--- Or maybe it is OK? See https://github.com/nathom/filetype.nvim
 
 --- Note: the order of sourcing Slime and IPython configs does matter.
 --- ####  First, import Slime's one, then those of IPython.

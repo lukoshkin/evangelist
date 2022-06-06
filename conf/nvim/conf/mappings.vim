@@ -90,7 +90,8 @@ noremap <silent><A--> :silent !transset -a --dec .02<CR>
 "" :silent discards the output of a command that follows it.
 
 "" Remove all extra spaces at the end of lines
-command! -range=% Trim <line1>,<line2>s/\s\+$//e | :nohlsearch
+"" TODO: rewrite it so the cursor position doesn't change.
+command! -range=% Trim <line1>,<line2>s/\s\+$//e | nohlsearch
 "" By default, the application range is the whole file (%).
 "" The exclamation mark says to replace the command if it already exists.
 "" So no error will pop up when sourcing this file several times.

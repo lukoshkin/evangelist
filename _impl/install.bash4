@@ -406,6 +406,11 @@ END
 
 
 install::vim_settings::packer_plugins () {
+  ## Just in case these variables are already defined
+  ## in the shellrc file and have different values.
+  export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.lua"
+  export VIMINIT=":source $MYVIMRC"
+
   nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
 }
 

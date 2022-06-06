@@ -41,7 +41,7 @@ local on_attach = function(_, bufnr)
   --- ':Telescope lsp_xxx_actions<CR>'
   --- where 'xxx' is 'code' or 'range_code'.
 
-  buf_keymap(bufnr, 'n', '<leader>d', '<cmd>lua vim.diagnostic.open_float()<CR>')
+  buf_keymap(bufnr, 'n', 'ge', '<cmd>lua vim.diagnostic.open_float()<CR>')
   buf_keymap(bufnr, 'n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>')
   buf_keymap(bufnr, 'n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>')
 
@@ -66,39 +66,23 @@ local servers = {
   'clangd',
   'rust_analyzer',
   'bashls',
-  'dockerls' }
+  'dockerls',
+  'jsonls',
+}
 
 for _, lsp in pairs(servers) do
   require('lspconfig')[lsp].setup {
     on_attach = on_attach,
     capabilities = capabilities,
-    flags = {
-      -- This will be the default in neovim 0.7+
-      debounce_text_changes = 150,
-    }
   }
 end
 
-require 'lspconfig'.jsonls.setup {
-  on_attach = on_attach,
-  capabilities = capabilities,
-  flags = {
-    debounce_text_changes = 150,
-  },
-  settings = {
-    json = {
-      schemas = require('schemastore').json.schemas()
-    }
-  }
-}
-
+-- Lua setup follows this guide:
+-- https://jdhao.github.io/2021/08/12/nvim_sumneko_lua_conf/
 local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
 
-
--- Lua setup follows this guide:
--- https://jdhao.github.io/2021/08/12/nvim_sumneko_lua_conf/
 local lua_ls_bin = os.getenv 'XDG_DATA_HOME' .. '/lua-ls/bin/'
 require 'lspconfig'.sumneko_lua.setup {
   on_attach = on_attach,

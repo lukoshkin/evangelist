@@ -46,13 +46,21 @@ ECHO2 () {
 
 ## NOTE: stderr-pipe redirection (|&) doesn't work on old shells
 HAS () {
-  [[ $(type $@ 2>&1 | grep -c 'not found') -lt $# ]] && return 0
+  [[ $(sed '/alias/d' <(type $@ 2>&1) | grep -c 'not found') -lt $# ]] \
+    && return 0
   return 1
 }
 
 
 HASLIB () {
   dpkg-query -W $1 &> /dev/null
+}
+
+
+PIPHAS () {
+  ## In beta state.
+  # conda list | grep -q $1
+  pip show $1 2> /dev/null
 }
 
 ##########################

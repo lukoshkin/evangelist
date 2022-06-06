@@ -73,7 +73,8 @@ telescope.setup {
 }
 
 require'telescope'.load_extension 'fzf'
-require('telescope').load_extension('projects')
+require'telescope'.load_extension 'projects'
+require'telescope'.load_extension 'neoclip'
 
 --- Find files in the current directory (except hidden ones).
 keymap('n', '<leader>ff', [[<cmd>lua require'telescope.builtin'.find_files()<CR>]])
@@ -89,3 +90,5 @@ keymap('n', '<leader>fg', [[<cmd>lua require'telescope'.extensions.live_grep_raw
 keymap('n', '<leader>fo', [[<cmd>lua require'telescope.builtin'.oldfiles()<CR>]])
 --- Find a project
 keymap('n', '<leader>fp', [[<cmd>lua require'telescope'.extensions.projects.projects()<CR>]])
+--- Find yanks made during the current session.
+keymap( 'n', '<leader>fy', [[<cmd> lua require'telescope'.extensions.neoclip.neoclip()<CR>]])

@@ -5,9 +5,18 @@ packer.startup(function (use)
 
   use 'sickill/vim-pasta'
   use 'tpope/vim-sleuth'
-  use 'tpope/vim-eunuch' -- Adds useful commands like :SudoWrite and etc.
+  --- Adds useful commands like :SudoWrite and etc.
+  use 'tpope/vim-eunuch'
+  --- Automatically create parent dirs when saving a file.
+  use 'jessarcher/vim-heritage'
+  use 'unblevable/quick-scope'
 
-  use 'jessarcher/vim-heritage' -- Automatically create parent dirs when saving
+  use {
+    'rcarriga/nvim-notify',
+    config = function ()
+      vim.notify = require'notify'
+    end
+  }
 
   use {
     'mhinz/vim-sayonara',
@@ -50,11 +59,13 @@ packer.startup(function (use)
   }
 
   use {
-    { 'tpope/vim-commentary',     keys  = 'gc'},
-    { 'tpope/vim-surround',       event = 'BufRead'}, -- keys = {'ys', 'cs', 'ds' }}, --> malfunctioning with 'ds'
+    { 'tpope/vim-commentary',     keys  = 'gc' },
+    { 'junegunn/vim-easy-align',  keys  = 'ga' },
     { 'farmergreg/vim-lastplace', event = 'BufRead' },
-    { 'tpope/vim-repeat',         event = 'BufRead'},
-    { 'dstein64/vim-startuptime', cmd   = 'StartupTime'},
+    { 'tpope/vim-repeat',         event = 'BufRead' },
+    { 'dstein64/vim-startuptime', cmd   = 'StartupTime' },
+    { 'tpope/vim-surround',       event = 'BufRead' },
+    --- keys = {'ys', 'cs', 'ds' }}, --> malfunctioning with 'ds'
   }
 
   use {
@@ -67,33 +78,27 @@ packer.startup(function (use)
   }
 
   use {
-    'tommcdo/vim-lion',
-    keys  = {'gl', 'gL'},
-    config = function ()
-      require'user.plugins.lion'
-    end
-  }
-
-  use {
-    --- Also required by telescope.
     'ahmedkhalf/project.nvim',
     config = function()
-      require("project_nvim").setup { manual_mode = true }
+      require("project_nvim").setup {
+        -- manual_mode = true,
+        silent_chdir = false,
+      }
     end
   }
 
   --- LOOK
   use {
-    'glepnir/dashboard-nvim',
-    config = function ()
-      require'user.plugins.dashboard'
+    'shaunsingh/nord.nvim',
+    config =function ()
+      require'user.colors'
     end
   }
 
   use {
-    'shaunsingh/nord.nvim',
+    'glepnir/dashboard-nvim',
     config = function ()
-      require'user.plugins.nord'
+      require'user.plugins.dashboard'
     end
   }
 
@@ -158,6 +163,8 @@ packer.startup(function (use)
     requires = {
       { 'nvim-lua/plenary.nvim' },
       { 'kyazdani42/nvim-web-devicons' },
+      { 'ahmedkhalf/project.nvim' },
+      { 'AckslD/nvim-neoclip.lua' },
       { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
       { 'nvim-telescope/telescope-live-grep-raw.nvim' },
     },
@@ -165,6 +172,19 @@ packer.startup(function (use)
       require'user.plugins.telescope'
     end
   }
+
+  use {
+    'AckslD/nvim-neoclip.lua',
+    requires = {
+      --- is only required if persistent history is enabled.
+      -- {'tami5/sqlite.lua', module = 'sqlite'},
+      {'nvim-telescope/telescope.nvim'},
+    },
+    config = function()
+      require'user.plugins.neoclip'
+    end
+  }
+
 
   use {
     'nvim-treesitter/nvim-treesitter',
@@ -197,24 +217,21 @@ packer.startup(function (use)
   }
 
   use {
-    'neovim/nvim-lspconfig',
-    requires = {
-      'b0o/schemastore.nvim',
-      'folke/lsp-colors.nvim',
-      'weilbith/nvim-code-action-menu',
-    },
+    'jose-elias-alvarez/null-ls.nvim',
     config = function ()
-      require'user.plugins.lspconfig'
+      require'user.plugins.null-ls'
     end
   }
 
   use {
-    'rafamadriz/friendly-snippets',
-    --- Check if the following setup is necessary;
-    --- The results of its application might have been cached somewhere,
-    --- so you might have to clear them first before checking it out.
-    setup = function ()
-      require'luasnip'.filetype_extend('cpp', {'clangd'})
+    'neovim/nvim-lspconfig',
+    requires = {
+      'folke/lsp-colors.nvim',
+      'weilbith/nvim-code-action-menu',
+      'jose-elias-alvarez/null-ls.nvim',
+    },
+    config = function ()
+      require'user.plugins.lspconfig'
     end
   }
 

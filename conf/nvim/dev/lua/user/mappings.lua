@@ -163,9 +163,10 @@ keymap('x', '<Space>b<Space>', ':call SplitBySep()<CR>')
 keymap('x', '<Space>bb', [[:call SplitBySep(getreg('/'))<CR>]])
 
 --- Trim trailing whitespaces.
+--- TODO: rewrite it so the cursor position doesn't change.
 vim.api.nvim_create_user_command(
   'Trim',
-  [[<line1>,<line2>s/\s\+$//e | :nohlsearch]],
+  [[<line1>,<line2>s/\s\+$//e | nohlsearch]],
   { range = '%' }
 )
 

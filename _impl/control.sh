@@ -91,7 +91,12 @@ control::checkhealth () {
   write::modulecheck VIM \
     r:'nvim vim':neovim r:curl \
     o:'pip pip3':pip3 o:'nodejs conda':npm o:xclip \
-    +:node::12.12 +l:libxcb-xinerama0 +:ninja:ninja-build
+    +:node::12.12 +l:libxcb-xinerama0 \
+    +:ninja:ninja-build +:rg:ripgrep +:fd:fd-find
+    ## Many plugins requires node (particularly CoC).
+    ## 'xclip' to enable Vim's clipboard. 'xinerama0' is needed for
+    ## slime-ipython setup. 'telescope.nvim' exploits rg and fd.
+    ## 'ninja' to build Lua LSP.
   write::modulecheck JUPYTER r:'pip pip3':pip3 r:git
   write::modulecheck TMUX r:tmux
 
