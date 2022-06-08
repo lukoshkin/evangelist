@@ -1,6 +1,7 @@
 #!/bin/bash
 ## Shebang helps the editor to correctly render colors.
 
+
 ## This function should be called only once
 ## within the body of an install::*_settings function
 
@@ -13,11 +14,11 @@
 ## in control.sh: back_up_original_configs
 
 ## Check out the commented code section below.
-
-
 utils::back_up_original_configs () {
   if ! grep -q "^$1" .update-list
   then
+    ## A bit outdated code section, but can be still valid.
+    ## Needs to be checked.
     # echo $1 >> /tmp/update-evn-list
 
     # if [[ -z $1 ]]

@@ -188,7 +188,7 @@ packer.startup(function (use)
 
   use {
     'nvim-treesitter/nvim-treesitter',
-    -- run = ':TSUpdate',
+    run = ':TSUpdate',
     requires = {
       'nvim-treesitter/playground',
       'nvim-treesitter/nvim-treesitter-textobjects',

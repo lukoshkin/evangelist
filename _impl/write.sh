@@ -59,8 +59,9 @@ HASLIB () {
 
 PIPHAS () {
   ## In beta state.
-  # conda list | grep -q $1
-  pip show $1 2> /dev/null
+  # conda list | grep -q "$1"
+  # pip3 show "$1" 2> /dev/null
+  pip3 --disable-pip-version-check list 2>&1 | grep -qP "$1"
 }
 
 ##########################

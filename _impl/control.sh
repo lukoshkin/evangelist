@@ -187,6 +187,7 @@ control::install () {
 }
 
 
+## Still in beta.
 control::update () {
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
@@ -348,6 +349,10 @@ control::uninstall () {
         cp -R $OBJ "$XDG_CONFIG_HOME"
         ;;
 
+      share_nvim)
+        cp -R $OBJ "$XDG_DATA_HOME"
+        ;;
+
       tmux.conf)
         cp $OBJ "$XDG_CONFIG_HOME/tmux"
         ;;
@@ -375,8 +380,6 @@ control::uninstall () {
 control::reinstall () {
   HAS git || { ECHO2 Missing git; exit; }
   [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
-  assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
-  [[ $assembly = extended ]] && _EXTEND=-
 
   assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
   [[ $assembly = extended ]] && _EXTEND=-

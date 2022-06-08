@@ -76,9 +76,11 @@ install::vim_settings () {
     1??)
       _VIM=vim
       packman=~/.vim/autoload/plug.vim
-      mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
       utils::back_up_original_configs $_VIM \
-        f:~/.vimrc d:"$XDG_CONFIG_HOME/nvim"
+        f:~/.vimrc d:"$XDG_CONFIG_HOME/nvim" \
+        d:"$XDG_DATA_HOME/nvim":share_nvim
+
+      mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
       ;;&
 
     [23]??)
@@ -114,7 +116,9 @@ install::vim_settings () {
       install_packman="sh -c \"curl -sS -fLo $packman --create-dirs \
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim\""
 
-      utils::back_up_original_configs $_VIM d:"$XDG_CONFIG_HOME/nvim"
+      utils::back_up_original_configs $_VIM \
+        d:"$XDG_CONFIG_HOME/nvim" d:"$XDG_DATA_HOME/nvim":share_nvim
+
       grep -q '^vim' .update-list && sed -i '/^vim/d' .update-list
       ;;&
 
@@ -138,6 +142,7 @@ install::vim_settings () {
       install_packman="git clone \
         --depth 1 https://github.com/wbthomason/packer.nvim $packman"
 
+      rm "$XDG_DATA_HOME/nvim" -rf
       install::vim_settings::lua_lsp
       ;;&
 
@@ -166,6 +171,7 @@ install::vim_settings () {
   ## Possible assembly options: minimal, extended, neovim-lua.
   install::vim_settings::set_assembly
 
+  echo Installing plugings..
   if [[ $_CODE = ??1 ]]; then
     install::vim_settings::packer_plugins
   else
@@ -411,14 +417,16 @@ install::vim_settings::packer_plugins () {
   export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.lua"
   export VIMINIT=":source $MYVIMRC"
 
-  nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+  nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync' \
+    2> /tmp/_neovim_lua_setup_packer_installation.log
+
+  echo Logs saved to /tmp/_neovim_lua_setup_packer_installation.log
 }
 
 
 install::vim_settings::vim_plug_plugins () {
   ## Install Vim plugins silently (save installation summary)
   if [[ $TERM != dumb ]]; then
-    echo Installing plugings..
     $_VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
     ## NOTE: During interactive installation, the hanging happens
     ## if some of the plugins being installed throw an error. If the latter
