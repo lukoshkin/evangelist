@@ -1,5 +1,6 @@
 local buf_option = vim.api.nvim_buf_set_option
-local buf_keymap = require 'lib.utils'.buf_keymap
+local buf_keymap = require'lib.utils'.buf_keymap
+local nls_conf = require'user.plugins.null-ls'
 
 vim.diagnostic.config {
   --- ghost text on the right which can only be selected.
@@ -20,7 +21,7 @@ vim.diagnostic.config {
   }
 }
 
-local on_attach = function(_, bufnr)
+local function set_lsp_mappings (_, bufnr)
   buf_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
   buf_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>')
   buf_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>')
@@ -29,7 +30,7 @@ local on_attach = function(_, bufnr)
   buf_keymap(bufnr, 'n', '<leader>td', '<cmd>lua vim.lsp.buf.type_definition()<CR>')
   buf_keymap(bufnr, 'n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
   buf_keymap(bufnr, 'n', 'gr', ':Telescope lsp_references<CR>')
-  --- gi is reserved by original Vim command (see :h gi).
+  --- gi and gI are reserved by original Vim command (see :h gi, e.g.).
   buf_keymap(bufnr, 'n', 'gI', '<cmd>lua vim.lsp.buf.implementation()<CR>')
 
   --- Provided by 'weilbith/nvim-code-action-menu':
@@ -41,9 +42,19 @@ local on_attach = function(_, bufnr)
   --- ':Telescope lsp_xxx_actions<CR>'
   --- where 'xxx' is 'code' or 'range_code'.
 
+  --- 'ge' like (E)xplain (E)rror.
   buf_keymap(bufnr, 'n', 'ge', '<cmd>lua vim.diagnostic.open_float()<CR>')
+  --- ][d for looping over all diagnostic messages.
   buf_keymap(bufnr, 'n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>')
   buf_keymap(bufnr, 'n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>')
+  --- ][e ─ over just error messages.
+  buf_keymap(
+    bufnr, "n", "[e", '<cmd>lua vim.diagnostic.goto_prev('
+    .. '{severity = vim.diagnostic.severity.ERROR})<CR>')
+  buf_keymap(
+    bufnr, "n", "]e", '<cmd>lua vim.diagnostic.goto_next('
+    .. '{severity = vim.diagnostic.severity.ERROR})<CR>')
+
 
   --- Open full diagnostics in location-list + find symbols(primitive data type) using telescope.
   buf_keymap(bufnr, 'n', '<Space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
@@ -54,6 +65,12 @@ local on_attach = function(_, bufnr)
     vim.lsp.buf.formatting,
     {}
   )
+end
+
+
+local on_attach = function(client, bufnr)
+  set_lsp_mappings(client, bufnr)
+  nls_conf.setup_formatters(client, bufnr)
 end
 
 -- nvim-cmp supports additional completion capabilities
@@ -113,19 +130,26 @@ require 'lspconfig'.sumneko_lua.setup {
   },
 }
 
+
+--- Configure null-ls here so it reuses `on_attach`.
+nls_conf.setup(on_attach)
+
+
 vim.fn.sign_define('DiagnosticSignError', { text = '', texthl = 'DiagnosticSignError' })
 vim.fn.sign_define('DiagnosticSignWarn', { text = '', texthl = 'DiagnosticSignWarn' })
 vim.fn.sign_define('DiagnosticSignInfo', { text = '', texthl = 'DiagnosticSignInfo' })
 vim.fn.sign_define('DiagnosticSignHint', { text = '', texthl = 'DiagnosticSignHint' })
 
--- Suppress error messages from lang servers.
-vim.notify = function(msg, log_level, _)
-  if msg:match 'exit code' then
-    return
-  end
-  if log_level == vim.log.levels.ERROR then
-    vim.api.nvim_err_writeln(msg)
-  else
-    vim.api.nvim_echo({ { msg } }, true, {})
-  end
-end
+--- We use notify.nvim for notifications. Not sure if they two work coherently.
+--- So it should remain commented out, until I figure it out.
+-- --- Suppress error messages from lang servers.
+-- vim.notify = function(msg, log_level, _)
+--   if msg:match 'exit code' then
+--     return
+--   end
+--   if log_level == vim.log.levels.ERROR then
+--     vim.api.nvim_err_writeln(msg)
+--   else
+--     vim.api.nvim_echo({ { msg } }, true, {})
+--   end
+-- end

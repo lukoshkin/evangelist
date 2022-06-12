@@ -22,7 +22,22 @@ M.buf_keymap = function(bufnr, mode, lhs, rhs, opts)
 end
 
 
-function M.shellcmd_capture(cmd, raw)
+function M.unique (tbl)
+  local set = {}
+  local hash = {}
+
+  for _, v in pairs(tbl) do
+    if not (hash[v]) then
+      set[#set+1] = v
+      hash[v] = true
+    end
+  end
+
+  return set
+end
+
+
+local function shellcmd_capture(cmd, raw)
   --- 'r' is the default mode.
   local f = assert(io.popen(cmd, 'r'))
   local s = assert(f:read('*a'))
@@ -36,7 +51,8 @@ function M.shellcmd_capture(cmd, raw)
 end
 
 
-local system = M.shellcmd_capture('uname')
+M.sc_capture = shellcmd_capture
+local system = shellcmd_capture('uname')
 
 if system == 'Linux' then
   M._opener = 'xdg-open'

@@ -1,4 +1,6 @@
-vim.g.dashboard_custom_header = {
+local db = require('dashboard')
+
+db.custom_header = {
   '',
   '',
   '',
@@ -12,18 +14,43 @@ vim.g.dashboard_custom_header = {
   ' ╚═╝  ╚═══╝ ╚══════╝ ╚═════╝    ╚═══╝   ╚═╝ ╚═╝     ╚═╝',
   '',
   '',
+  '',
 }
 
-vim.g.dashboard_custom_section = {
-  a = { description = { '   New File                     ' }, command = 'enew' },
-  b = { description = { '   Find File                 \\ff' }, command = 'Telescope find_files' },
-  c = { description = { '   Recent Files              \\fo' }, command = 'Telescope oldfiles' },
-  d = { description = { '   Find Word                 \\fg' }, command = 'Telescope live_grep' },
-  e = { description = { '   Find Project              \\fp' }, command = 'Telescope projects' },
-  f = { description = { ' ﴚ  Quit                       ZZ' }, command = ':q' },
+
+db.custom_center = {
+  { icon = '  ',
+    --- More whitespace chars since
+    desc = ' New File                                  ',
+    --- the line doesn't include a shortcut.
+    action = 'enew' },
+  { icon = '  ',
+    desc = ' Find File                              ',
+    shortcut = '\\ff',
+    action = 'Telescope find_files' },
+  { icon = '  ',
+    desc = ' Recent Files                           ',
+    shortcut = '\\fo',
+    action = 'Telescope oldfiles' },
+  { icon = '  ',
+    desc = ' Find Word                              ',
+    shortcut = '\\fg',
+    action = 'Telescope live_grep' },
+  { icon = '  ',
+    desc = ' Find Project                           ',
+    shortcut = '\\fp',
+    action = 'Telescope projects' },
+  { icon = ' ﴚ ',
+    desc = ' Quit                                   ',
+    shortcut = ' ZZ' ,
+    action = ':q' },
 }
 
-vim.g.dashboard_custom_footer = {
+
+db.custom_footer = {
+  '',
+  '',
+  '',
   [[ ,---,---,---,---,---,---,---,---,---,---,---,---,---,-------, ]],
   [[ | ~ | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0 | [ | ] | <-    | ]],
   [[ |---'-,-'-,-'-,-'-,-'-,-'-,-'-,-'-,-'-,-'-,-'-,-'-,-'-,-----| ]],
@@ -33,6 +60,6 @@ vim.g.dashboard_custom_footer = {
   [[ |------'-,-'-,-'-,-'-,-'-,-'-,-'-,-'-,-'-,-'-,-'-,-'--------| ]],
   [[ | Shift  | 🅔 | 🅥 | 🅐 | 🅝 | 🅖 | 🅔 | 🅛 | 🅘 | 🅢 | 🅣 |    Shift | ]],
   [[ |------,-',--'--,'---'---'---'---'---'---'-,-'---',--,------| ]],
-  [[ | ctrl |  | alt |                          | alt  |  | ctrl | ]],
+  [[ | Ctrl |  | Alt |                          | Alt  |  | Ctrl | ]],
   [[ '------'  '-----'--------------------------'------'  '------' ]],
 }

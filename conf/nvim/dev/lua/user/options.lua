@@ -9,6 +9,7 @@ local options = {
 
   title = true,
   number = true,
+  confirm = true,
   relativenumber = true,
   termguicolors = true,
 
@@ -30,9 +31,6 @@ local options = {
 
   showmode = false, -- don't show --INSERT-- and etc.
   wildmode = 'longest:full,full', -- modes for cmd line completion.
-
-  wrap = false,
-  confirm = true,
 
   splitright = true,
   splitbelow = true,

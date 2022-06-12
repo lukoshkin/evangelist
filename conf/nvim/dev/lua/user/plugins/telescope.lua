@@ -84,8 +84,8 @@ keymap('n', '<leader>fe', [[<cmd>lua require'telescope.builtin'.find_files({fuzz
 keymap('n', '<leader>fa', [[<cmd>lua require'telescope.builtin'.find_files({ no_ignore = true, prompt_title = 'All Files' })<CR>]])
 ---  Vim buffers (thanks to bufferline plugin, open buffers are always listed above).
 keymap('n', '<leader>b', [[<cmd>lua require'telescope.builtin'.buffers()<CR>]])
---- Find word. `live_grep_raw` adds to `live_grep` allows to use regex and pass CLI flags right from Telescope prompt.
-keymap('n', '<leader>fg', [[<cmd>lua require'telescope'.extensions.live_grep_raw.live_grep_raw()<CR>]])
+--- Find word. `live_grep_args` adds to `live_grep` allows to use regex and pass CLI flags right from Telescope prompt.
+keymap('n', '<leader>fg', [[<cmd>lua require'telescope'.extensions.live_grep_args.live_grep_args()<CR>]])
 -- Find MRU files.
 keymap('n', '<leader>fo', [[<cmd>lua require'telescope.builtin'.oldfiles()<CR>]])
 --- Find a project

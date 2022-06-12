@@ -1,3 +1,5 @@
+local keymap = require'lib.utils'.keymap
+
 vim.g.ipython_cell_tag = { '# %%', '#%%', '## <codecell>', '# In[' }
 --- Use %cpaste "magic function" that allows for error-free pasting.
 --- Moreover, it sends all lines in a cell at once instead of one by one.
@@ -43,7 +45,7 @@ local pyau = function (lhs, cmd)
   vim.api.nvim_create_autocmd('FileType', {
     pattern = 'python',
     callback = function ()
-      vim.keymap.set('n', lhs, cmd)
+      keymap('n', lhs, cmd)
     end,
     group = aug,
   })

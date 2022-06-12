@@ -1,4 +1,6 @@
-require'bufferline'.setup ()
+local keymap = require'lib.utils'.keymap
 
-vim.keymap.set('n', ']b', ':BufferLineCycleNext<CR>', {silent=true})
-vim.keymap.set('n', '[b', ':BufferLineCyclePrev<CR>', {silent=true})
+keymap('n', ']b', ':BufferLineCycleNext<CR>', {silent=true})
+keymap('n', '[b', ':BufferLineCyclePrev<CR>', {silent=true})
+
+require'bufferline'.setup ()

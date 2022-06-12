@@ -349,10 +349,6 @@ control::uninstall () {
         cp -R $OBJ "$XDG_CONFIG_HOME"
         ;;
 
-      share_nvim)
-        cp -R $OBJ "$XDG_DATA_HOME"
-        ;;
-
       tmux.conf)
         cp $OBJ "$XDG_CONFIG_HOME/tmux"
         ;;

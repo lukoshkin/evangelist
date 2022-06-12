@@ -60,10 +60,11 @@ function CustomHighlighting() abort
 
   "" '!' here means that there will be no error
   "" if the highlighting it refers to is already exists.
-  hi! SpellBad   guifg=none guibg=none gui=undercurl guisp=palevioletred
-  hi! SpellCap   guifg=none guibg=none gui=undercurl guisp=khaki1
-  hi! SpellRare  guifg=none guibg=none gui=undercurl guisp=mediumpurple1
-  hi! SpellLocal guifg=none guibg=none gui=undercurl guisp=skyblue1
+  hi! SpellBad   guifg=NONE guibg=NONE gui=undercurl guisp=palevioletred
+  hi! SpellCap   guifg=NONE guibg=NONE gui=undercurl guisp=khaki1
+  hi! SpellRare  guifg=NONE guibg=NONE gui=undercurl guisp=mediumpurple1
+  hi! SpellLocal guifg=NONE guibg=NONE gui=undercurl guisp=skyblue1
+  "" NOTE: Vim requires 'none' to be uppercase.
 
   "" Trailing whitespace highlighting
   highlight! ExtraWhitespace ctermbg=red guibg=palevioletred

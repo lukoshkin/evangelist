@@ -1,3 +1,5 @@
+local keymap = require'lib.utils'.keymap
+
 require'nvim-tree'.setup {
   update_focused_file = {
     enable = true,
@@ -26,8 +28,8 @@ require'nvim-tree'.setup {
   }
 }
 
-vim.keymap.set('n', '<leader>nt', ':NvimTreeToggle<CR>')
-vim.keymap.set('n', '<leader>nf', ':NvimTreeFindFileToggle<CR>')
+keymap('n', '<leader>nt', ':NvimTreeToggle<CR>')
+keymap('n', '<leader>nf', ':NvimTreeFindFileToggle<CR>')
 
 vim.cmd[[
   autocmd BufEnter * ++nested

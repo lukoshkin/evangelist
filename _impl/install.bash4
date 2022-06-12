@@ -77,8 +77,7 @@ install::vim_settings () {
       _VIM=vim
       packman=~/.vim/autoload/plug.vim
       utils::back_up_original_configs $_VIM \
-        f:~/.vimrc d:"$XDG_CONFIG_HOME/nvim" \
-        d:"$XDG_DATA_HOME/nvim":share_nvim
+        f:~/.vimrc d:"$XDG_CONFIG_HOME/nvim"
 
       mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
       ;;&
@@ -116,9 +115,7 @@ install::vim_settings () {
       install_packman="sh -c \"curl -sS -fLo $packman --create-dirs \
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim\""
 
-      utils::back_up_original_configs $_VIM \
-        d:"$XDG_CONFIG_HOME/nvim" d:"$XDG_DATA_HOME/nvim":share_nvim
-
+      utils::back_up_original_configs $_VIM d:"$XDG_CONFIG_HOME/nvim"
       grep -q '^vim' .update-list && sed -i '/^vim/d' .update-list
       ;;&
 
@@ -142,7 +139,7 @@ install::vim_settings () {
       install_packman="git clone \
         --depth 1 https://github.com/wbthomason/packer.nvim $packman"
 
-      rm "$XDG_DATA_HOME/nvim" -rf
+      rm -f "$XDG_CONFIG_HOME/plugin/packer_compiled.lua"
       install::vim_settings::lua_lsp
       ;;&
 
@@ -420,7 +417,7 @@ install::vim_settings::packer_plugins () {
   nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync' \
     2> /tmp/_neovim_lua_setup_packer_installation.log
 
-  echo Logs saved to /tmp/_neovim_lua_setup_packer_installation.log
+  echo Saved logs to /tmp/_nvim_lua_setup_packer_installation.log
 }
 
 

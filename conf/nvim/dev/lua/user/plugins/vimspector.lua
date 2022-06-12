@@ -1,3 +1,5 @@
+local keymap = require'lib.utils'.keymap
+
 --- BP & BPCond & BPDisabled (green bullet) priorities are increased to 200.
 vim.g.vimspector_sign_priority = {
   vimspectorPC            = 200,
@@ -8,8 +10,6 @@ vim.g.vimspector_sign_priority = {
   vimspectorCurrentThread = 200
   }
 
-
-local keymap = vim.keymap.set
 
 keymap('n', '<leader>dc', '<Plug>VimspectorContinue')
 keymap('n', '<leader>dr', ':call vimspector#Reset()<CR>')

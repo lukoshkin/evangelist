@@ -115,9 +115,7 @@ packer.startup(function (use)
     'nvim-lualine/lualine.nvim',
     requires = 'kyazdani42/nvim-web-devicons',
     config = function ()
-      require'lualine'.setup {
-        options = { theme = 'nord' },
-      }
+      require'user.plugins.lualine'
     end
   }
 
@@ -219,7 +217,7 @@ packer.startup(function (use)
   use {
     'jose-elias-alvarez/null-ls.nvim',
     config = function ()
-      require'user.plugins.null-ls'
+      require'user.plugins.null-ls'.setup()
     end
   }
 

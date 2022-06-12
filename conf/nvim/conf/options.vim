@@ -13,7 +13,8 @@ set title
 set confirm
 set number relativenumber
 
-if has('nvim') || has('patch-8.0')
+"" NOTE: if dealing with Neovim, v:version is always 800.
+if v:version >= 800
   set termguicolors
 endif
 

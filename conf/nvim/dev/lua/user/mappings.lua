@@ -67,6 +67,8 @@ keymap('n', '<leader>ts', "i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>")
 keymap('v', '//', [[y/\V<C-R>=escape(@",'/\')<CR><CR>]])
 
 --- Go to file (but first, create if doesn't exist).
+--- Won't work on python imports and cpp includes after remapping.
+--- One can use 'gd' instead.
 keymap('', 'gf', ':edit <cfile><CR>')
 
 --- Open file with the system standard utility.

@@ -1,3 +1,5 @@
+local keymap = require'lib.utils'.keymap
+
 -- set to 1, nvim will open the preview window after entering the markdown buffer
 -- default: 0
 vim.g.mkdp_auto_start = 0
@@ -87,4 +89,4 @@ vim.g.mkdp_port = ''
 vim.g.mkdp_page_title = '${name}'
 
 -- Open and close with the following mapping
-vim.keymap.set('n', '<leader>md', '<Plug>MarkdownPreviewToggle')
+keymap('n', '<leader>md', '<Plug>MarkdownPreviewToggle')
