@@ -3,6 +3,7 @@ local actions = require'telescope.actions'
 local state = require'telescope.actions.state'
 local keymap = require'lib.utils'.keymap
 
+local lga_actions = require"telescope-live-grep-args.actions"
 
 local delete_buffer = function (prompt_bufnr)
   if state.get_selected_entry()[1] == nil then
@@ -69,6 +70,14 @@ telescope.setup {
       case_mode = 'smart_case', --  or "ignore_case" or "respect_case"
                                 --- the default case_mode is "smart_case"
     },
+    live_grep_args = {
+      mappings = {
+        i = {
+          ['<C-k>'] = actions.move_selection_previous,
+          ["<A-'>"] = lga_actions.quote_prompt(),
+        },
+      },
+    },
   },
 }
 
@@ -82,7 +91,7 @@ keymap('n', '<leader>ff', [[<cmd>lua require'telescope.builtin'.find_files()<CR>
 keymap('n', '<leader>fe', [[<cmd>lua require'telescope.builtin'.find_files({fuzzy = false})<CR>]])
 --- All files not matched by `file_ignore_patterns`.
 keymap('n', '<leader>fa', [[<cmd>lua require'telescope.builtin'.find_files({ no_ignore = true, prompt_title = 'All Files' })<CR>]])
----  Vim buffers (thanks to bufferline plugin, open buffers are always listed above).
+--- Vim buffers (thanks to bufferline plugin, open buffers are always listed above).
 keymap('n', '<leader>b', [[<cmd>lua require'telescope.builtin'.buffers()<CR>]])
 --- Find word. `live_grep_args` adds to `live_grep` allows to use regex and pass CLI flags right from Telescope prompt.
 keymap('n', '<leader>fg', [[<cmd>lua require'telescope'.extensions.live_grep_args.live_grep_args()<CR>]])
@@ -90,5 +99,7 @@ keymap('n', '<leader>fg', [[<cmd>lua require'telescope'.extensions.live_grep_arg
 keymap('n', '<leader>fo', [[<cmd>lua require'telescope.builtin'.oldfiles()<CR>]])
 --- Find a project
 keymap('n', '<leader>fp', [[<cmd>lua require'telescope'.extensions.projects.projects()<CR>]])
+--- Request help using fuzzy search and preview.
+keymap('n', '<leader>fh', [[<cmd>Telescope help_tags<CR>]])
 --- Find yanks made during the current session.
 keymap( 'n', '<leader>fy', [[<cmd> lua require'telescope'.extensions.neoclip.neoclip()<CR>]])

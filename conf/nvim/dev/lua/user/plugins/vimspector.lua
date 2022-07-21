@@ -27,7 +27,12 @@ keymap('n', '<Space>.', '<Plug>VimspectorToggleBreakpoint')
 keymap('n', '<Space>,', '<Plug>VimspectorToggleConditionalBreakpoint')
 keymap('n', '<Space>:', '<Plug>VimspectorAddFunctionBreakpoint')
 
+
 function VariablesFocusToggle()
+  if vim.fn.bufnr('vimspector.Variables') < 0 then
+    return
+  end
+
   if vim.fn.bufname() == 'vimspector.Variables' then
     vim.cmd 'MaximizerToggle'
     vim.fn.win_gotoid(vim.g.vimspector_session_windows.code)

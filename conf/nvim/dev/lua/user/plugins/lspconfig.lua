@@ -2,10 +2,89 @@ local buf_option = vim.api.nvim_buf_set_option
 local buf_keymap = require'lib.utils'.buf_keymap
 local nls_conf = require'user.plugins.null-ls'
 
+-- local ns = vim.api.nvim_create_namespace('copy-from-help-diagnostic-handlers')
+-- local orig_virt_text_handler = vim.diagnostic.handlers.virtual_text
+
+-- vim.diagnostic.handlers.virtual_text = {
+--   show = function (_, bufnr, diagnostics, opts)
+--     local line_sign_cnt = {}
+--     local hash = {}
+--     for _, d in pairs(diagnostics) do
+--       hash[d.lnum] = hash[d.lnum] or {}
+--       if not hash[d.lnum][d.message] then
+--         line_sign_cnt[d.lnum] = line_sign_cnt[d.lnum] or 0
+--         line_sign_cnt[d.lnum] = line_sign_cnt[d.lnum] + 1
+--         hash[d.lnum][d.message] = true
+--       end
+--     end
+
+--     for i, d in ipairs(diagnostics) do
+--       local twcol = 80 - #vim.fn.getline(d.lnum+1)
+--       if twcol >= 0 then twcol = 81 else twcol = 82 - twcol end
+
+--       vim.api.nvim_buf_set_extmark(
+--         bufnr, ns, d.lnum, d.col,
+--         { id=i,
+--           virt_text = {{ string.rep('◆', line_sign_cnt[d.lnum]) }},
+--           virt_text_win_col = twcol,
+--         })
+--     end
+--   end,
+
+--   hide = function (_, bufnr)
+--     orig_virt_text_handler.hide(ns, bufnr)
+--   end
+-- }
+
+--- Override the handler for diagnostic signs to show only a sign
+--- for the highest severity diagnostic on a given line. The code below
+--- follows the help message for 'diagnostic-handlers-example'.
+
+--- Create a custom namespace. This will aggregate signs from all other
+--- namespaces and only show the one with the highest severity on a given line
+local ns = vim.api.nvim_create_namespace('copy-from-help-diagnostic-handlers')
+
+
+--- Get a reference to the original signs handler
+local orig_signs_handler = vim.diagnostic.handlers.signs
+
+--- Override the built-in signs handler
+vim.diagnostic.handlers.signs = {
+  show = function(_, bufnr, _, opts)
+    --- Get all diagnostics from the whole buffer rather than just the
+    --- diagnostics passed to the handler
+    local diagnostics = vim.diagnostic.get(bufnr)
+
+    --- Find the "worst" diagnostic per line
+    local max_severity_per_line = {}
+    for _, d in pairs(diagnostics) do
+      local m = max_severity_per_line[d.lnum]
+      if not m or d.severity < m.severity then
+        max_severity_per_line[d.lnum] = d
+      end
+    end
+
+    --- Pass the filtered diagnostics (with our custom namespace) to
+    --- the original handler
+    local filtered_diagnostics = vim.tbl_values(max_severity_per_line)
+    orig_signs_handler.show(ns, bufnr, filtered_diagnostics, opts)
+  end,
+  hide = function(_, bufnr)
+    orig_signs_handler.hide(ns, bufnr)
+  end,
+}
+
 vim.diagnostic.config {
-  --- ghost text on the right which can only be selected.
-  virtual_text = false,
   severity_sort = true,
+
+  signs = true,
+  virtual_text = {
+    source = false,
+    format = function (_)
+      return ''
+    end
+  },
+
   float = {
     source = true,
     focus = false,
@@ -18,8 +97,9 @@ vim.diagnostic.config {
 
       return diagnostic.message
     end,
-  }
+  },
 }
+
 
 local function set_lsp_mappings (_, bufnr)
   buf_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -31,7 +111,7 @@ local function set_lsp_mappings (_, bufnr)
   buf_keymap(bufnr, 'n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
   buf_keymap(bufnr, 'n', 'gr', ':Telescope lsp_references<CR>')
   --- gi and gI are reserved by original Vim command (see :h gi, e.g.).
-  buf_keymap(bufnr, 'n', 'gI', '<cmd>lua vim.lsp.buf.implementation()<CR>')
+  buf_keymap(bufnr, 'n', '<leader>i', '<cmd>lua vim.lsp.buf.implementation()<CR>')
 
   --- Provided by 'weilbith/nvim-code-action-menu':
   buf_keymap(bufnr, 'n', '<leader>ca', ':CodeActionMenu<CR>')
@@ -73,7 +153,7 @@ local on_attach = function(client, bufnr)
   nls_conf.setup_formatters(client, bufnr)
 end
 
--- nvim-cmp supports additional completion capabilities
+--- nvim-cmp supports additional completion capabilities
 local capabilities = require(
   'cmp_nvim_lsp').update_capabilities(
   vim.lsp.protocol.make_client_capabilities())
@@ -94,8 +174,10 @@ for _, lsp in pairs(servers) do
   }
 end
 
--- Lua setup follows this guide:
--- https://jdhao.github.io/2021/08/12/nvim_sumneko_lua_conf/
+--- Lua setup follows this guide:
+--- https://jdhao.github.io/2021/08/12/nvim_sumneko_lua_conf/
+--- FIXME: multiple instances sumneko_lua.
+--- https://github.com/neovim/nvim-lspconfig/issues/319
 local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
@@ -111,7 +193,7 @@ require 'lspconfig'.sumneko_lua.setup {
   settings = {
     Lua = {
       diagnostics = {
-        -- Get the language server to recognize the `vim` global
+        --- Get the language server to recognize the `vim` global
         globals = { 'vim' },
       },
       runtime = {
@@ -120,10 +202,10 @@ require 'lspconfig'.sumneko_lua.setup {
       },
     },
     workspace = {
-      -- Make the server aware of Neovim runtime files
+      --- Make the server aware of Neovim runtime files
       library = vim.api.nvim_get_runtime_file('', true),
     },
-    -- Do not send telemetry data containing a randomized but unique identifier
+    --- Do not send telemetry data containing a randomized but unique identifier
     telemetry = {
       enable = false,
     },

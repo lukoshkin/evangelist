@@ -23,7 +23,7 @@ db.custom_center = {
     --- More whitespace chars since
     desc = ' New File                                  ',
     --- the line doesn't include a shortcut.
-    action = 'enew' },
+    action = 'DashboardNewFile' },
   { icon = '  ',
     desc = ' Find File                              ',
     shortcut = '\\ff',

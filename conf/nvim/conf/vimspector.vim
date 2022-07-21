@@ -33,7 +33,12 @@ Plug 'szw/vim-maximizer'
 nnoremap <silent><Space>mm :MaximizerToggle<CR>
 nnoremap <Space>vv :silent! call ToggleVimspectorVariables()<CR>
 
+
 fun! ToggleVimspectorVariables()
+  if bufnr('vimspector.Variables') < 0
+    return
+  endif
+
   if bufname() == 'vimspector.Variables'
     MaximizerToggle
     call win_gotoid(g:vimspector_session_windows.code)

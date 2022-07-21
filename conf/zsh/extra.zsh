@@ -82,10 +82,11 @@ zstyle ':completion:*' matcher-list 'm:{[:lower:]-_}={[:upper:]_-}'
 ##  Highlight for the selected completion menu item.
 zstyle ':completion:*' menu select search
 
-## Except context-sensitive completion (_complete), it enables alias expansion
-## with TAB (_expand_alias), use of glob (_match), ignored-patterns (_ignored),
-## and checking whether the word is eligible for expansion (_expand - unused).
-## order: '_expand', then '_complete', then '_match' - according to ZSH guide
+## In addition to context-sensitive completion (_complete), it also enables
+## alias expansion with TAB (_expand_alias), use of glob (_match),
+## ignored-patterns (_ignored), and checking whether the word is eligible for
+## expansion (_expand - unused). The order: '_expand', then '_complete', then
+## '_match' ─ is according to ZSH guide
 zstyle ':completion:*' completer _expand_alias _complete _match #_ignored
 # zstyle ':completion:*' ignored-patterns '<pattern-to-ignore>'
 

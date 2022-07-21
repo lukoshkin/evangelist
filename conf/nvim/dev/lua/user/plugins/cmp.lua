@@ -3,8 +3,7 @@ local luasnip = require 'luasnip'
 local lspkind = require 'lspkind'
 
 --- Load snippets from 'rafamadriz/friendly-snippets'.
-require'luasnip.loaders.from_vscode'.lazy_load(
-  vim.fn.stdpath 'data' .. '/site/pack/packer/start/friendly-snippets')
+require'luasnip.loaders.from_vscode'.lazy_load()
 
 
 --- Check if there is no space before the cursor.
@@ -52,10 +51,12 @@ cmp.setup {
     ['<C-Space>'] = cmp.mapping.complete(), -- same as `cmp.complete()`
     --- Close and restore original (abort) and just close (close) mappings.
     ['<C-e>'] = cmp.mapping.abort(),
-    ['<S-A-e>'] = cmp.mapping.close(),
+    ['<S-A-e>'] = cmp.mapping.close(), -- TODO: set completed_successfully to true.
 
     ['<C-b>'] = cmp.mapping.scroll_docs(-4),
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
+
+    --- TODO: set or declare `b:completed_successfully` to true
     ['<CR>'] = cmp.mapping.confirm {
       --- If there is text after the cursor, replace it
       --- with the selected option on the confirmation.
@@ -75,8 +76,10 @@ cmp.setup {
         cmp.select_next_item()
       elseif luasnip.expand_or_jumpable() then
         luasnip.expand_or_jump()
+        --- TODO: set `b:completed_successfully` to false
       elseif not_space_before() then
         cmp.complete()
+        --- TODO: trim trailing whitespace if it is left some.
       else
         fallback()
       end
@@ -106,8 +109,7 @@ cmp.setup {
     { name = 'buffer' },
     { name = 'treesitter' },
     { name = 'nvim_lua' },
-    -- { name = 'nvim_lsp_signature_help' },
+    { name = 'nvim_lsp_signature_help' },
     -- { name = 'digraphs' },
-    -- { name = 'fuzzy_path' },
   },
 }

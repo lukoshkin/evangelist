@@ -50,8 +50,15 @@ keymap('n', '<leader>y', ':%y+<CR>')
 keymap('', '<A-+>', ':silent !transset -a --inc .02<CR>')
 keymap('', '<A-->', ':silent !transset -a --dec .02<CR>')
 
+
+local function discard_distractive ()
+  require'notify'.dismiss()
+  vim.cmd ':nohlsearch | echo'
+end
+
 --- Turn off highlighting and dismiss messages below the status bar.
-keymap('n', '<Space><Space>', ':nohlsearch<Bar>echo<CR>')
+keymap('n', '<Space><Space>', discard_distractive)
+
 
 --- Toggle spellchecker.
 keymap('', '<leader>en', ':setlocal spell! spelllang=en_us<CR>')
@@ -114,60 +121,6 @@ vim.cmd[[
     delmarks lL
     let @l=''
   endfun
-
-  fun! BottomtermToggle(...)
-    let l:cmd = get(a:, '1', '')
-    let l:caller = bufname()
-
-    if bufnr('BottomTerm') >= 0
-      let l:winid = bufwinid('BottomTerm')
-      if l:winid < 0
-        if t:bottom_term_horizontal
-          execute 'sb BottomTerm'
-        else
-          execute 'vs BottomTerm'
-        endif
-      else
-        " call win_gotoid(l:winid)
-        call win_execute(l:winid, 'close')
-        return
-      endif
-    else
-      new
-      setlocal buftype=nofile bufhidden=hide noswapfile
-      execute 'terminal' l:cmd
-
-      file BottomTerm
-      let t:bottom_term_horizontal = v:true
-      let t:bottom_term_channel = &channel
-    endif
-
-    if t:bottom_term_horizontal
-      execute 'resize' get(g:, 'bottom_term_height', 8)
-    endif
-
-    startinsert
-
-    if g:bottom_term_focus_on_win
-      call win_gotoid(bufwinid(l:caller))
-      stopinsert
-    endif
-  endfun
-
-  fun! BottomtermOrientation()
-    if bufname() != 'BottomTerm'
-      return
-    endif
-
-    if t:bottom_term_horizontal
-      wincmd L
-    else
-      wincmd J
-      execute 'resize' get(g:, 'bottom_term_height', 8)
-    endif
-
-    let t:bottom_term_horizontal = !t:bottom_term_horizontal
-  endfun
 ]]
 
 keymap('x', '<Space>b<Space>', ':call SplitBySep()<CR>')
@@ -187,47 +140,6 @@ vim.api.nvim_create_user_command(
   [[silent !rm "$XDG_DATA_HOME/nvim/swap/"*'%:t'*]],
   {}
 )
-
---- Bottom terminal for a current window.
-if vim.g.bottom_term_insert_on_switch == nil then
-  vim.g.bottom_term_insert_on_switch = true
-end
-
-if vim.g.bottom_term_last_close == nil then
-  vim.g.bottom_term_last_close = true
-end
-
-if vim.g.bottom_term_focus_on_win == nil then
-  vim.g.bottom_term_focus_on_win = false
-end
-
-local aug_bt = vim.api.nvim_create_augroup('BottomTerm', {clear=true})
-
-if vim.g.bottom_term_insert_on_switch then
-  vim.api.nvim_create_autocmd('BufEnter', {
-    pattern = 'BottomTerm',
-    command = 'norm i<CR>',
-    group = aug_bt
-  })
-end
-
-if vim.g.bottom_term_last_close then
-  vim.api.nvim_create_autocmd('BufEnter', {
-    pattern = 'BottomTerm',
-    callback = function ()
-      if vim.fn.winnr('$') == 1 and vim.fn.bufname() == 'BottomTerm' then
-        vim.cmd 'quit'
-      end
-    end,
-    group = aug_bt
-  })
-end
-
-keymap('n', '<S-A-t>', vim.fn.BottomtermToggle)
-keymap('t', '<Esc>', '<C-\\><C-n>')
-keymap('t', '<S-A-t>', '<Esc>:q<Bar>echo<CR>', {remap=true})
-keymap('t', '<C-w>', '<Esc><C-w>', {remap=true})
-keymap('t', '<C-t>', vim.fn.BottomtermOrientation)
 
 --- Paste previously yanked text in place of selected one.
 keymap('v', 'p', '"_dP')

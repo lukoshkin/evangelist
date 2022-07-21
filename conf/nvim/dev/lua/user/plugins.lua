@@ -2,6 +2,34 @@ local packer = require'lib.packer-init'
 
 packer.startup(function (use)
   use 'wbthomason/packer.nvim'
+  -- use 'lukoshkin/trailing-whitespace'
+
+  use {
+    'lukoshkin/trailing-whitespace',
+    config = function ()
+      require'trailing-whitespace'.setup {
+        patterns = { '\\s\\+$', '\\t\\+' },
+      }
+    end
+  }
+
+  use {
+    'lukoshkin/slime-wrapper.nvim',
+    requires = {
+      'jpalardy/vim-slime',
+      'hanschen/vim-ipython-cell',
+      'lukoshkin/bterm.nvim',
+      {
+        'lukoshkin/auenv.nvim',
+        run = './install.sh',
+      }
+    },
+    config = function ()
+      require'auenv'.setup()
+      require'bottom-term'.setup()
+      require'slime-wrapper'.setup()
+    end
+  }
 
   use 'sickill/vim-pasta'
   use 'tpope/vim-sleuth'
@@ -9,7 +37,13 @@ packer.startup(function (use)
   use 'tpope/vim-eunuch'
   --- Automatically create parent dirs when saving a file.
   use 'jessarcher/vim-heritage'
-  use 'unblevable/quick-scope'
+
+  use {
+    'unblevable/quick-scope',
+    config = function ()
+      require'user.plugins.quick-scope'
+    end
+  }
 
   use {
     'rcarriga/nvim-notify',
@@ -22,22 +56,6 @@ packer.startup(function (use)
     'mhinz/vim-sayonara',
     setup = function ()
       vim.keymap.set('n', '<Leader>q', ':Sayonara!<CR>')
-    end
-  }
-
-  use {
-    'jpalardy/vim-slime',
-    ft = {'sh', 'bash', 'zsh', 'python', 'lua'},
-    config = function ()
-      require'user.plugins.vim-slime'
-    end
-  }
-
-  use {
-    'hanschen/vim-ipython-cell',
-    ft = 'python',
-    config = function ()
-      require'user.plugins.vim-ipython-cell'
     end
   }
 
@@ -60,18 +78,24 @@ packer.startup(function (use)
 
   use {
     { 'tpope/vim-commentary',     keys  = 'gc' },
-    { 'junegunn/vim-easy-align',  keys  = 'ga' },
     { 'farmergreg/vim-lastplace', event = 'BufRead' },
     { 'tpope/vim-repeat',         event = 'BufRead' },
     { 'dstein64/vim-startuptime', cmd   = 'StartupTime' },
     { 'tpope/vim-surround',       event = 'BufRead' },
     --- keys = {'ys', 'cs', 'ds' }}, --> malfunctioning with 'ds'
+    {
+      'junegunn/vim-easy-align',
+      keys  = 'ga',
+      config = function ()
+        require'user.plugins.vim-easy-align'
+      end
+    },
   }
 
   use {
-    "iamcco/markdown-preview.nvim",
+    'iamcco/markdown-preview.nvim',
     ft = 'markdown',
-    run = function() vim.fn["mkdp#util#install"]() end,
+    run = function() vim.fn['mkdp#util#install']() end,
     config = function ()
       require'user.plugins.md_preview'
     end
@@ -80,9 +104,15 @@ packer.startup(function (use)
   use {
     'ahmedkhalf/project.nvim',
     config = function()
-      require("project_nvim").setup {
+      require'project_nvim'.setup {
+        --- use pattern. If it does't find anything, use lsp.
+        --- https://github.com/ahmedkhalf/project.nvim/issues/67
+        -- detection_methods = { 'pattern', 'lsp' },
+
+        ignore_lsp = {'null-ls'},
+
         -- manual_mode = true,
-        silent_chdir = false,
+        -- silent_chdir = false, -- for debug
       }
     end
   }
@@ -91,7 +121,7 @@ packer.startup(function (use)
   use {
     'shaunsingh/nord.nvim',
     config =function ()
-      require'user.colors'
+      require'user.plugins.nord'
     end
   }
 
@@ -149,10 +179,13 @@ packer.startup(function (use)
   }
 
   use {
-    'voldikss/vim-floaterm',
-    keys = '<A-t>',
-    config = function ()
-      require'user.plugins.floaterm'
+    'kkoomen/vim-doge',
+    run = ':call doge#install()',
+    ft = { 'python', 'rust', 'bash', 'lua', 'cpp', 'c' },
+    setup = function ()
+      vim.g.doge_doc_standard_python = 'numpy'
+      vim.g.doge_enable_mappings = false
+      vim.keymap.set('n', '<LocalLeader>dg', ':DogeGenerate<CR>')
     end
   }
 
@@ -161,10 +194,10 @@ packer.startup(function (use)
     requires = {
       { 'nvim-lua/plenary.nvim' },
       { 'kyazdani42/nvim-web-devicons' },
-      { 'ahmedkhalf/project.nvim' },
       { 'AckslD/nvim-neoclip.lua' },
       { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
-      { 'nvim-telescope/telescope-live-grep-raw.nvim' },
+      { 'nvim-telescope/telescope-live-grep-args.nvim' },
+      { 'ahmedkhalf/project.nvim' },
     },
     config = function ()
       require'user.plugins.telescope'
@@ -182,7 +215,6 @@ packer.startup(function (use)
       require'user.plugins.neoclip'
     end
   }
-
 
   use {
     'nvim-treesitter/nvim-treesitter',
@@ -215,9 +247,10 @@ packer.startup(function (use)
   }
 
   use {
-    'jose-elias-alvarez/null-ls.nvim',
+    --- Looks better than cmp-nvim-lsp-signature-help.
+    'ray-x/lsp_signature.nvim',
     config = function ()
-      require'user.plugins.null-ls'.setup()
+      require'lsp_signature'.setup()
     end
   }
 
@@ -249,15 +282,9 @@ packer.startup(function (use)
       },
       'hrsh7th/cmp-nvim-lua',
       'onsails/lspkind-nvim',
-      'hrsh7th/cmp-nvim-lsp-signature-help',
     },
     config = function ()
       require'user.plugins.cmp'
     end
   }
-
-  -- use {
-  --   'luukvbaal/stabilize.nvim',
-  --   config = function () require'stabilize'.setup() end
-  -- }
 end)
