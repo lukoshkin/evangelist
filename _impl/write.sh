@@ -27,7 +27,7 @@ RESET=$(tput sgr0)
 ECHO () {
   local RAIN=$(tput setaf 152)
   local PURPLE=$(tput setaf 111)
-  echo -e "${BOLD}${PURPLE}EVANGELIST ~>$RESET ${RAIN}$@${RESET}"
+  echo -e "${BOLD}${PURPLE}EVANGELIST ~>$RESET ${RAIN}$*${RESET}"
 }
 
 
@@ -40,19 +40,28 @@ NOTE () {
 ECHO2 () {
   local SALMON=$(tput setaf 210)
   local BUFF=$(tput setaf 186)
-  >&2 echo -e "${BOLD}${SALMON}EVANGELIST:${RED}PROBLEM:$RESET ${BUFF}$@${RESET}"
+  >&2 echo -e "$BOLD${SALMON}EVANGELIST:${RED}PROBLEM:$RESET $BUFF$*$RESET"
 }
 
 
 ## NOTE: stderr-pipe redirection (|&) doesn't work on old shells
 HAS () {
-  [[ $(type $@ 2>&1 | grep -c 'not found') -lt $# ]] && return 0
+  [[ $(sed '/alias/d' <(type "$@" 2>&1) | grep -c 'not found') -lt $# ]] \
+    && return 0
   return 1
 }
 
 
 HASLIB () {
   dpkg-query -W $1 &> /dev/null
+}
+
+
+PIPHAS () {
+  ## In beta state.
+  # conda list | grep -q "$1"
+  # pip3 show "$1" 2> /dev/null
+  pip3 --disable-pip-version-check list 2>&1 | grep -qP "$1"
 }
 
 ##########################
@@ -247,7 +256,7 @@ _register_package () {
 
   case $mode in
     [ro+]l) has () { HASLIB $1; } ;;
-    *) has () { HAS $@; } ;;
+    *) has () { HAS "$@"; } ;;
   esac
 
   if ! has $package || ! $newer
@@ -255,7 +264,7 @@ _register_package () {
     [[ -n $v2 ]] && v2="${GRAY}>=${v2}$RESET"
     ## NOTE: There should be no spaces in `out`, and thus, `v2`,
     ## since the former is an element of an array with default IFS.
-    [[ -z $name ]] && out=(${package}$v2) || out=(${name}$v2)
+    [[ -z $name ]] && out=${package}$v2 || out=${name}$v2
   fi
 
   echo $out
@@ -267,9 +276,9 @@ _diagnostics () {
   local color=$2
   shift 2
 
-  [[ $# -ne 0 ]] && echo -e "$color[$title]$RESET"
+  [[ $# -ne 0 ]] && echo -e "${color}[$title]$RESET"
 
-  for p in $@; do
+  for p in "$@"; do
     echo -e "  $p"
   done
 }
@@ -285,20 +294,24 @@ write::modulecheck () {
   local required=()
   local optional=()
   local extended=()
-  local mode name package version
+  local mode name package version pack_info
 
   while [[ -n $1 ]]; do
-    mode=$(cut -d ':' -f1 <<< $1)
-    name=$(cut -d ':' -f3 <<< $1)
-    package=$(cut -d ':' -f2 <<< $1)
-    version=$(cut -d ':' -f4 <<< $1)
+    mode=$(cut -d ':' -f1 <<< "$1")
+    name=$(cut -d ':' -f3 <<< "$1")
+    package=$(cut -d ':' -f2 <<< "$1")
+    version=$(cut -d ':' -f4 <<< "$1")
 
-    case $mode in
-      r*) required+=($(_register_package $version)) ;;
-      o*) optional+=($(_register_package $version)) ;;
-      +*) extended+=($(_register_package $version)) ;;
-      *) echo Wrong argument specification; exit 1 ;;
-    esac
+    pack_info=$(_register_package "$version")
+
+    if [[ -n $pack_info ]]; then
+      case $mode in
+        r*) required+=( "$pack_info" ) ;;
+        o*) optional+=( "$pack_info" ) ;;
+        +*) extended+=( "$pack_info" ) ;;
+        *) echo Wrong argument specification; exit 1 ;;
+      esac
+    fi
 
     shift
   done
@@ -324,9 +337,9 @@ write::modulecheck () {
   [[ $ok -gt 0 ]] && echo -e "${color}Missing the following packages:$RESET"
 
   echo
-  _diagnostics required $RED ${required[@]}
-  _diagnostics optional $YELLOW ${optional[@]}
-  _diagnostics 'for extensions' $BLUE ${extended[@]}
+  _diagnostics required $RED "${required[@]}"
+  _diagnostics optional $YELLOW "${optional[@]}"
+  _diagnostics 'for extensions' $BLUE "${extended[@]}"
   echo
 }
 
@@ -344,7 +357,7 @@ write::how_to_install_conda () {
   cmd+=( '\tbash miniconda.sh -b -p "$HOME/miniconda"\n' )
   cmd+=( '\t"$HOME/miniconda/bin/conda" init'" ${SHELL##*/}\n" )
   cmd+=( "\texec ${SHELL##*/}\n\n" )
-  echo -e ${BOLD}${WHITE}${cmd[@]}${RESET}
+  echo -e ${BOLD}${WHITE}${cmd[*]}${RESET}
 
   echo If one has wget installed instead of curl or prefer
   printf "using one over the other, substitute ${BOLD}${WHITE}curl -o$RESET"
@@ -362,4 +375,3 @@ write::commit_messages () {
   [[ $nrows = 1 ]] && format=%B || format=%s
   git log HEAD..origin/$branch --format=$format
 }
-

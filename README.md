@@ -1,26 +1,16 @@
 # Vim Proliferation
 
-"I came up with evangelist and am developing it so I could configure everything less when I am dead."
-
-General settings of console and Jupyter that are empowered by Vim!  
-The package includes bash- and zsh-plugins, up-to-date Vim configurations,
-and Jupyter Notebook extensions.
-
-***A quick and easy way to configure all your workstations!***  
-Your laptop, the remote server you use, a docker container -
-from now on, a couple of commands and they all have the same settings<sup>\*</sup>.
-No need to manually restore your configs each time you buy a new laptop or reinstall the OS.
-
-Give it a shot! And if you don't like `evangelist`, you can always revert to
-your previous settings with its `uninstall` command.
-
-[More information on the first wiki page!](https://github.com/lukoshkin/evangelist/wiki/Philosophy)
+_"I came up with **evangelist** and am developing it so I could configure everything less when I am dead."_
 
 ---
-<sup>\*</sup> the settings shipped by **evangelist**. Their similarity on different machines  
-&ensp;will depend on the similarity of installed components among those machines.
 
-<br>
+#### About the project
+
+A wide set of configurations for Vim, Bash/Zsh, Tmux, and Jupyter.  
+Deploy them on a laptop, remote server, or in a docker container.  
+Revert to your original settings with the `uninstall` command.
+
+[More information on the first wiki page!](https://github.com/lukoshkin/evangelist/wiki/Philosophy)
 
 
 ## Contents
@@ -53,7 +43,7 @@ and the setup script will become more universal and cross-platform.
     ```
 
 2. **Install at least minimal list of prerequisites**  
-   Run `./evangelist.sh checkhealth` - this will help.
+   Run `./evangelist.sh checkhealth` for help.
 
 3. In your console, **run from the project directory**:
     - `./evangelist.sh install <configs>`  
@@ -71,7 +61,7 @@ and the setup script will become more universal and cross-platform.
 
 <br>
 
-Since Vim keeps all changes made to files with its help, on Linux, one might consider
+Since Vim keeps all changes made to files with it, on Linux, one might consider
 adding anacron job (or its equivalent on macOS) by running `anacron/anacron.sh` script.
 
 * to remove old undofiles  
@@ -116,12 +106,12 @@ with broken colors during the process of both the installation and exploitation.
 - Efficient navigation in the project directory (commands: `tree`, `d`, `gg`, `G`)
 - Interactive command history search (key-bindings: `jjk`, `<M-kk>`, `/`)
 - Jupyter empowered by Vim and basic set of notebook extensions
-- Minimal configurations for Vim and Tmux
+- Minimal configuration for Tmux and several configuration levels for Vim/Neovim
 
 <br>
 <br>
 
-Before to get into it, let's get familiar with the imposed notation:  
+Before to go into details, let's get familiar with the imposed notation:  
 
 ---
 
@@ -129,13 +119,13 @@ Before to get into it, let's get familiar with the imposed notation:
   `M` is for `Meta`, which is `Alt` or `command`, depending on the keyboard layout.  
   `<*-*>` is a combination of keys where first ones are modifier of the last one.  
   `(a|b)` means the use of either a or b key in the given combination.  
-  By default, `leader` is mapped to `\` in Vim, as well as `localleader`.  
+  By default, `Leader` is mapped to `\` in Vim, `LocalLeader` to `<Space>`.  
   But you can change both values in your `custom/custom.vim`.
 
 ---
 
 
-Patch 1.3.3 (!)
+Patch 1.4.0 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -145,16 +135,16 @@ Patch 1.3.3 (!)
 
   | mode | shortcut | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
   |:----:|:--------:|:----------|
-  | ins | `jj` | exit insert mode |
-  | cmd | `(j\|k)` | go to the (next \| previous) matching substring in cmd history <br> _provided no substring,_ go to the (next \| previous) cmd |
-  | any | `<M-(j\|k)>` | go to the (next \| previous) cmd matching the current buffer from <br> the beginning (Note: one more `<j/k>` press to exit from ins mode) |
-  | any | `<C-q>` | deletes the current buffer, so one can execute another cmd, <br> after which the original one would be restored |
-  | cmd | `/` | start interactive fuzzy search over cmds in the history file |
+  | ins | `jj` | Exit insert mode |
+  | cmd | `(j\|k)` | Go to the (next \| Previous) matching substring in cmd history <br> _provided no substring,_ go to the (next \| previous) cmd |
+  | any | `<M-(j\|k)>` | Go to the (next \| previous) cmd matching the current buffer from <br> the beginning (Note: one more `<j/k>` press to exit from ins mode) |
+  | any | `<C-q>` | Deletes the current buffer, so one can execute another cmd, <br> after which the original one would be restored |
+  | cmd | `/` | Start interactive fuzzy search over cmds in the history file |
 
-  **NOTE:** the following settings are only supported for X11 based platforms  
+  **NOTE:** the following settings are only supported by X11 based platforms  
   (It means that they will not work or be active on such as macOS or the one with Wayland protocol)
-  |      |          |           |
-  |:----:|:--------:|:----------|
+  |    |    |   |
+  |:--:|:--:|:--|
   | any | `<M-(+\|-)>` | (in \| de)crease terminal window transparency a bit |
   </details>
 
@@ -163,22 +153,22 @@ Patch 1.3.3 (!)
 
   | alias/function | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
   |:--------------:|:-----------|
-  | `mkenv [env]` | remember the environment used in a folder to <br> [de]activate the former when [leaving]/entering the latter <br> ***(supports only conda environments)*** |
-  | `md` | create a directory (or nested folders) and cd there |
-  | `tree` | draw a project tree (files and directories); <br> if not installed `dtree` is called instead <br> (a "safe" wrapper around Unix `tree`) |
-  | `dtree` | draw a project tree (folders only) |
-  | `v` | open the last file closed (in Vim) |
-  | `vip` | initiate the "vim-ipython" split in tmux <br> (available only if tmux settings are installed) |
-  | `vrmswp [name]` | delete swap file by name or part of its name |
-  | `d` | show directories visited by user (autocd zsh option) |
-  | `(gg\|G)` | go through the dir stack in (forward \| backward) direction |
-  | `gg n` | go to n-th directory in the list obtained with `d` <br> &emsp;&emsp;&emsp;&emsp;&emsp; (starting from 0) |
-  | `gg -n` | remove n-th directory from the dir stack |
-  | `swap` | swap names of two targets |
-  | `rexgrep <str>` | is equivalent to `grep -r --exclude-dir='.?*' <str>`, <br> which excludes hidden directories from recursive search |
-  | `(bash\|zsh\|vim)rc`\* | edit user-defined settings for the specified target |
-  | `_(bash\|zsh\|vim)rc` | open main config file for the specified target |
-  | `evn\|evangelist` | alias for evangelist.sh executable script |
+  | `mkenv [env]` | Remember the environment used in a folder to <br> [de]activate the former when [leaving]/entering the latter <br> _(supports only conda environments)_ |
+  | `md` | Create a directory (or nested folders) and cd there |
+  | `tree` | Draw a project tree (files and directories); <br> if not installed `dtree` is called instead <br> (a "safe" wrapper around Unix `tree`) |
+  | `dtree` | Draw a project tree (folders only) |
+  | `v` | Open the last file closed (in Vim) |
+  | `vip` | Make the "vim-ipython" split in tmux <br> (available only if tmux settings are installed; former configuration) |
+  | `vrmswp [name]` | Delete swap file by name or part of its name |
+  | `d` | Show directories visited by user (autocd zsh option) |
+  | `(gg\|G)` | Go through the dir stack in (forward \| backward) direction |
+  | `gg <n>` | Go to n-th directory in the list obtained with `d` <br> &emsp;&emsp;&emsp;&emsp;&emsp; (starting from 0) |
+  | `gg -<n>` | Remove n-th directory from the dir stack |
+  | `swap` | Swap names of two targets |
+  | `rexgrep <str>` | is equivalent to `grep -rIn --exclude-dir='.?*' <str>`, <br> (exclude hidden directories, binary files from recursive search; add numbering) |
+  | `(bash\|zsh\|vim)rc`\* | Edit user-defined settings for the specified target |
+  | `_(bash\|zsh\|vim)rc` | Open main config file for the specified target |
+  | `evn\|evangelist` | Alias for evangelist.sh executable script |
 
   \* Note, the priority is given to custom settings. Also, they will not be overwritten by
   updates or new installations.
@@ -190,65 +180,197 @@ Patch 1.3.3 (!)
 <details>
 <summary><b>Vim</b></summary>
 
+modes: n - normal, v - visual, t - terminal, c - command mapping  
+different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v0.7)
+
+
+
 * <details>
-  <summary>General key-bindings and functions</summary>
+  <summary>General key-bindings and functions (common)</summary>
 
   | mode | shortcut | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
   |:----:|:--------:|:-----------------------------------------------|
-  | normal | `<leader>en` | toggle spell-check |
-  | normal | `<leader>y` | yank current buffer |
-  | visual | `<leader>y` | yank selected text |
-  | normal | `<leader>ts` | paste date and time before the cursor |
-  | normal | `<leader>nu` | toggle line numbering and diagnostics signs |
-  | normal | `<Space>b<Space>` | split line at the next space after the cursor position |
-  | visual | `<Space>b<Space>` | split the entire line at spaces |
-  | normal | `<Space>bb` | split line at the next char you previously searched with `f` |
-  | visual | `<Space>bb` | split the entire line at a separator you searched with `/` |
-  | normal | `<Space><Space>` | turn off highlighting of a searched pattern <br>  or dismiss a message in the cmd line below |
-  | normal | `<leader>x` | open file under the cursor with xdg-open |
-  | any | `<C-s>` | save changes to a file |
-  | normal | `<M-(h\|j\|k\|l)>` | insert an empty line or space in the direction <br> which a movement key specifies. When shift is pressed, the cursor remains on the current char |
-  | command | Trim | remove all trailing spaces in the file |
-  | command | Rmswp | delete the corresponding to open buffer swap file |
-  | visual | `//` | search for selected text <br> (doesn't work in `VISUAL LINE` mode) |
-  | any | `<A-m>` | toggle mouse |
+  | n | `<Leader>en` | Toggle spell-check |
+  | n | `<Leader>y` | Yank current buffer |
+  | v | `<Leader>y` | Yank selected text |
+  | n | `<Leader>ts` | Paste date and time before the cursor |
+  | n | `<Leader>nu` | Toggle line numbering and sign column |
+  | n | `<Space>b<Space>` | Split line at the next space after the cursor position |
+  | v | `<Space>b<Space>` | Split the entire line at spaces |
+  | n | `<Space>bb` | Split line at the next char you previously searched with `f` |
+  | v | `<Space>bb` | Split the entire line at a separator you searched with `/` |
+  | n | `<Space><Space>` | Clear a search pattern highlighting, <br> dismiss a message in the cmd line below or in floating wins |
+  | n | `<Leader>x` | Open file under the cursor with xdg-open |
+  | any | `<C-s>` | Save changes to a file |
+  | n+v | `<C-(j\|k)>` | Move lines (down\|up) |
+  | n | `<M-(h\|j\|k\|l)>` | Insert an empty line or space in the direction <br> which a movement key specifies |
+  | n | `<S-M-(h\|j\|k\|l)>` |  Same, but the cursor remains on the current char |
+  | c | `Trim` | Remove all trailing spaces in the whole file or for visual selection |
+  | c | `Rmswp` | Delete the swap file corresponding to the current buffer |
+  | v | `//` | Search for selected text <br> (doesn't work in `VISUAL LINE` mode) |
+  | any | `<M-m>` | Toggle mouse |
+  | v | `p` | Paste the last yanked text in place of selected one |
+
   </details>
 
 * <details>
-  <summary>Plugin-related shortcuts</summary>
+  <summary>Plugins (w/o dependencies) and related mappings</summary>
 
-  |      |          |           |
-  |:----:|:--------:|:----------|
-  | normal | `<leader>nt` | open NERDTree <br> (helps to navigate through a project tree) |
-  | normal | `<leader>nf` | open NERDTree <br> starting from a directory in which current file resides |
-  | normal | `<leader>md` | open/close markdown preview |
-  | normal | `<leader>u` | open undo-tree |
-  | normal | `<C-p>` | open CtrlP (file navigation) |
-  | any <br> but insert | `<leader>tr` | translate the line under the cursor |
-  | any <br> but insert | `<A-t>` | open terminal in a floating window |
-  <!--
-  | ctrlP | `<C-j>`, `<C-k>` | navigation keys |
-  | ctrlP | `<C-r>` | enable regex |
-  | ctrlP | `<C-f>`, `<C-d>` | switch search mode <br> ('recently opened', 'in the current directory', and etc.) |
-  | ctrlP | `<C-c>` | close ctrlP buffer |
-  -->
-  </details>
+  **Available at all levels**
 
-* <details>
-  <summary>Extra functionality</summary>
+  |    |    |   |
+  |:--:|:--:|:--|
+  | n | `<Leader>nt` | Open tree explorer <br> (helps to navigate through a project tree) |
+  | n | `<Leader>nf` | Open tree explorer <br> starting from a directory of the current file |
+  | n | `<Leader>u` | Open undo-tree |
 
-  The functionality below is available after uncommenting respective lines in `init.vim` file
+  |   |   |
+  |:--|:--|
+  | [nord.nvim](https://github.com/shaunsingh/nord.nvim) | Change the default color scheme to nord |
+  | [trailing-whitespace](https://github.com/lukoshkin/trailing-whitespace) | Trailing whitespace highlighting |
+  | [vim-eunuch](https://github.com/tpope/vim-eunuch) | Adds useful commands like `:SudoWrite`, `:Rename`, and etc. |
+  | [vim-heritage](https://github.com/jessarcher/vim-heritage) | Create a parent directory (if need be) when saving a file |
+  | [vim-lastplace](https://github.com/farmergreg/vim-lastplace) | Open file at the last edit position |
+  | [vim-mundo](https://github.com/simnalamburt/vim-mundo) | Visualize Vim undo tree |
+  | [vim-pasta](https://github.com/sickill/vim-pasta) | Auto-indent on pasting |
+  | [vim-repeat](https://github.com/tpope/vim-repeat) | Repeat with `.` complex commands (e.g., containing `<Plug>`) |
+  | [vim-sleuth](https://github.com/tpope/vim-sleuth) | Automatically adjust `shiftwidth` & `expandtab` |
+  | [vim-surround](https://github.com/tpope/vim-surround) | Surround with quotation marks, tags, and more. Remove them or substitute |
+  | [vim-commentary](https://github.com/tpope/vim-commentary) | Commenting and uncommenting lines |
 
-  |      |          |           |
-  |:----:|:--------:|:----------|
-  | normal | `<localleader>ll` | toggle compilation of a tex file in continuous mode |
-  | normal | `<localleader>lc` | clean auxiliary files |
-  | normal | `<localleader>lC` | clean all auxiliaries including generated pdf |
-  | normal | `<leader>err` | check compilation errors (listed in a location list) |
-  | normal | `[g` | go to the previous error in the location list |
-  | normal | `]g` | go to the next error in the location list |
-  | normal | `gd` | go to definition or declaration |
-  | normal | `gk` | open documentation of function, class or etc. |
+  **With Neovim-Lua setup and entended settings**
+
+  |   |   |
+  |:--|:--|
+  | [vimspector](https://github.com/puremourning/vimspector) | Code debugger |
+  | [vimtex](https://github.com/lervag/vimtex) | Mappings, highlighting, compilation for LaTex files |
+  | [vim-maximizer](https://github.com/szw/vim-maximizer) | Maximizes and restores window in a split |
+  | [markdown-preview.nvim](https://github.com/iamcco/markdown-preview.nvim) | Preview markdown in the user's browser |
+  | [vim-slime](https://github.com/jpalardy/vim-slime.git) | Send code on the left to a split on the right and execute it if possible |
+  | [vim-ipython-cell](https://github.com/hanschen/vim-ipython-cell.git) | Build cell layout for Python code with a delimiter |
+
+  |    |    |   |
+  |:--:|:--:|:--|
+  | n | `<Leader>md` | Open/close markdown preview |
+  | n | `<Space>mm` | Maximize/minimize the current window |
+  | n | `<C-p>` | Open CtrlP fuzzy finder |
+
+  Vimspector
+
+  |    |    |   |
+  |:--:|:--:|:--|
+  | n | `<Leader>dc` | Switch to the debug mode |
+  | n | `<Leader>dr` | Switch to regular editing |
+  | <br>n | <br>`<Leader>ds` | Stop the debugger <br> (You can not continue from where you have stopped. <br> Unlike reset, all windows remain оpen) |
+  | n | `<Leader>dd` | Pause the debugger |
+  | n | `<Leader>d0` | Restart the debugger |
+  | n | `<Space>=` | Step into |
+  | n | `<Space>+` | Step over |
+  | n | `<Space>-` | Step out |
+  | n | `<Space>.` | Toggle breakpoint |
+  | n | `<Space>,` | Add a conditional breakpoint |
+  | n | `<Space>:` | Add a function breakpoint |
+  | n | `<Space>v` | Go to the variables section |
+
+  **With extended settings**
+
+  |   |   |
+  |:--|:--|
+  | [vim-floaterm](https://github.com/voldikss/vim-floaterm) | Terminal in a floating window |
+  | [coc.nvim](https://github.com/neoclide/coc.nvim) | Completion engine, syntax parsing, and more |
+  | [ctrlp.vim](https://github.com/ctrlpvim/ctrlp.vim.git) | fuzzy search among MRU files, current folder content |
+  | [eregex.vim](https://github.com/othree/eregex.vim.git) | Toggle between Vim and Perl regular expressions (`<Leader>re` nmap) |
+
+  **With Neovim-Lua setup**
+
+  |   |   |
+  |:--|:--|
+  | [LuaSnip](https://github.com/L3MON4D3/LuaSnip) | Code snippets |
+  | [auenv.nvim](https://github.com/lukoshkin/auenv.nvim) | Automatically switch between conda envs |
+  | [bterm.nvim](https://github.com/lukoshkin/bterm.nvim) | Simple terminal call |
+  | [bufferline.nvim](https://github.com/akinsho/bufferline.nvim) | Display tabs with buffers at the top |
+  | [dashboard-nvim](https://github.com/glepnir/dashboard-nvim) | Starting page on open |
+  | [fidget.nvim](https://github.com/j-hui/fidget.nvim) | Widget displaying the loading progress of Neovim LSP |
+  | [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) | Mark changes to the working tree in the sign column |
+  | [vim-easy-align](https://github.com/junegunn/vim-easy-align) | Align block of text |
+  | [lsp_signature.nvim](https://github.com/ray-x/lsp_signature.nvim) | Display signature help when modifying function arguments |
+  | [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) | Better status line |
+  | [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim) | Embed non-LSP sources in Neovim |
+  | [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) | Text/code-completion engine |
+  | [nvim-code-action-menu](https://github.com/weilbith/nvim-code-action-menu) | GUI for code action menu |
+  | [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) | Configs for Neovim LSP client |
+  | [nvim-neoclip.lua](https://github.com/AckslD/nvim-neoclip.lua) | Pick one of previous yanks for pasting |
+  | [nvim-notify](https://github.com/rcarriga/nvim-notify) | Display errors, warnings, hints in floating windows |
+  | [nvim-tree.lua](https://github.com/kyazdani42/nvim-tree.lua) | File explorer |
+  | [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) | [Tree-sitter](https://github.com/tree-sitter/tree-sitter) in Neovim |
+  | [project.nvim](https://github.com/ahmedkhalf/project.nvim) | Automatically change CWD to the root of the project |
+  | [quick-scope](https://github.com/unblevable/quick-scope) | Highlight word anchors within the line to do t/f-movement |
+  | [slime-wrapper.nvim](https://github.com/lukoshkin/slime-wrapper.nvim) | Mimic JupyterLab |
+  | [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) | Advanced file search with preview |
+  | [vim-doge](https://github.com/kkoomen/vim-doge) | Generate documentation template for a function/class |
+  | [vim-sayonara](https://github.com/mhinz/vim-sayonara) | Wipe out a buffer, don't close the window |
+
+  Jumps
+
+  |    |    |   |
+  |:--:|:--:|:--|
+  | n | `[g` | Jump to the previous sign of gitsigns |
+  | n | `]g` | Jump to the next sign of gitsigns |
+  | n | `[d` | Jump to the previous diagnostic |
+  | n | `]d` | Jump to the next diagnostic |
+  | n | `[e` | Jump to the previous error (higher diagnostic severity lvl) |
+  | n | `]e` | Jump to the next error (higher diagnostic severity lvl) |
+  | n | `[b` | Jump to the previous buffer |
+  | n | `]b` | Jump to the next buffer |
+
+  Telescope
+
+  |    |    |   |
+  |:--:|:--:|:--|
+  | n | `<Leader>b` | Open available buffers in Telescope |
+  | n | `<Leader>fo` | Open most recently used files in Telescope |
+  | n | `<Leader>fp` | Open projects in Telescope |
+  | n | `<Leader>fy` | Open yanks in Telescope |
+  | n | `<Leader>fe` | Open files in Telescope (exact search) |
+  | n | `<Leader>ff` | Open files in Telescope (fuzzy search) |
+  | n | `<Leader>fa` | Same but abolish all external ignore patterns |
+  | n | `<Leader>fg` | Find string with grep options in Telescope |
+  | n | `gr` | Open LSP references of the symbol under the cursor in Telescope |
+  | n | `<Leader>fh` | Find a help tag in Telescope |
+
+  LSP keymaps (most of LSP mappings are valid for extended settings as well)
+
+  |    |    |   |
+  |:--:|:--:|:--|
+  | n | `gd` | Go to definition |
+  | n | `gD` | Go to declaration |
+  | n | `gs` | Show signature help |
+  | n | `ge` | Show diagnostic message |
+  | n | `<Leader>i` | Go to implementation |
+  | n | `<Leader>td` | Go to type definition |
+  | n | `K` | Display hover information about the symbol under the cursor |
+  | n | `<Leader>rn` | Rename symbol under the cursor |
+  | n | `<Space>q` | Open diagnostics in the location list |
+  | n | `<Leader>fs` | Open documents symbols in the location list |
+  | n+v | `<Leader>ca` | Open code action menu |
+
+  Some mappings of evangelist's offspring projects
+
+  |    |    |   |
+  |:--:|:--:|:--|
+  | n | `<Space>ip` | Start IPython session in a split on the right |
+  | n | `<Leader>ss` | Select an interpreter to start a Vim-SLIME session |
+  | n+t | `<M-t>` | Toggle bottom terminal |
+  | t | `<C-t>` | Flip terminal from horizontal to vertical orientation |
+
+  Miscellanea
+
+  |    |    |   |
+  |:--:|:--:|:--|
+  | n+v | `<Leader>hr` | Undo change made to a hunk (in git diff) under the cursor |
+  | <br>n+v | <br>`ga` | Align a block of text <br> One specifies the range by a movement or selection. <br> `<Enter>` switches the alignment mode |
+  | n | `<LocalLeader>dg` | Generate documentation for a function or a class |
+
   </details>
 </details>
 
@@ -314,7 +436,7 @@ the ones defined by ***evangelist***.
 * **Command history in docker container**
 
   If you log out, and your container is still running, you may sometime
-  encounter the problem that your command history is deleted every time you exit.
+  encounter a problem that your command history is deleted every time you exit.
   In this case, it can be resolved with `docker stop` + `docker start`:
 
   ```
@@ -375,11 +497,6 @@ This work is based primarily on leveraging the following projects and resources.
 
 <table>
   <tr>
-    <td> - <a href="https://github.com/jessarcher/dotfiles/tree/master/nvim"> Jess Archer's Vim settings </a> </td>
-    <td> custom settings of a public person I discovered on Git </td>
-  </tr>
-
-  <tr>
     <td> - <a href="https://github.com/junegunn/vim-plug"> vim-plug </a> </td>
     <td> a minimalist Vim plugin manager </td>
   </tr>
@@ -392,6 +509,19 @@ This work is based primarily on leveraging the following projects and resources.
   <tr>
     <td> - <a href="https://github.com/lambdalisue/jupyter-vim-binding"> jupyter-vim-binding </a> </td>
     <td> Vim extension for Jupyter Notebook </td>
+  </tr>
+
+  <tr>
+    <td> - <a href="https://github.com/LunarVim/LunarVim.git"> LunarVim </a> </td>
+    <td> An IDE layer for Neovim </td>
+  </tr>
+
+  <tr>
+    <td> - <a href="https://github.com/jessarcher/dotfiles"> dotfiles1 </a>
+    <br> - <a href="https://github.com/alpha2phi/dotfiles"> dotfiles2 </a>
+    <br> - <a href="https://github.com/folke/dot"> dotfiles3 </a>
+    </td>
+    <td> <br> custom settings I found on Git </td>
   </tr>
 </table>
 
@@ -406,6 +536,10 @@ This work is based primarily on leveraging the following projects and resources.
  - [x] Write bash/zsh completions
  - [x] Write Wiki evangelist
  ---
- - [ ] Switch from `init.vim` to `init.lua` (for Neovim)
- - [ ] Switch from CoC to configs with Native LSP (for Neovim)
- - [ ] Test LunarVim / SpaceVim
+
+ - [x] Switch from `init.vim` to `init.lua` (for Neovim)
+ - [x] Switch from CoC to configs with Native LSP (for Neovim)
+ - [x] Test LunarVim / SpaceVim
+ ---
+
+ - [ ] Clean up the repository

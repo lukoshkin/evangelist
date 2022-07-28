@@ -1,9 +1,10 @@
+"" Easier exit from Insert mode
 inoremap jj <Esc>
 "" 'autocmd' helps you make commands executed on some event.
 "" The two lines below mean: set timeout for all keystroke sequences
 "" to 200ms when entering 'insert' mode and 1000ms when leaving it.
 "" This applies to any file type as the asterisks below specify.
-augroup JJExit
+augroup EasierJJ
   "" The next line removes autocmds
   "" defined in the context of autogroup
   autocmd!
@@ -89,7 +90,8 @@ noremap <silent><A--> :silent !transset -a --dec .02<CR>
 "" :silent discards the output of a command that follows it.
 
 "" Remove all extra spaces at the end of lines
-command! -range=% Trim <line1>,<line2>s/\s\+$//e | :nohlsearch
+"" TODO: rewrite it so the cursor position doesn't change.
+command! -range=% Trim <line1>,<line2>s/\s\+$//e | nohlsearch
 "" By default, the application range is the whole file (%).
 "" The exclamation mark says to replace the command if it already exists.
 "" So no error will pop up when sourcing this file several times.
@@ -97,8 +99,21 @@ command! -range=% Trim <line1>,<line2>s/\s\+$//e | :nohlsearch
 " Search for visually selected text
 vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>
 
-"" Toggle line numbering
-nnoremap <silent><leader>nu :set invnu invrnu <Bar> silent! ToggleDiag<CR>
+function! ToggleSignsNumbers ()
+  if &nu != &rnu
+    set nu rnu
+  endif
+
+  set invnu invrnu
+  if &scl != 'no'
+    set scl=no
+  else
+    set scl=yes
+  endif
+endfunction
+
+"" Toggle line numbering and signcolumn
+nnoremap <silent><leader>nu :call ToggleSignsNumbers()<CR>
 
 "" Break a line at the next space or at the char you searched with `f<char>`.
 "" In visual selection, it is applied to all spanned lines.
@@ -119,14 +134,20 @@ fun! SplitBySep (...)
 
   let l:sep = get(a:, 1, ' ')
 
-  normal ml
-  normal 0"ldw
+  mark l
+  normal 0"lyw
   silent! execute 's;\('.l:sep.'\)\(\S\)\@=;\1\r;g'
-  normal mL
+  mark L
 
-  'l,'Ls;^;\=@l;
-  normal 'l
+  " let l:len = strlen(getreg('l'))
+  " let l:indent = repeat(' ', l:len)
+
+  " 'l+1,'Ls;^;\=l:indent;
+
+  normal 'lj
+  normal ='L
   silent 'l,'LTrim
+
   delmarks lL
   let @l=''
 endfun
@@ -146,38 +167,79 @@ nnoremap <leader>x :!xdg-open <C-R>=expand("<cfile>")<CR><CR>
 map <C-s> :w<CR>
 
 "" Bottom terminal for a current window.
-fun BottomtermToggle()
-  if exists('t:bottom_term') && bufnr(t:bottom_term) >= 0
-    let l:winid = bufwinid(t:bottom_term)
-    if l:winid < 0
-      execute 'sb' t:bottom_term
+fun! BottomtermToggle(...)
+    let l:cmd = get(a:, '1', '')
+    let l:caller = bufname()
+
+    if bufnr('BottomTerm') >= 0
+      let l:winid = bufwinid('BottomTerm')
+      if l:winid < 0
+        if t:bottom_term_horizontal
+          execute 'sb BottomTerm'
+        else
+          execute 'vs BottomTerm'
+        endif
+      else
+        " call win_gotoid(l:winid)
+        call win_execute(l:winid, 'close')
+        return
+      endif
     else
-      call win_gotoid(l:winid)
+      new
+      setlocal buftype=nofile bufhidden=hide noswapfile
+      execute 'terminal' l:cmd
+
+      file BottomTerm
+      let t:bottom_term_horizontal = v:true
+      let t:bottom_term_channel = &channel
+    endif
+
+    if t:bottom_term_horizontal
+      execute 'resize' get(g:, 'bottom_term_height', 8)
+    endif
+
+    startinsert
+
+    if get(g:, 'bottom_term_focus_on_win', v:false)
+      call win_gotoid(bufwinid(l:caller))
+      stopinsert
+    endif
+  endfun
+
+fun! BottomtermOrientation()
+    if bufname() != 'BottomTerm'
       return
     endif
-  else
-    new
-    setlocal buftype=nofile bufhidden=hide noswapfile
-    terminal
-    let t:bottom_term = bufname()
-  endif
 
-  resize 8
-  startinsert
-endfun
+    if t:bottom_term_horizontal
+      wincmd L
+    else
+      wincmd J
+      execute 'resize' get(g:, 'bottom_term_height', 8)
+    endif
+
+    let t:bottom_term_horizontal = !t:bottom_term_horizontal
+  endfun
 
 augroup TermInsert
-  "" Start insert mode when switching to term buffer.
   autocmd!
-  autocmd BufEnter term://* norm i<CR>
+  "" Start insert mode when switching to term buffer.
+  au BufEnter BottomTerm norm i<CR>
+  "" Quit from BottomTerm window if it is last.
+  au BufEnter BottomTerm
+    \ if winnr('$') == 1 && bufname() == 'BottomTerm'
+    \| quit | endif
 augroup END
 
 "" Note: The terminal mappings below are necessary only for Neovim.
-nnoremap <S-A-t> :call BottomtermToggle()<CR>
-tnoremap <silent><S-A-t> <C-\><C-n>:q<Bar>echo<CR>
-tnoremap <C-t> <C-\><C-n><C-w>Li
-tnoremap <C-w> <C-\><C-n><C-w>
+nnoremap <A-t> :call BottomtermToggle()<CR>
 tnoremap <Esc> <C-\><C-n>
+tmap <silent><A-t> <Esc>:q<Bar>echo<CR>
+tmap <C-w> <Esc><C-w>
+tmap <C-t> :call BottomtermOrientation()<CR>
 
 "" List available buffers and choose one to switch to.
 noremap <leader>b :buffers<CR>:buffer<Space>
+
+"" Paste previously yanked text in place of selected one.
+vnoremap p "_dP

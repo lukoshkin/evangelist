@@ -14,8 +14,8 @@ install::check_arguments () {
   if [[ $# -ne 0 ]]; then
     local ok=true
 
-    for arg in $@; do
-      [[ " $(tr ,/ ' ' <<< $allowed)" =~ " $arg" ]] || { ok=false; break; }
+    for arg in "$@"; do
+      [[ $(tr ,/ ' ' <<< $allowed) =~ $arg ]] || { ok=false; break; }
     done
 
     $ok && return
@@ -35,39 +35,61 @@ install::check_arguments () {
 install::vim_settings () {
   ECHO Installing Vim configuration..
 
-  ## Go on with Neovim if available, otherwise with Vim
-  local VIM VIMPLUG code=0
+  ## Go on with Neovim if available, otherwise with Vim.
+  local _VIM packman install_packman
+  local ok version _CODE=0
+  version=$(nvim -v 2> /dev/null | head -1 | cut -d ' ' -f2)
 
-  ## realpath is not available on OSX.
-  # [[ $(realpath $(which vim)) =~ nvim ]] && (( code+=1 ))
-  HAS vim && (( code+=1 ))
-  HAS nvim && (( code+=2 ))
+  ## `realpath` is not available on OSX.
+  # [[ $(realpath $(which vim)) =~ nvim ]] && (( _CODE+=1 ))
+  HAS vim && (( _CODE+=1 ))
+  HAS nvim && (( _CODE+=2 ))
 
-  [[ $code -eq 0 ]] && { ECHO2 Missing: vim, neovim. Aborted.; return 1; }
+  [[ $_CODE -eq 0 ]] && { ECHO2 Missing: vim, neovim. Aborted.; return 1; }
+
   ! grep -qE '^(z|ba)sh' .update-list
-  code+="$?"
+  _CODE+=$?
 
-  ## Make an "alias" for pip3
-  (! HAS pip && HAS pip3) && pip () { pip3 $@; }
+  ! ([[ -n $_EXTEND ]] && utils::v1_ge_v2 "$version" 0.7)
+  _CODE+=$?
+
+  ## _CODE[0]:
+  ##   0: can't go further; return 1
+  ##   1: Vim is present, Neovim is not.
+  ##   2: Neovim is present, Vim is not.
+  ##   3: Both are present.
+
+  ## _CODE[1]:
+  ##   0: Only Vim settings are being installed.
+  ##   1: In addition to Vim settings, we install bash or zsh settings.
+
+  ## _CODE[2]:
+  ##   0: User is not going to use Neovim-Lua setup or it's not possible.
+  ##   1: Extend to Neovim-Lua setup.
+
+  ## Make an "alias" for pip3.
+  (! HAS pip && HAS pip3) && pip () { pip3 "$@"; }
 
   ## NOTE: case fallthrough (;&) and resume (;;&) are available in bash >= 4.0
   ## NOTE: zsh's 'case resume' is different - `;|`
-  case $code in
-    1?)
-      VIM=vim
-      VIMPLUG=~/.vim/autoload/plug.vim
-      mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
-      utils::back_up_original_configs $VIM \
+  case $_CODE in
+    1??)
+      ## Let's call it "old" Vim settings.
+      _VIM=vim
+      packman=~/.vim/autoload/plug.vim
+      utils::back_up_original_configs $_VIM \
         f:~/.vimrc d:"$XDG_CONFIG_HOME/nvim"
+
+      mkdir -p "$XDG_DATA_HOME/nvim/site/undo"
       ;;&
 
-    [23]?)
+    [23]??)
       if ! HAS nodejs
       then
-        echo Installing nodejs..
+        echo Checking nodejs..
         ## NOTE: hard-coded minimal version of Node.
         conda install -yc conda-forge "nodejs>=12.12" &> /dev/null \
-          && echo - Installed nodejs. \
+          && echo - [OK] nodejs. \
           || echo - Failed to install with conda: nodejs
       else
         echo Checking if possible to update 'node' via conda..
@@ -89,106 +111,341 @@ install::vim_settings () {
         && echo - [OK] pynvim. \
         || echo "Cannot execute: pip install pynvim"
 
-      VIM=nvim
-      VIMPLUG="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
-      utils::back_up_original_configs $VIM d:"$XDG_CONFIG_HOME/nvim"
+      _VIM=nvim
+      packman="$XDG_DATA_HOME/nvim/site/autoload/plug.vim"
+      install_packman="sh -c 'curl -sS -fLo $packman --create-dirs \
+        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'"
+
+      utils::back_up_original_configs $_VIM d:"$XDG_CONFIG_HOME/nvim"
       grep -q '^vim' .update-list && sed -i '/^vim/d' .update-list
       ;;&
 
     *)
-      ## Copy new configs
+      ## Ensure the following may only appear after the installation.
+      rm -f "$XDG_CONFIG_HOME/nvim/init.lua"
+      rm -rf "$XDG_CONFIG_HOME/nvim/plugin"
+
+      ## TODO: Let user decide what to remove.
+
+      ## Remove files installed by Packer or vim-plug.
+      # rm -rf "$XDG_DATA_HOME/nvim/site/pack/packer"
+      # rm -rf "$XDG_DATA_HOME/nvim/plugged"
+
+      ## Remove some of the plugins of Neovim-Lua setup
+      ## that leave trace after removing Packer.
+      rm -rf "$XDG_DATA_HOME/nvim/site/pack/packer/start/dashboard-nvim"
+      rm -rf "$XDG_DATA_HOME/nvim/site/pack/packer/start/dashboard-nvim"
+      rm -rf "$XDG_DATA_HOME/nvim/site/pack/packer/start/quick-scope"
+      rm -f "$XDG_CONFIG_HOME/nvim/plugin/packer_compiled.lua"
+
+      ## Copy new configs.
       cp -R conf/nvim "$XDG_CONFIG_HOME"
       ;;&
 
-    ?0)
-      ## Check if need to expand $EVANGELIST
-      sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
-        -e 's;(filereadable\()(.+\));\1"\2;' \
-        -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
-        "$XDG_CONFIG_HOME/nvim/init.vim"
+    [23]?1)
+      cd "$XDG_CONFIG_HOME/nvim" && ok=true
 
-      local msg shell=${SHELL##*/}
-      ## -r -- do not allow backslashes to escape any chars.
-      ## -d -- change delim from '\n' delim to no delims.
-      read -r -d '' msg << END
-## Added by evangelist (#vim-only)
-if grep -qE '^n?vim' "\$EVANGELIST/.update-list"
-then
-  if [[ -f \$EVANGELIST/custom/custom.vim ]]; then
-    cd "\$EVANGELIST/custom" \\
-      && sed -n '/^Plug .*/p' custom.vim > .plugins.vim \\
-      && sed '/^Plug .*/d' custom.vim > .settings.vim \\
-      && cd - > /dev/null
-  fi
-fi
-END
+      ## Many MacOS functions (like rm) requires
+      ## to place options in the beginning.
+      rm -rf lua
+      mv dev/{lua,init.lua} .
+      rm -rf init.vim dev
 
-      case $shell in
-        bash|'')
-          grep -q "## Added by evangelist (#vim-only)" ~/.bashrc \
-            || echo -e "\n$msg\n" >> ~/.bashrc
-          ;;
+      $ok && cd - > /dev/null \
+        && echo '- [OK] Neovim-Lua setup!' \
+        || echo Impl.error: broken dir hierarchy.
 
-        zsh)
-          local zshrc
-          [[ -n $ZDOTDIR ]] && zshrc="$ZDOTDIR/zshrc" || zshrc=~/.zshrc
-          grep -q "## Added by evangelist (#vim-only)" "$zshrc" \
-            || echo -e "\n$msg\n" >> "$zshrc"
-          ;;
+      packman="$XDG_DATA_HOME/nvim/site/pack/packer/start/packer.nvim"
+      install_packman="git clone \
+        --depth 1 https://github.com/wbthomason/packer.nvim $packman"
 
-        *)
-          echo Add this to your rc file:
-          echo -e "\n$msg\n"
-          ;;
-      esac
+      install::vim_settings::lua_lsp
       ;;&
 
-    10)
+    ?00)
+      install::vim_settings::without_modifying_shellrc
+      ;;&
+
+    100)
       rm -f ~/.vimrc
       ln -s "$XDG_CONFIG_HOME/nvim/init.vim" ~/.vimrc
       ;;
 
-    11)
+    110)
       export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
       export VIMINIT=":source $MYVIMRC"
       ;;
 
-    30)
+    30?)
       utils::resolve_vim_alternatives
       ;;
   esac
 
-  ## Install vim-plug if it is not there yet
-  if ! [[ -f "$VIMPLUG" ]]; then
-    sh -c "curl -sS -fLo $VIMPLUG --create-dirs \
-      https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+  ## Install plugin manager if it is not there yet.
+  ! [[ -e "$packman" ]] && eval "$install_packman"
+
+  ## Possible assembly options: minimal, extended, neovim-lua.
+  install::vim_settings::set_assembly
+
+  echo Installing plugings..
+  if [[ $_CODE = ??1 ]]; then
+    install::vim_settings::packer_plugins
+  else
+    install::vim_settings::vim_plug_plugins
   fi
 
-  set_assembly=minimal
-  if [[ -n $_EXTEND ]]; then
-    sed -i 's;^" ;;' "$XDG_CONFIG_HOME/nvim/init.vim"
-    sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
-    ## CoC is chosen to be a default code-completion engine,
-    ## YCM is commented out, therefore.
+  ## _ARG can be any, but _VIM is specific.
+  _PARAMS=( "${_PARAMS[@]/$_ARG/$_VIM}" )
 
-    if ! utils::v1_ge_v2 $(node --version) 12.12
-    then
-      ## `&` in the following line means "use the whole text matched".
-      sed -i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
-    fi
-    set_assembly=extended
+  ECHO Successfully installed: Vim configuration.
+}
+
+
+install::jupyter_settings () {
+  ECHO Installing Jupyter configuration..
+  local JUPVIM JUPCONFDIR
+
+  ## Check if pip and git are available.
+  (HAS pip || HAS pip3) || { ECHO2 Missing pip3. Aborted.; return 1; }
+  HAS git || { ECHO2 Missing git. Aborted.; return 1; }
+
+  ## Make an "alias" for pip3.
+  (! HAS pip && HAS pip3) && pip () { pip3 "$@"; }
+
+  echo Checking required packages..
+  echo "(Missing ones will be installed if possible)"
+  ## - jupyter
+  ## - jupyter_contrib_nbextensions
+  ## - jupyter_nbextensions_configurator
+
+  ## Install Jupyter if need be.
+  HAS jupyter \
+    || { pip install -q jupyter \
+         && HAS jupyter && echo - Installed jupyter.; } \
+      || { ECHO2 Jupyter is not accessible. Aborted.; return 1; }
+
+  JUPCONFDIR=$(jupyter --config-dir)
+
+  utils::back_up_original_configs jupyter \
+    f:"$JUPCONFDIR/custom/custom.js" \
+    f:"$JUPCONFDIR/nbconfig/notebook.json"
+
+  ## Install nbextensions if need be.
+  if ! pip show -qq jupyter_contrib_nbextensions
+  then
+    pip install -q jupyter_contrib_nbextensions \
+      && echo - Installed jupyter_contrib_nbextensions. \
+      || return 1
   fi
 
-  assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
-  if [[ $set_assembly != $assembly ]]; then
-    sed -i "/^Installed/i VIM ASSEMBLY:$set_assembly" .update-list
-    [[ -n $assembly ]] && sed -i "/VIM ASSEMBLY:$assembly/d" .update-list
+  ## Add extension tab in Jupyter Notebook if need be.
+  if ! pip show -qq jupyter_nbextensions_configurator
+  then
+    pip install -q jupyter_nbextensions_configurator \
+      && echo - Installed jupyter_nbextensions_configurator. \
+      || return 1
   fi
 
-  ## Install Vim plugins silently (save installation summary)
+  echo Ready to install jupyter-vim-bindings.
+  JUPVIM="$(jupyter --data-dir)/nbextensions/vim_binding"
+  [[ -d "$JUPVIM" ]] && rm -rf "$JUPVIM"
+
+  ## Install Vim in Jupyter Notebook.
+  {
+    git clone -q https://github.com/lambdalisue/jupyter-vim-binding "$JUPVIM";
+    jupyter nbextension enable vim_binding/vim_binding; # add log lvl control?
+    jupyter contrib nbextension install --user --JupyterApp.log_level='WARN';
+  } || return 1
+
+  ## Copy new configs.
+  mkdir -p "$JUPCONFDIR/custom"
+  mkdir -p "$JUPCONFDIR/nbconfig"
+  cp conf/jupyter/custom.js "$JUPCONFDIR/custom"
+  cp conf/jupyter/notebook.json "$JUPCONFDIR/nbconfig"
+
+  ECHO Successfully installed: Jupyter configuration.
+}
+
+
+install::tmux_settings () {
+  ECHO Installing Tmux configuration..
+  local version
+
+  ## Check if Tmux is available.
+  HAS tmux || { ECHO2 Missing tmux. Aborted.; return 1; }
+
+  utils::back_up_original_configs tmux \
+    f:~/.tmux.conf f:"$XDG_CONFIG_HOME/tmux/tmux.conf"
+
+  ## Tmux version determines where to put Tmux configs.
+  version=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
+
+  ## Copy new configs.
+  utils::v1_ge_v2 "$version" 3.1 \
+    && cp -R conf/tmux "$XDG_CONFIG_HOME" \
+    || cp conf/tmux/tmux.conf ~/.tmux.conf
+
+  ECHO Successfully installed: Tmux configuration.
+}
+
+
+install::bash_settings () {
+  ECHO Installing BASH configuration..
+
+  utils::back_up_original_configs bash \
+    f:~/.bashrc f:~/.inputrc f:~/.condarc
+
+  ## Copy new configs.
+  cp conf/bash/bashrc ~/.bashrc
+  cp conf/bash/inputrc ~/.inputrc
+
+  write::file_header ~/.bashrc
+
+  ## Add conda init to `.bashrc`.
+  conda &> /dev/null \
+    && (conda init bash > /dev/null; conda config --set changeps1 False) \
+    || ECHO2 "conda doesn't seem to work."
+
+  ## Dynamic imports should make the last line in rc files.
+  write::dynamic_imports ~/.bashrc
+
+  ## Transfer the old history.
+  local NEWHISTFILE="$HOME/.bash_history"
+  [[ -n "$HISTFILE" && "$HISTFILE" != "$NEWHISTFILE" ]] \
+    && cp "$HISTFILE" "$NEWHISTFILE"
+
+  ECHO Successfully installed: BASH configuration.
+}
+
+
+install::zsh_settings () {
+  ECHO Installing ZSH configuration..
+
+  ## Check if zsh and git are available.
+  HAS zsh || { ECHO2 Missing zsh. Aborted.; return 1; }
+  HAS git || { ECHO2 Missing git. Aborted.; return 1; }
+
+  [[ -z "$ZDOTDIR" ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+
+  utils::back_up_original_configs zsh \
+    f:~/.zshenv f:~/.zshrc d:"$ZDOTDIR":zdotdir
+
+  mkdir -p "$ZDOTDIR"
+
+  ## If there was no ~/.zshrc, remove it later.
+  ## (BUG: conda init generates dummy .zshrc in $HOME ignoring $ZDOTDIR)
+  ls ~/.zshrc &> /dev/null
+  local code=$?
+
+  ## Copy new configs.
+  cp conf/zsh/zshrc "$ZDOTDIR/.zshrc"
+  cp conf/zsh/agkozakrc "$ZDOTDIR"
+  cp conf/zsh/zshenv ~/.zshenv
+
+  if [[ $(uname) = Darwin ]]; then
+    cp conf/zsh/macos.zsh "$ZDOTDIR/extra.zsh"
+  else
+    cp conf/zsh/extra.zsh "$ZDOTDIR"
+  fi
+
+  write::file_header ~/.zshenv
+
+  if ! [[ -f "$ZDOTDIR/.zcomet/bin/zcomet.zsh" ]]; then
+    git clone https://github.com/agkozak/zcomet.git "$ZDOTDIR/.zcomet/bin"
+    echo Installed zcomet.
+  fi
+
+  ## Add conda init to `.zshrc`.
+  conda &> /dev/null \
+    && conda init zsh > /dev/null \
+    || ECHO2 "conda doesn't seem to work"
+
+  ## Deal with miniconda's bug.
+  grep -q '>>> conda init >>>' "$ZDOTDIR/.zshrc" \
+    || sed -n '/> conda init/,/< conda init/p' \
+         ~/.zshrc >> "$ZDOTDIR/.zshrc" 2> /dev/null
+
+  [[ $code -gt 0 ]] && rm -f ~/.zshrc
+
+  ## Dynamic imports should make the last line in rc files.
+  write::dynamic_imports "$ZDOTDIR/.zshrc"
+
+  ## Transfer the old history.
+  local NEWHISTFILE="$XDG_DATA_HOME/zsh_history"
+  [[ -n "$HISTFILE" && "$HISTFILE" != "$NEWHISTFILE" ]] \
+    && cp "$HISTFILE" "$NEWHISTFILE"
+
+  ECHO Successfully installed: ZSH configuration.
+}
+
+
+#####################################
+##  Local helpers (vim_settings).  ##
+#####################################
+install::vim_settings::without_modifying_shellrc () {
+  ## Check if need to expand $EVANGELIST.
+  # sed -ri -e 's;\$EVANGELIST[.\"]*;'"$PWD"';' \
+  #   -e 's;(filereadable\()(.+\));\1"\2;' \
+  #   -e 's;\$XDG_CONFIG_HOME;'"$XDG_CONFIG_HOME"';' \
+  #   "$XDG_CONFIG_HOME/nvim/init.vim"
+  ## No need to expend after adding the snippet below!
+
+  local msg shell=${SHELL##*/}
+  ## -r -- do not allow backslashes to escape any chars.
+  ## -d -- change delim from '\n' delim to no delims.
+  read -r -d '' msg << END
+## Added by evangelist (#vim-only)
+export EVANGELIST="$EVANGELIST"
+
+if grep -qE '^n?vim' "\$EVANGELIST/.update-list"
+then
+  if [[ -f \$EVANGELIST/custom/custom.vim ]]; then
+  cd "\$EVANGELIST/custom" \\
+    && sed -n '/^Plug .*/p' custom.vim > .plugins.vim \\
+    && sed '/^Plug .*/d' custom.vim > .settings.vim \\
+    && cd - > /dev/null
+  fi
+fi
+END
+
+  case $shell in
+    bash|'')
+      grep -q "## Added by evangelist (#vim-only)" ~/.bashrc \
+        || echo -e "\n$msg\n" >> ~/.bashrc
+      ;;
+
+    zsh)
+      local zshrc
+      [[ -n $ZDOTDIR ]] && zshrc="$ZDOTDIR/zshrc" || zshrc=~/.zshrc
+      grep -q "## Added by evangelist (#vim-only)" "$zshrc" \
+        || echo -e "\n$msg\n" >> "$zshrc"
+      ;;
+
+    *)
+      echo Add this to your rc file:
+      echo -e "\n$msg\n"
+      ;;
+  esac
+}
+
+
+install::vim_settings::packer_plugins () {
+  ## Just in case these variables are already defined
+  ## in the shellrc file and have different values.
+  export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.lua"
+  export VIMINIT=":source $MYVIMRC"
+
+  nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync' \
+    2> /tmp/_neovim_lua_setup_packer_installation.log
+
+  echo Saved logs to /tmp/_nvim_lua_setup_packer_installation.log
+}
+
+
+install::vim_settings::vim_plug_plugins () {
+  ## Install Vim plugins silently (save installation summary).
   if [[ $TERM != dumb ]]; then
-    echo Installing plugings..
-    $VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
+    $_VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
     ## NOTE: During interactive installation, the hanging happens
     ## if some of the plugins being installed throw an error. If the latter
     ## is the case, evangelist will not finish the procedure unless the user
@@ -208,10 +465,10 @@ END
     ## Though it does the work. Check for a better solution
     ## that might appear with the upcoming package releases.
 
-    cmd="$VIM "
-    [[ $VIM = nvim ]] && cmd+='--headless '
+    cmd="$_VIM "
+    [[ $_VIM = nvim ]] && cmd+='--headless '
     cmd+='+PlugInstall +qa'
-    [[ $VIM = vim ]] && cmd+=' > /dev/null'
+    [[ $_VIM = vim ]] && cmd+=' > /dev/null'
     eval "$cmd"
   fi
 
@@ -223,186 +480,55 @@ END
   ## Add Vim customization template, if installing from scratch.
   ! [[ -f $EVANGELIST/custom/custom.vim ]] \
     && cp "$EVANGELIST/conf/nvim/custom.vim" "$EVANGELIST/custom"
-
-  ## _ARG can be any, but VIM is specific.
-  _PARAMS=( ${_PARAMS[@]/$_ARG/$VIM} )
-
-  ECHO Successfully installed: Vim configuration.
 }
 
 
-install::jupyter_settings () {
-  ECHO Installing Jupyter configuration..
+install::vim_settings::lua_lsp () {
+  [[ -d "$XDG_DATA_HOME/lua-ls" ]] && return
+  HAS ninja || return
 
-  ## Check if pip and git are available
-  (HAS pip || HAS pip3) || { ECHO2 Missing pip3. Aborted.; return 1; }
-  HAS git || { ECHO2 Missing git. Aborted.; return 1; }
+  echo 'Installing Lua-LSP..'
+  git clone --depth=1 \
+    https://hub.fastgit.xyz/sumneko/lua-language-server \
+    "$XDG_DATA_HOME/lua-ls"
 
-  ## Make an "alias" for pip3
-  (! HAS pip && HAS pip3) && pip () { pip3 $@; }
+  local back="$PWD"
+  cd "$XDG_DATA_HOME/lua-ls" \
+    && git submodule update --init --recursive \
+    && cd 3rd/luamake \
+    && compile/install.sh \
+    && cd ../.. \
+    && ./3rd/luamake/luamake rebuild
 
-  echo Checking required packages..
-  echo "(Missing ones will be installed if possible)"
-  ## - jupyter
-  ## - jupyter_contrib_nbextensions
-  ## - jupyter_nbextensions_configurator
+  cd "$back" && { echo Impl.error: broken dir hierarchy; exit; }
+}
 
-  ## Install Jupyter if need be
-  HAS jupyter \
-    || { pip install -q jupyter \
-         && HAS jupyter && echo - Installed jupyter.; } \
-      || { ECHO2 Jupyter is not accessible. Aborted.; return 1; }
 
-  local JUPCONFDIR=$(jupyter --config-dir)
+install::vim_settings::set_assembly () {
+  local assembly
+  local set_assembly=minimal
 
-  utils::back_up_original_configs jupyter \
-    f:"$JUPCONFDIR/custom/custom.js" \
-    f:"$JUPCONFDIR/nbconfig/notebook.json"
+  if [[ -n $_EXTEND ]]; then
+    if [[ $_CODE = ??0 ]]; then
+      sed -i 's;^" ;;' "$XDG_CONFIG_HOME/nvim/init.vim"
+      sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
+      ## CoC is chosen to be a default code-completion engine ("old" Vim),
+      ## YCM is commented out, therefore.
 
-  ## Install nbextensions if need be
-  if ! pip show -qq jupyter_contrib_nbextensions
-  then
-    pip install -q jupyter_contrib_nbextensions \
-      && echo - Installed jupyter_contrib_nbextensions. \
-      || return 1
+      if ! utils::v1_ge_v2 "$(node --version)" 12.12
+      then
+        ## `&` in the following line means "use the whole text matched".
+        sed -i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
+      fi
+      set_assembly=extended
+    else
+      set_assembly=neovim-lua
+    fi
   fi
 
-  ## Add extension tab in Jupyter Notebook if need be
-  if ! pip show -qq jupyter_nbextensions_configurator
-  then
-    pip install -q jupyter_nbextensions_configurator \
-      && echo - Installed jupyter_nbextensions_configurator. \
-      || return 1
+  assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
+  if [[ $set_assembly != "$assembly" ]]; then
+    sed -i "/^Installed/i VIM ASSEMBLY:$set_assembly" .update-list
+    [[ -n $assembly ]] && sed -i "/VIM ASSEMBLY:$assembly/d" .update-list
   fi
-
-  echo Ready to install jupyter-vim-bindings.
-  local JUPVIM="$(jupyter --data-dir)/nbextensions/vim_binding"
-  [[ -d "$JUPVIM" ]] && rm -rf "$JUPVIM"
-
-  ## Install Vim in Jupyter Notebook
-  {
-    git clone -q https://github.com/lambdalisue/jupyter-vim-binding "$JUPVIM";
-    jupyter nbextension enable vim_binding/vim_binding; # add log lvl control?
-    jupyter contrib nbextension install --user --JupyterApp.log_level='WARN';
-  } || return 1
-
-  ## Copy new configs
-  mkdir -p "$JUPCONFDIR/custom"
-  mkdir -p "$JUPCONFDIR/nbconfig"
-  cp conf/jupyter/custom.js "$JUPCONFDIR/custom"
-  cp conf/jupyter/notebook.json "$JUPCONFDIR/nbconfig"
-
-  ECHO Successfully installed: Jupyter configuration.
 }
-
-
-install::tmux_settings () {
-  ECHO Installing Tmux configuration..
-
-  ## Check if Tmux is available
-  HAS tmux || { ECHO2 Missing tmux. Aborted.; return 1; }
-
-  utils::back_up_original_configs tmux \
-    f:~/.tmux.conf f:"$XDG_CONFIG_HOME/tmux/tmux.conf"
-
-  ## Tmux version determines where to put Tmux configs
-  local VERSION=$(tmux -V | sed -En 's/^tmux ([.0-9]+).*/\1/p')
-
-  ## Copy new configs
-  utils::v1_ge_v2 $VERSION 3.1 \
-    && cp -R conf/tmux "$XDG_CONFIG_HOME" \
-    || cp conf/tmux/tmux.conf ~/.tmux.conf
-
-  ECHO Successfully installed: Tmux configuration.
-}
-
-
-install::bash_settings () {
-  ECHO Installing BASH configuration..
-
-  utils::back_up_original_configs bash \
-    f:~/.bashrc f:~/.inputrc f:~/.condarc
-
-  ## Copy new configs
-  cp conf/bash/bashrc ~/.bashrc
-  cp conf/bash/inputrc ~/.inputrc
-
-  write::file_header ~/.bashrc
-
-  ## Add conda init to .bashrc
-  conda &> /dev/null \
-    && (conda init bash > /dev/null; conda config --set changeps1 False) \
-    || ECHO2 "conda doesn't seem to work."
-
-  ## Dynamic imports should make the last line in rc files.
-  write::dynamic_imports ~/.bashrc
-
-  ## Transfer the old history
-  local NEWHISTFILE="$HOME/.bash_history"
-  [[ -n "$HISTFILE" && "$HISTFILE" != "$NEWHISTFILE" ]] \
-    && cp "$HISTFILE" "$NEWHISTFILE"
-
-  ECHO Successfully installed: BASH configuration.
-}
-
-
-install::zsh_settings () {
-  ECHO Installing ZSH configuration..
-
-  ## Check if zsh and git are available
-  HAS zsh || { ECHO2 Missing zsh. Aborted.; return 1; }
-  HAS git || { ECHO2 Missing git. Aborted.; return 1; }
-
-  [[ -z "$ZDOTDIR" ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
-
-  utils::back_up_original_configs zsh \
-    f:~/.zshenv f:~/.zshrc d:"$ZDOTDIR":zdotdir
-
-  mkdir -p "$ZDOTDIR"
-
-  ## If there was no ~/.zshrc, remove it later
-  ## (BUG: conda init generates dummy .zshrc in $HOME ignoring $ZDOTDIR)
-  ls ~/.zshrc &> /dev/null
-  local CODE=$?
-
-  ## Copy new configs
-  cp conf/zsh/zshrc "$ZDOTDIR/.zshrc"
-  cp conf/zsh/agkozakrc "$ZDOTDIR"
-  cp conf/zsh/zshenv ~/.zshenv
-
-  if [[ $(uname) = Darwin ]]; then
-    cp conf/zsh/macos.zsh "$ZDOTDIR/extra.zsh"
-  else
-    cp conf/zsh/extra.zsh "$ZDOTDIR"
-  fi
-
-  write::file_header ~/.zshenv
-
-  if ! [[ -f "$ZDOTDIR/.zcomet/bin/zcomet.zsh" ]]; then
-    git clone https://github.com/agkozak/zcomet.git "$ZDOTDIR/.zcomet/bin"
-    echo Installed zcomet.
-  fi
-
-  ## Add conda init to .zshrc
-  conda &> /dev/null \
-    && conda init zsh > /dev/null \
-    || ECHO2 "conda doesn't seem to work"
-
-  ## Deal with miniconda's bug
-  grep -q '>>> conda init >>>' "$ZDOTDIR/.zshrc" \
-    || sed -n '/> conda init/,/< conda init/p' \
-         ~/.zshrc >> "$ZDOTDIR/.zshrc" 2> /dev/null
-
-  [[ $CODE -gt 0 ]] && rm -f ~/.zshrc
-
-  ## Dynamic imports should make the last line in rc files.
-  write::dynamic_imports "$ZDOTDIR/.zshrc"
-
-  ## Transfer the old history
-  local NEWHISTFILE="$XDG_DATA_HOME/zsh_history"
-  [[ -n "$HISTFILE" && "$HISTFILE" != "$NEWHISTFILE" ]] \
-    && cp "$HISTFILE" "$NEWHISTFILE"
-
-  ECHO Successfully installed: ZSH configuration.
-}
-

@@ -36,9 +36,17 @@ up_hierarchy_search() {
 }
 
 
-_conda_autoenv_zsh() {
-  first_elem_id=${1:-1}
-  local -a found=( "$(up_hierarchy_search "$PWD" '.autoenv-evn.*')" )
+_conda_autoenv () {
+  ## Disable conda-autoenv by setting AUENV_SHELL to false.
+  ## Disabling functionality locally (or temporarily) may be useful
+  ## when there is another plugin that temporarily takes care of managing
+  ## conda environments.
+  [[ $AUENV_SHELL == false ]] && return
+
+  [[ -z $1 ]] && { echo Not enough args provided; return 1; }
+
+  first_elem_id=${2:-1}
+  local -a found=( "$(up_hierarchy_search "$1" '.autoenv-evn.*')" )
 
   if [[ -z ${found[*]} ]]
   then
@@ -66,8 +74,12 @@ _conda_autoenv_zsh() {
 
 _conda_autoenv_bash() {
   [[ "$PWD" = "$PREV_WORK_DIR" ]] && return
-  _conda_autoenv_zsh 0
+  _conda_autoenv "$PWD" 0
   PREV_WORK_DIR="$PWD"
+}
+
+_conda_autoenv_zsh () {
+  _conda_autoenv "$PWD"
 }
 
 

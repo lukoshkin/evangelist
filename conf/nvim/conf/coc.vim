@@ -69,21 +69,19 @@ else
 endif
 
 
-"" `[g` and `]g` navigate through diagnostics.
+"" `[d` and `]d` navigate through diagnostics.
 "" `:CocDiagnostics` shows the diagnostics in the location list.
-nmap <silent> [g <Plug>(coc-diagnostic-prev)
-nmap <silent> ]g <Plug>(coc-diagnostic-next)
+nmap <silent> [d <Plug>(coc-diagnostic-prev)
+nmap <silent> ]d <Plug>(coc-diagnostic-next)
 
 "" GoTo code navigation.
 "" Note: in Vim defaults
 "" - 'gt' is mapped to 'go to the next tab page',
-"" - 'gi' -- to 'insert in the same osition as where Insert mode
-""    was stopped last time.
+"" - 'gi' -- to 'insert in the position of the last edit'
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gr <Plug>(coc-references)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> ge <Plug>(coc-implementation)
-"" Thus, gt --> gy, gi --> ge.
+nmap <silent> <Leader>td <Plug>(coc-type-definition)
+nmap <silent> <Leader>i <Plug>(coc-implementation)
 
 "" <S-k> to show documentation in a preview window.
 nnoremap <silent> K :call <SID>show_documentation()<CR>
@@ -102,7 +100,7 @@ endfunction
 "" Rename symbol.
 nmap <leader>rn <Plug>(coc-rename)
 "" Apply CodeAction to the current buffer.
-nmap <leader>aa  <Plug>(coc-codeaction)
+nmap <leader>ca  <Plug>(coc-codeaction)
 "" Apply AutoFix to a problem on the current line.
 nmap <leader>qf  <Plug>(coc-fix-current)
 
@@ -110,9 +108,9 @@ nmap <leader>qf  <Plug>(coc-fix-current)
 "" NOTE: Requires 'textDocument.documentSymbol' support.
 "" See 'v:operator' to come up with possible solutions
 "" for 'if' and 'ic' in operator pending mode.
-autocmd FileType sh,bash,zsh,cpp xmap if <Plug>(coc-funcobj-i)V
-autocmd FileType python xmap if <Plug>(coc-funcobj-i)Vj}k
-autocmd FileType cpp xmap af <Plug>(coc-funcobj-a)Vj
+" autocmd FileType sh,bash,zsh,cpp xmap if <Plug>(coc-funcobj-i)V
+" autocmd FileType python xmap if <Plug>(coc-funcobj-i)Vj}k
+" autocmd FileType cpp xmap af <Plug>(coc-funcobj-a)Vj
 xmap af <Plug>(coc-funcobj-a)
 omap af <Plug>(coc-funcobj-a)
 xmap ac <Plug>(coc-classobj-a)

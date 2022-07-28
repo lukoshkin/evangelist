@@ -1,6 +1,7 @@
 #!/bin/bash
 ## Shebang helps the editor to correctly render colors.
 
+
 ## This function should be called only once
 ## within the body of an install::*_settings function
 
@@ -13,11 +14,11 @@
 ## in control.sh: back_up_original_configs
 
 ## Check out the commented code section below.
-
-
 utils::back_up_original_configs () {
   if ! grep -q "^$1" .update-list
   then
+    ## A bit outdated code section, but can be still valid.
+    ## Needs to be checked.
     # echo $1 >> /tmp/update-evn-list
 
     # if [[ -z $1 ]]
@@ -26,7 +27,7 @@ utils::back_up_original_configs () {
     #   rm -f /tmp/update-evn-list
     # fi
 
-    echo $1:0 >> .update-list
+    echo "$1:0" >> .update-list
     shift
 
     local arg m v n
@@ -35,13 +36,13 @@ utils::back_up_original_configs () {
     ## Though, the outer was renamed to `_ARG` (it is used within
     ## `install::vim_settings` now), it is better to separate
     ## eponymous variables with `local` specifier.
-    for arg in $@; do
-      m=$(cut -d ':' -f1 <<< $arg)
-      v=$(cut -d ':' -f2 <<< $arg)
-      n=$(cut -d ':' -f3 <<< $arg)
+    for arg in "$@"; do
+      m=$(cut -d ':' -f1 <<< "$arg")
+      v=$(cut -d ':' -f2 <<< "$arg")
+      n=$(cut -d ':' -f3 <<< "$arg")
 
-      v=$(eval echo $v)
-      n=$(eval echo $n)
+      v=$(eval echo "$v")
+      n=$(eval echo "$n")
       case $m in
         f)
           [[ -f "$v" ]] && cp "$v" ".bak/$n"
@@ -60,7 +61,7 @@ utils::back_up_original_configs () {
 
 
 utils::update_status () {
-  for p in ${_PARAMS[@]}; do
+  for p in "${_PARAMS[@]}"; do
     sed -i "s;\(^$p:\)[01];\11;" .update-list
   done
 }
@@ -72,7 +73,8 @@ utils::get_installed_components () {
   ## and can be patterns. If called without args, sed prints the current
   ## buffer. One can use $ as the EOF marker.
 
-  components=$(sed -n 's;\(.*\):1;\1;p' <<< $components | tr '\n' ' ')
+  components=$(sed -n 's;\(.*\):1;\1;p' <<< "$components" | tr '\n' ' ')
+  ## Space separated clean component names from `.update-list`.
 }
 
 
@@ -81,7 +83,7 @@ utils::str_has_any () {
   local stringset=$1
 
   while [[ -n $2 ]]; do
-    [[ $stringset =~ $2 ]] && (( intersection+=1))
+    [[ $stringset =~ $2 ]] && (( intersection+=1 ))
     shift
   done
 
@@ -92,36 +94,64 @@ utils::str_has_any () {
 
 utils::v1_ge_v2 () {
   [[ -z $1 || -z $2 ]] && return 1
-  [[ ${1//v} = ${2//v} ]] && return 0
+  [[ ${1//v} = "${2//v}" ]] && return 0
+
+  ## Check if there is more than one hyphen.
 
   local sep=$3
   [[ -z $sep ]] && sep=.
-  declare -a version1 version2
+  local verstr1=$1 verstr2=$2
 
+  local suf1 suf2
+  verstr1=$(cut -d- -f1 <<< "$1")
+  suf1=$(cut -d- -f2 <<< "$1")
+
+  verstr2=$(cut -d- -f1 <<< "$2")
+  suf2=$(cut -d- -f2 <<< "$2")
+
+  [[ $suf1 = "$verstr1" ]] && suf1=
+  [[ $suf2 = "$verstr2" ]] && suf2=
+
+  if [[ -z $suf1 ]] && [[ -z $suf2 ]]; then
+    :
+  elif [[ -z $suf1 ]]; then
+    suf1="${suf2}a"
+  elif [[ -z $suf2 ]]; then
+    suf2="${suf1}a"
+  fi
+
+  local shear
+  declare -a version1 version2
   if [[ $(readlink /proc/$$/exe) = *bash ]]; then
-    IFS=$sep read -ra version1 <<< ${1//v}
-    IFS=$sep read -ra version2 <<< ${2//v}
-    local shear=0
+    IFS=$sep read -ra version1 <<< "${verstr1//v}"
+    IFS=$sep read -ra version2 <<< "${verstr2//v}"
+    shear=0
   elif [[ $(readlink /proc/$$/exe) = *zsh ]]; then
-    IFS=$sep read -rA version1 <<< ${1//v}
-    IFS=$sep read -rA version2 <<< ${2//v}
-    local shear=1
+    IFS=$sep read -rA version1 <<< "${verstr1//v}"
+    IFS=$sep read -rA version2 <<< "${verstr2//v}"
+    shear=1
   else
     >&2 echo evangelist supports only bash and zsh.
     exit 1
   fi
 
-  local minlen
-  [[ ${#version1[@]} < ${#version2[@]} ]] \
-    && minlen=${#version1[@]} \
-    || minlen=${#version2[@]}
+  while [[ ${#version1[@]} < ${#version2[@]} ]]; do
+    version1+=( 0 )
+  done
 
-  for ((i=shear; i<minlen+shear; ++i )); do
-    if [[ ${version1[$i]} = ${version2[$i]} ]]; then
+  while [[ ${#version2[@]} < ${#version1[@]} ]]; do
+    version2+=( 0 )
+  done
+
+  version1+=( "$suf1" )
+  version2+=( "$suf2" )
+
+  for ((i=shear; i<${#version1[@]}+shear; ++i )); do
+    if [[ ${version1[$i]} = "${version2[$i]}" ]]; then
       continue
     fi
 
-    if [[ ${version1[$i]} =~ ^[0-9]+$ && ${version2[$i]} =~ ^[0-9]+$ ]]
+    if [[ ${version1[$i]} =~ ^[0-9]+$ ]] && [[ ${version2[$i]} =~ ^[0-9]+$ ]]
     then
       [[ ${version1[$i]} -gt ${version2[$i]} ]] && return 0
     else
@@ -145,7 +175,7 @@ utils::resolve_vim_alternatives () {
   then
     if ! grep -q 'VIM-ALTERNATIVE' .update-list
     then
-      value=$(grep 'Value:' <<< $alternatives | cut -d ' ' -f2)
+      value=$(grep 'Value:' <<< "$alternatives" | cut -d ' ' -f2)
       sed -i "/^Installed/i VIM-ALTERNATIVE:$value" .update-list
     fi
 
