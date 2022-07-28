@@ -25,6 +25,7 @@ keymap('n', '<S-A-k>', '<S-o><Esc>j')
 keymap('n', '<S-A-h>', 'i<Space><Esc>l')
 keymap('n', '<S-A-l>', 'a<Space><Esc>h')
 
+
 local function toggle_mouse()
   --- https://unix.stackexchange.com/questions/156707
   if vim.o.mouse == 'a' then
@@ -36,14 +37,15 @@ end
 
 keymap({'n', 'i'}, '<A-m>', toggle_mouse)
 
+
 keymap('n', '<C-j>', ':m+1<CR>==')
 keymap('n', '<C-k>', ':m-2<CR>==')
 keymap('v', '<C-j>', ":m'>+<CR>gv=gv")
 keymap('v', '<C-k>', ':m-2<CR>gv=gv')
 
 --- Copy to clipboard selected text or the whole file.
-keymap('x', '<leader>y', '"+y')
-keymap('n', '<leader>y', ':%y+<CR>')
+keymap('x', '<Leader>y', '"+y')
+keymap('n', '<Leader>y', ':%y+<CR>')
 
 --- Change the terminal bg's transparency from within Vim
 --- (valid only for Linux systems; maybe, just Ubuntu).
@@ -61,14 +63,30 @@ keymap('n', '<Space><Space>', discard_distractive)
 
 
 --- Toggle spellchecker.
-keymap('', '<leader>en', ':setlocal spell! spelllang=en_us<CR>')
+keymap('', '<Leader>en', ':setlocal spell! spelllang=en_us<CR>')
 
---- Toggle line numbering and CoC-diagnostics
---- (if installed, otherwise, it is ignored).
-keymap('n', '<leader>nu', ':set invnu invrnu<CR>')
+
+local function toggle_numbers_signs ()
+  if vim.opt.number:get() ~= vim.opt.relativenumber:get() then
+    vim.opt.number = vim.opt.relativenumber:get()
+  end
+
+  vim.opt.number = not vim.opt.number:get()
+  vim.opt.relativenumber = not vim.opt.relativenumber:get()
+
+  if vim.opt.signcolumn:get() == 'no' then
+    vim.opt.signcolumn = 'yes'
+  else
+    vim.opt.signcolumn = 'no'
+  end
+end
+
+--- Toggle line numbering and signcolumn.
+keymap('n', '<Leader>nu', toggle_numbers_signs)
+
 
 --- Put a timestamp (Russian format).
-keymap('n', '<leader>ts', "i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>")
+keymap('n', '<Leader>ts', "i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>")
 
 --- Search for visually selected text.
 keymap('v', '//', [[y/\V<C-R>=escape(@",'/\')<CR><CR>]])
@@ -79,7 +97,7 @@ keymap('v', '//', [[y/\V<C-R>=escape(@",'/\')<CR><CR>]])
 keymap('', 'gf', ':edit <cfile><CR>')
 
 --- Open file with the system standard utility.
-keymap('n', '<leader>x', ':!'.. open ..' <C-R>=expand("<cfile>")<CR><CR>')
+keymap('n', '<Leader>x', ':!'.. open ..' <C-R>=expand("<cfile>")<CR><CR>')
 
 --- Save changes to a file.
 keymap('n', '<C-s>', ':w<CR>')
@@ -141,5 +159,5 @@ vim.api.nvim_create_user_command(
   {}
 )
 
---- Paste previously yanked text in place of selected one.
+--- Paste last yanked text in place of selected one.
 keymap('v', 'p', '"_dP')

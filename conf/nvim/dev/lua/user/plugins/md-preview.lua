@@ -89,4 +89,4 @@ vim.g.mkdp_port = ''
 vim.g.mkdp_page_title = '${name}'
 
 -- Open and close with the following mapping
-keymap('n', '<leader>md', '<Plug>MarkdownPreviewToggle')
+keymap('n', '<Leader>md', '<Plug>MarkdownPreviewToggle')

@@ -43,6 +43,11 @@ set nowrap
 "" For this to work, the above line should be commented out.
 " set textwidth=110
 
+"" Instead of highlighting, one can use special chars for
+"" trailing spaces and tabs.
+" set list
+" set listchars=tab:▸\ ,trail:·
+
 
 "" CUSTOM COLORS
 "" -------------
@@ -65,23 +70,6 @@ function CustomHighlighting() abort
   hi! SpellRare  guifg=NONE guibg=NONE gui=undercurl guisp=mediumpurple1
   hi! SpellLocal guifg=NONE guibg=NONE gui=undercurl guisp=skyblue1
   "" NOTE: Vim requires 'none' to be uppercase.
-
-  "" Trailing whitespace highlighting
-  highlight! ExtraWhitespace ctermbg=red guibg=palevioletred
-  au! FileType markdown hi ExtraWhitespace ctermbg=brown guibg=rosybrown
-
-  "" Pattern matching for au is different:
-  "" to exclude buffer names with leading underscores, we put
-  "" 'negative lookbehind' after the star expression.
-  au! BufWinEnter *\(_\)\@<! match ExtraWhitespace /\s\+$/
-  au! InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
-  au! InsertLeave * match ExtraWhitespace /\s\+$/
-  au! BufWinLeave *\(_\)\@<! call clearmatches()
-
-  "" Instead of highlighting, one can use special chars for
-  "" trailing spaces and tabs.
-  " set list
-  " set listchars=tab:▸\ ,trail:·
 endfunction
 
 

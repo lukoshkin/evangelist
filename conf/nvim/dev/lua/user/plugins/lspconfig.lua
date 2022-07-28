@@ -107,15 +107,15 @@ local function set_lsp_mappings (_, bufnr)
   buf_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>')
   buf_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>')
   buf_keymap(bufnr, 'n', 'gs', '<cmd>lua vim.lsp.buf.signature_help()<CR>')
-  buf_keymap(bufnr, 'n', '<leader>td', '<cmd>lua vim.lsp.buf.type_definition()<CR>')
-  buf_keymap(bufnr, 'n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
+  buf_keymap(bufnr, 'n', '<Leader>td', '<cmd>lua vim.lsp.buf.type_definition()<CR>')
+  buf_keymap(bufnr, 'n', '<Leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
   buf_keymap(bufnr, 'n', 'gr', ':Telescope lsp_references<CR>')
   --- gi and gI are reserved by original Vim command (see :h gi, e.g.).
-  buf_keymap(bufnr, 'n', '<leader>i', '<cmd>lua vim.lsp.buf.implementation()<CR>')
+  buf_keymap(bufnr, 'n', '<Leader>i', '<cmd>lua vim.lsp.buf.implementation()<CR>')
 
   --- Provided by 'weilbith/nvim-code-action-menu':
-  buf_keymap(bufnr, 'n', '<leader>ca', ':CodeActionMenu<CR>')
-  buf_keymap(bufnr, 'v', '<leader>ca', ':CodeActionMenu<CR>')
+  buf_keymap(bufnr, 'n', '<Leader>ca', ':CodeActionMenu<CR>')
+  buf_keymap(bufnr, 'v', '<Leader>ca', ':CodeActionMenu<CR>')
   --- A standard lsp approach would be
   --- '<cmd>lua vim.lsp.buf.xxx_action()<CR>'
   ---               or
@@ -138,7 +138,7 @@ local function set_lsp_mappings (_, bufnr)
 
   --- Open full diagnostics in location-list + find symbols(primitive data type) using telescope.
   buf_keymap(bufnr, 'n', '<Space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
-  buf_keymap(bufnr, 'n', '<leader>fs', [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]])
+  buf_keymap(bufnr, 'n', '<Leader>fs', [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]])
 
   vim.api.nvim_create_user_command(
     'Format',

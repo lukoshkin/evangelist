@@ -86,20 +86,20 @@ require'telescope'.load_extension 'projects'
 require'telescope'.load_extension 'neoclip'
 
 --- Find files in the current directory (except hidden ones).
-keymap('n', '<leader>ff', [[<cmd>lua require'telescope.builtin'.find_files()<CR>]])
+keymap('n', '<Leader>ff', [[<cmd>lua require'telescope.builtin'.find_files()<CR>]])
 --- Find files exactly how the names are spelled.
-keymap('n', '<leader>fe', [[<cmd>lua require'telescope.builtin'.find_files({fuzzy = false})<CR>]])
+keymap('n', '<Leader>fe', [[<cmd>lua require'telescope.builtin'.find_files({fuzzy = false})<CR>]])
 --- All files not matched by `file_ignore_patterns`.
-keymap('n', '<leader>fa', [[<cmd>lua require'telescope.builtin'.find_files({ no_ignore = true, prompt_title = 'All Files' })<CR>]])
+keymap('n', '<Leader>fa', [[<cmd>lua require'telescope.builtin'.find_files({ no_ignore = true, prompt_title = 'All Files' })<CR>]])
 --- Vim buffers (thanks to bufferline plugin, open buffers are always listed above).
-keymap('n', '<leader>b', [[<cmd>lua require'telescope.builtin'.buffers()<CR>]])
+keymap('n', '<Leader>b', [[<cmd>lua require'telescope.builtin'.buffers()<CR>]])
 --- Find word. `live_grep_args` adds to `live_grep` allows to use regex and pass CLI flags right from Telescope prompt.
-keymap('n', '<leader>fg', [[<cmd>lua require'telescope'.extensions.live_grep_args.live_grep_args()<CR>]])
+keymap('n', '<Leader>fg', [[<cmd>lua require'telescope'.extensions.live_grep_args.live_grep_args()<CR>]])
 -- Find MRU files.
-keymap('n', '<leader>fo', [[<cmd>lua require'telescope.builtin'.oldfiles()<CR>]])
+keymap('n', '<Leader>fo', [[<cmd>lua require'telescope.builtin'.oldfiles()<CR>]])
 --- Find a project
-keymap('n', '<leader>fp', [[<cmd>lua require'telescope'.extensions.projects.projects()<CR>]])
+keymap('n', '<Leader>fp', [[<cmd>lua require'telescope'.extensions.projects.projects()<CR>]])
 --- Request help using fuzzy search and preview.
-keymap('n', '<leader>fh', [[<cmd>Telescope help_tags<CR>]])
+keymap('n', '<Leader>fh', [[<cmd>Telescope help_tags<CR>]])
 --- Find yanks made during the current session.
-keymap( 'n', '<leader>fy', [[<cmd> lua require'telescope'.extensions.neoclip.neoclip()<CR>]])
+keymap( 'n', '<Leader>fy', [[<cmd> lua require'telescope'.extensions.neoclip.neoclip()<CR>]])

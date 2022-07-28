@@ -2,15 +2,11 @@ local packer = require'lib.packer-init'
 
 packer.startup(function (use)
   use 'wbthomason/packer.nvim'
-  -- use 'lukoshkin/trailing-whitespace'
+  use 'lukoshkin/trailing-whitespace'
 
   use {
-    'lukoshkin/trailing-whitespace',
-    config = function ()
-      require'trailing-whitespace'.setup {
-        patterns = { '\\s\\+$', '\\t\\+' },
-      }
-    end
+    'rxi/json.lua',
+    run = 'mkdir -p lua/json && mv json.lua lua/json/init.lua',
   }
 
   use {
@@ -19,10 +15,7 @@ packer.startup(function (use)
       'jpalardy/vim-slime',
       'hanschen/vim-ipython-cell',
       'lukoshkin/bterm.nvim',
-      {
-        'lukoshkin/auenv.nvim',
-        run = './install.sh',
-      }
+      'lukoshkin/auenv.nvim',
     },
     config = function ()
       require'auenv'.setup()
@@ -97,7 +90,7 @@ packer.startup(function (use)
     ft = 'markdown',
     run = function() vim.fn['mkdp#util#install']() end,
     config = function ()
-      require'user.plugins.md_preview'
+      require'user.plugins.md-preview'
     end
   }
 
@@ -157,7 +150,7 @@ packer.startup(function (use)
 
   use {
     'simnalamburt/vim-mundo',
-    keys = '<leader>u',
+    keys = '<Leader>u',
     config = function()
       require'user.plugins.undo'
     end
@@ -242,7 +235,7 @@ packer.startup(function (use)
     event = 'BufRead',
     requires = 'nvim-lua/plenary.nvim',
     config = function ()
-      require'gitsigns'.setup { sign_priority = 20 }
+      require'user.plugins.gitsigns'
     end
   }
 

@@ -1,24 +1,13 @@
 local M = {}
 
-M.keymap = vim.keymap.set
-
--- M.keymap = function(mode, lhs, rhs, opts)
---   vim.api.nvim_set_keymap(
---     mode,
---     lhs,
---     rhs,
---     vim.tbl_extend('keep', opts or {}, { noremap = true, silent = true })
---   )
--- end
+M.keymap = function (mode, lhs, rhs, opts)
+  opts = vim.tbl_extend('keep', opts or {}, {silent=true})
+  vim.keymap.set(mode, lhs, rhs, opts)
+end
 
 M.buf_keymap = function(bufnr, mode, lhs, rhs, opts)
-  vim.api.nvim_buf_set_keymap(
-    bufnr,
-    mode,
-    lhs,
-    rhs,
-    vim.tbl_extend('keep', opts or {}, { noremap = true, silent = true })
-  )
+  opts = vim.tbl_extend('keep', opts or {}, {noremap=true, silent=true})
+  vim.api.nvim_buf_set_keymap(bufnr, mode, lhs, rhs, opts)
 end
 
 
@@ -63,5 +52,6 @@ else
   --- 'start some.exe' - do we go like this?
   M._opener = 'start'
 end
+
 
 return M

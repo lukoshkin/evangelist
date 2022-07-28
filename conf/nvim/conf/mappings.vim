@@ -99,8 +99,21 @@ command! -range=% Trim <line1>,<line2>s/\s\+$//e | nohlsearch
 " Search for visually selected text
 vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>
 
-"" Toggle line numbering
-nnoremap <silent><leader>nu :set invnu invrnu <Bar> silent! ToggleDiag<CR>
+function! ToggleSignsNumbers ()
+  if &nu != &rnu
+    set nu rnu
+  endif
+
+  set invnu invrnu
+  if &scl != 'no'
+    set scl=no
+  else
+    set scl=yes
+  endif
+endfunction
+
+"" Toggle line numbering and signcolumn
+nnoremap <silent><leader>nu :call ToggleSignsNumbers()<CR>
 
 "" Break a line at the next space or at the char you searched with `f<char>`.
 "" In visual selection, it is applied to all spanned lines.
@@ -219,9 +232,9 @@ augroup TermInsert
 augroup END
 
 "" Note: The terminal mappings below are necessary only for Neovim.
-nnoremap <S-A-t> :call BottomtermToggle()<CR>
+nnoremap <A-t> :call BottomtermToggle()<CR>
 tnoremap <Esc> <C-\><C-n>
-tmap <silent><S-A-t> <Esc>:q<Bar>echo<CR>
+tmap <silent><A-t> <Esc>:q<Bar>echo<CR>
 tmap <C-w> <Esc><C-w>
 tmap <C-t> :call BottomtermOrientation()<CR>
 

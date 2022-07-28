@@ -44,6 +44,3 @@ ctrl_c () {
 
 trap ctrl_c SIGINT
 main "$@"
-## using "$@" will substitute arguments as a list,
-## thus, avoiding potentially undesirable re-splitting on space.
-

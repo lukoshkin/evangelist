@@ -27,7 +27,7 @@ utils::back_up_original_configs () {
     #   rm -f /tmp/update-evn-list
     # fi
 
-    echo $1:0 >> .update-list
+    echo "$1:0" >> .update-list
     shift
 
     local arg m v n
@@ -37,12 +37,12 @@ utils::back_up_original_configs () {
     ## `install::vim_settings` now), it is better to separate
     ## eponymous variables with `local` specifier.
     for arg in "$@"; do
-      m=$(cut -d ':' -f1 <<< $arg)
-      v=$(cut -d ':' -f2 <<< $arg)
-      n=$(cut -d ':' -f3 <<< $arg)
+      m=$(cut -d ':' -f1 <<< "$arg")
+      v=$(cut -d ':' -f2 <<< "$arg")
+      n=$(cut -d ':' -f3 <<< "$arg")
 
-      v=$(eval echo $v)
-      n=$(eval echo $n)
+      v=$(eval echo "$v")
+      n=$(eval echo "$n")
       case $m in
         f)
           [[ -f "$v" ]] && cp "$v" ".bak/$n"
@@ -73,7 +73,8 @@ utils::get_installed_components () {
   ## and can be patterns. If called without args, sed prints the current
   ## buffer. One can use $ as the EOF marker.
 
-  components=$(sed -n 's;\(.*\):1;\1;p' <<< $components | tr '\n' ' ')
+  components=$(sed -n 's;\(.*\):1;\1;p' <<< "$components" | tr '\n' ' ')
+  ## Space separated clean component names from `.update-list`.
 }
 
 
@@ -82,7 +83,7 @@ utils::str_has_any () {
   local stringset=$1
 
   while [[ -n $2 ]]; do
-    [[ $stringset =~ $2 ]] && (( intersection+=1))
+    [[ $stringset =~ $2 ]] && (( intersection+=1 ))
     shift
   done
 
@@ -93,7 +94,7 @@ utils::str_has_any () {
 
 utils::v1_ge_v2 () {
   [[ -z $1 || -z $2 ]] && return 1
-  [[ ${1//v} = ${2//v} ]] && return 0
+  [[ ${1//v} = "${2//v}" ]] && return 0
 
   ## Check if there is more than one hyphen.
 
@@ -102,14 +103,14 @@ utils::v1_ge_v2 () {
   local verstr1=$1 verstr2=$2
 
   local suf1 suf2
-  verstr1=$(cut -d- -f1 <<< $1)
-  suf1=$(cut -d- -f2 <<< $1)
+  verstr1=$(cut -d- -f1 <<< "$1")
+  suf1=$(cut -d- -f2 <<< "$1")
 
-  verstr2=$(cut -d- -f1 <<< $2)
-  suf2=$(cut -d- -f2 <<< $2)
+  verstr2=$(cut -d- -f1 <<< "$2")
+  suf2=$(cut -d- -f2 <<< "$2")
 
-  [[ $suf1 = $verstr1 ]] && suf1=
-  [[ $suf2 = $verstr2 ]] && suf2=
+  [[ $suf1 = "$verstr1" ]] && suf1=
+  [[ $suf2 = "$verstr2" ]] && suf2=
 
   if [[ -z $suf1 ]] && [[ -z $suf2 ]]; then
     :
@@ -142,11 +143,11 @@ utils::v1_ge_v2 () {
     version2+=( 0 )
   done
 
-  version1+=( $suf1 )
-  version2+=( $suf2 )
+  version1+=( "$suf1" )
+  version2+=( "$suf2" )
 
   for ((i=shear; i<${#version1[@]}+shear; ++i )); do
-    if [[ ${version1[$i]} = ${version2[$i]} ]]; then
+    if [[ ${version1[$i]} = "${version2[$i]}" ]]; then
       continue
     fi
 
@@ -174,7 +175,7 @@ utils::resolve_vim_alternatives () {
   then
     if ! grep -q 'VIM-ALTERNATIVE' .update-list
     then
-      value=$(grep 'Value:' <<< $alternatives | cut -d ' ' -f2)
+      value=$(grep 'Value:' <<< "$alternatives" | cut -d ' ' -f2)
       sed -i "/^Installed/i VIM-ALTERNATIVE:$value" .update-list
     fi
 

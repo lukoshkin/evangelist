@@ -41,6 +41,7 @@ control::help () {
 
 
 control::checkhealth () {
+  local components
   utils::get_installed_components
 
   if [[ -n $components ]]; then
@@ -86,8 +87,8 @@ control::checkhealth () {
     && { BASH_DEPS+=(o:locale-gen:locales);
          ZSH_DEPS+=(r:locale-gen:locales); }
 
-  write::modulecheck BASH ${BASH_DEPS[@]}
-  write::modulecheck ZSH ${ZSH_DEPS[@]}
+  write::modulecheck BASH "${BASH_DEPS[@]}"
+  write::modulecheck ZSH "${ZSH_DEPS[@]}"
   write::modulecheck VIM \
     r:'nvim vim':neovim r:curl \
     o:'pip pip3':pip3 o:'nodejs conda':npm o:xclip \
@@ -105,7 +106,7 @@ control::checkhealth () {
 
 
 control::install () {
-  install::check_arguments $@
+  install::check_arguments "$@"
 
   mkdir -p "$XDG_DATA_HOME"
   mkdir -p "$XDG_CACHE_HOME"
@@ -132,12 +133,12 @@ control::install () {
   ##   local msg                       local msg
   ##   echo "<$msg>"  # prints <>      echo "<$msg>"  # prints <10>
 
-  local msg _MSG shell=$(grep -oE '(z|ba)sh' <<< $@)
+  local msg _MSG shell=$(grep -oE '(z|ba)sh' <<< "$@")
   ## UPPERCASE WITH LEADING UNDERSCORE show that the variable is exposed
   ## to subroutines, i.e. global to internal function calls.
 
   ## Let user select login shell
-  if [[ $@ = *bash* ]] && [[ $@ = *zsh* ]]; then
+  if [[ $* = *bash* ]] && [[ $* = *zsh* ]]; then
     msg+="Since you are installing BOTH the shells' settings,\n"
     msg+='please type in which one will be used as a login shell.\n'
 
@@ -146,22 +147,22 @@ control::install () {
   fi
 
   ## Ensure shell settings are installed first
-  declare -a params=$@
-  [[ $@ = *bash+* ]] && params=( bash vim tmux ${params[@]/bash+} )
-  [[ $@ = *zsh+* ]] && params=( zsh vim tmux ${params[@]/zsh+} )
-  [[ $@ =~ bash ]] && params=( bash ${params[@]/bash} )
-  [[ $@ =~ zsh ]] && params=( zsh ${params[@]/zsh} )
+  declare -a params=( "$@" )
+  [[ $* = *bash+* ]] && params=( bash vim tmux "${params[@]/bash+}" )
+  [[ $* = *zsh+* ]] && params=( zsh vim tmux "${params[@]/zsh+}" )
+  [[ $* =~ bash ]] && params=( bash "${params[@]/bash}" )
+  [[ $* =~ zsh ]] && params=( zsh "${params[@]/zsh}" )
 
   ## Discard duplicates
   declare -a _PARAMS
-  for arg in ${params[@]}
+  for arg in "${params[@]}"
   do
-    [[ ${_PARAMS[@]} =~ $arg ]] || _PARAMS+=( $arg )
+    [[ ${_PARAMS[*]} =~ $arg ]] || _PARAMS+=( "$arg" )
   done
-  set -- ${_PARAMS[@]}
+  set -- "${_PARAMS[@]}"
   unset params
 
-  for _ARG in $@; do
+  for _ARG in "$@"; do
     case $_ARG in
       nvim|vim)    install::vim_settings ;;
       tmux)        install::tmux_settings ;;
@@ -173,7 +174,7 @@ control::install () {
         exit ;;
     esac
 
-    [[ $? -ne 0 ]] && _PARAMS=( ${_PARAMS[@]/$_ARG} )
+    [[ $? -ne 0 ]] && _PARAMS=( "${_PARAMS[@]/$_ARG}" )
   done
 
   ## Set 1 next to successfully installed settings in `.update-list`.
@@ -197,7 +198,7 @@ control::update () {
   git fetch -q
   local BRANCH UPD
   BRANCH=$(git rev-parse --abbrev-ref HEAD)
-  UPD=$(git diff --name-only ..origin/$BRANCH)
+  UPD=$(git diff --name-only ..origin/"$BRANCH")
   [[ -z "$UPD" ]] && { ECHO Up to date.; exit; }
 
   SRC=( evangelist.sh _impl )
@@ -207,19 +208,19 @@ control::update () {
   ## E.g.: If the structure of '.update-list' changes during development,
   ##       one must rewrite the file if it was generated
   ##       with old installation scripts.
-  if [[ $1 != SKIP ]] && utils::str_has_any "$UPD" $SRC
+  if [[ $1 != SKIP ]] && utils::str_has_any "$UPD" "${SRC[@]}"
   then
     ECHO Self-updating..
 
-    git checkout origin/$BRANCH -- ${SRC[@]}
+    git checkout "origin/$BRANCH" -- "${SRC[@]}"
 
-    $SHELL $0 update SKIP
+    $SHELL "$0" update SKIP
     exit
   fi
 
   ECHO 'Updating installed components if any..'
-  write::commit_messages $BRANCH
-  git merge origin/$BRANCH || exit 1
+  write::commit_messages "$BRANCH"
+  git merge "origin/$BRANCH" || exit 1
 
   ## TODO: Rewrite 'case + if' to 'if + case' ? too cumbersome now
   for OBJ in $(sed '/nvim/d' <<< "$UPD"); do
@@ -380,11 +381,13 @@ control::reinstall () {
   assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
   [[ $assembly = extended ]] && _EXTEND=-
 
+  local components
   utils::get_installed_components
 
   if [[ $1 = --no-reset ]]; then
     ECHO Reinstalling..
 
+    ## Do not quote.
     control::install $components
     return
   fi
@@ -399,6 +402,8 @@ control::reinstall () {
   ECHO Reinstalling..
 
   git fetch -q || { echo Unable to fetch.; exit 1; }
-  git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+  git reset --hard "origin/$(git rev-parse --abbrev-ref HEAD)"
+
+  ## Do not quote.
   control::install $components
 }

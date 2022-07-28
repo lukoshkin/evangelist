@@ -28,8 +28,8 @@ require'nvim-tree'.setup {
   }
 }
 
-keymap('n', '<leader>nt', ':NvimTreeToggle<CR>')
-keymap('n', '<leader>nf', ':NvimTreeFindFileToggle<CR>')
+keymap('n', '<Leader>nt', ':NvimTreeToggle<CR>')
+keymap('n', '<Leader>nf', ':NvimTreeFindFileToggle<CR>')
 
 vim.cmd[[
   autocmd BufEnter * ++nested

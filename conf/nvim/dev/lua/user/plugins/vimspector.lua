@@ -11,12 +11,12 @@ vim.g.vimspector_sign_priority = {
   }
 
 
-keymap('n', '<leader>dc', '<Plug>VimspectorContinue')
-keymap('n', '<leader>dr', ':call vimspector#Reset()<CR>')
+keymap('n', '<Leader>dc', '<Plug>VimspectorContinue')
+keymap('n', '<Leader>dr', ':call vimspector#Reset()<CR>')
 
-keymap('n', '<leader>ds', '<Plug>VimspectorStop')
-keymap('n', '<leader>dd', '<Plug>VimspectorPause')
-keymap('n', '<leader>d0', '<Plug>VimspectorRestart')
+keymap('n', '<Leader>ds', '<Plug>VimspectorStop')
+keymap('n', '<Leader>dd', '<Plug>VimspectorPause')
+keymap('n', '<Leader>d0', '<Plug>VimspectorRestart')
 
 keymap('n', '<Space>=', '<Plug>VimspectorStepInto')
 keymap('n', '<Space>+', '<Plug>VimspectorStepOver')

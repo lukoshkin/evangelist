@@ -37,6 +37,12 @@ up_hierarchy_search() {
 
 
 _conda_autoenv () {
+  ## Disable conda-autoenv by setting AUENV_SHELL to false.
+  ## Disabling functionality locally (or temporarily) may be useful
+  ## when there is another plugin that temporarily takes care of managing
+  ## conda environments.
+  [[ $AUENV_SHELL == false ]] && return
+
   [[ -z $1 ]] && { echo Not enough args provided; return 1; }
 
   first_elem_id=${2:-1}

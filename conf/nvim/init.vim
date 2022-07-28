@@ -17,8 +17,13 @@ source $XDG_CONFIG_HOME/nvim/conf/mundo.vim
 "" to repeat actions that include plugin commands (<Plug> and so on).
 Plug 'mhinz/vim-startify'
 Plug 'farmergreg/vim-lastplace'
+Plug 'lukoshkin/trailing-whitespace', { 'branch': 'vimscript' }
+Plug 'jessarcher/vim-heritage'
+
 Plug 'sickill/vim-pasta'
 Plug 'tpope/vim-sleuth'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-repeat'
 
@@ -26,15 +31,12 @@ Plug 'tpope/vim-repeat'
 " source $XDG_CONFIG_HOME/nvim/conf/tex.vim
 " source $XDG_CONFIG_HOME/nvim/conf/regex.vim
 " source $XDG_CONFIG_HOME/nvim/conf/md-preview.vim
-" source $XDG_CONFIG_HOME/nvim/conf/translate.vim
 " source $XDG_CONFIG_HOME/nvim/conf/floaterm.vim
-" Plug 'tpope/vim-surround'
 
 "" 'Towards IDE' plugins
 " source $XDG_CONFIG_HOME/nvim/conf/slime.vim
 " source $XDG_CONFIG_HOME/nvim/conf/ipython.vim
 " source $XDG_CONFIG_HOME/nvim/conf/vimspector.vim
-" Plug 'tpope/vim-commentary'
 
 "" Use either CoC or YCM (!)
 " source $XDG_CONFIG_HOME/nvim/conf/coc.vim
