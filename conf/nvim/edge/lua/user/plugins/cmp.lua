@@ -7,7 +7,7 @@ require'luasnip.loaders.from_vscode'.lazy_load()
 
 
 --- Check if there is no space before the cursor.
-local not_space_before = function()
+local is_completable = function()
   local col = vim.fn.col '.' - 1
   local char = vim.fn.getline('.'):sub(col, col)
   return col ~= 0 and char:match '%s' == nil
@@ -73,13 +73,13 @@ cmp.setup {
       --- If neither of the two actions is possible ─
       --- initiate completion (e.g. re-initiate after confirmation).
       if cmp.visible() then
-        cmp.select_next_item()
+        cmp.select_next_item { behavior = cmp.SelectBehavior.Insert }
       elseif luasnip.expand_or_jumpable() then
         luasnip.expand_or_jump()
         --- TODO: set `b:completed_successfully` to false
-      elseif not_space_before() then
+      elseif is_completable() then
         cmp.complete()
-        --- TODO: trim trailing whitespace if it is left some.
+        --- TODO: trim trailing whitespace if need be.
       else
         fallback()
       end
@@ -95,7 +95,12 @@ cmp.setup {
       elseif luasnip.jumpable(-1) then
         luasnip.jump(-1)
       else
-        fallback()
+        if vim.fn.col '.' ~= 1 and not is_completable() then
+          --- not is_completable --> col '.' == 1 or prev_char == ' '
+          vim.api.nvim_feedkeys(
+            vim.api.nvim_replace_termcodes(
+              '<BS>', true, true, true), 'i', true)
+        end
       end
     end, { 'i', 's' }),
   },

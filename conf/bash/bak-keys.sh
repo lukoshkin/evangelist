@@ -8,30 +8,33 @@ declare -A DIRS=(
 )
 
 backup () {
-  [[ $# = 0 || $1 = '/' ]] && prefix= || prefix="$1/"
+  [[ $# -eq 0 || $1 = '/' ]] && prefix= || prefix="$1/"
 
-  for key in "${!DIRS[@]}"
-  do
-    if [[ -n $(dconf list ${DIRS[$key]}) ]]
-    then
-      dconf dump ${DIRS[$key]} > ${prefix}${key}
+  for key in "${!DIRS[@]}"; do
+    if [[ -n $(dconf list ${DIRS[$key]}) ]]; then
+      dconf dump ${DIRS[$key]} > "${prefix}${key}"
     fi
   done
 }
 
 restore () {
-  [[ $# = 0 || $1 = '/' ]] || cd $1
-  declare -a FOUND=( $(ls keys-*.dconf 2> /dev/null) )
+  local keys_dir=$1
+  echo "Looking for keys in $keys_dir"
 
-  for key in "${FOUND[@]}"
-  do
-    dconf load ${DIRS[$key]} < ${key}
+  if [[ $keys_dir =~ ^[/]+$ ]]; then
+    echo "Are you sure about your privileges?"
+  fi
+
+  declare -a FOUND=( "$(ls "${keys_dir}"keys-*.dconf 2> /dev/null)" )
+
+  for key in "${FOUND[@]}"; do
+    dconf load ${DIRS[${key##*/}]} < ${key}
   done
 }
 
 
 
 case $1 in
-  backup) backup $2 ;;
-  restore) restore $2 ;;
+  backup) backup "$2" ;;
+  restore) restore "$2" ;;
 esac

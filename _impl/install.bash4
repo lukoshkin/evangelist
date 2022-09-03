@@ -148,8 +148,8 @@ install::vim_settings () {
       ## Many MacOS functions (like rm) requires
       ## to place options in the beginning.
       rm -rf lua
-      mv dev/{lua,init.lua} .
-      rm -rf init.vim dev
+      mv edge/{lua,init.lua} .
+      rm -rf init.vim edge
 
       $ok && cd - > /dev/null \
         && echo '- [OK] Neovim-Lua setup!' \
@@ -159,7 +159,7 @@ install::vim_settings () {
       install_packman="git clone \
         --depth 1 https://github.com/wbthomason/packer.nvim $packman"
 
-      install::vim_settings::lua_lsp
+      # install::vim_settings::sumneko_lua
       ;;&
 
     ?00)
@@ -435,10 +435,24 @@ install::vim_settings::packer_plugins () {
   export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.lua"
   export VIMINIT=":source $MYVIMRC"
 
-  nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync' \
-    2> /tmp/_neovim_lua_setup_packer_installation.log
+  local logfile=/tmp/_neovim_lua_setup_packer_installation.log
+  nvim --headless -c 'autocmd User PackerComplete quitall' \
+    -c 'PackerSync' 2> $logfile
 
-  echo Saved logs to /tmp/_nvim_lua_setup_packer_installation.log
+  declare -a lsp_servers=(
+    bash-language-server shellcheck
+    pyright flake8 pylint black
+    cpplint clangd
+    rust-analyzer
+    lua-language-server
+    dockerfile-language-server
+    cmake-language-server
+    markdownlint
+  )
+
+  nvim --headless -c "MasonInstall ${lsp_servers[*]}" 2>> $logfile
+  echo Saved logs to $logfile
+  echo Try :PackerSync in Neovim to ensure everything is intalled.
 }
 
 
@@ -483,7 +497,7 @@ install::vim_settings::vim_plug_plugins () {
 }
 
 
-install::vim_settings::lua_lsp () {
+install::vim_settings::sumneko_lua () {
   [[ -d "$XDG_DATA_HOME/lua-ls" ]] && return
   HAS ninja || return
 

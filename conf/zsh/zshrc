@@ -40,4 +40,3 @@ fi
 ## Static imports.
 source "$ZDOTDIR/extra.zsh"
 source "$EVANGELIST/conf/bash/aliases-functions.sh"
-

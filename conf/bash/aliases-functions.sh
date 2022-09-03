@@ -12,16 +12,26 @@ if ! [[ $CDPATH =~ ~ ]]; then
 fi
 
 
-## With `setopt complete_aliases` in zsh, both `evn` and `evangelist`
-## aliases can be completed with Tab. However, it is hardly possible
-## to complete aliases not connected to any function in bash. Therefore,
-## we define `evangelist` as a function and `evn` as an alias to it.
-## (in zsh this is also valid after adding `compdef evn=evangelist`).
+## Alias completion in Zsh is possible after setting complete_aliases option
+## or specifying `compdef alias_name=function_name`. I don't know how to
+## complete aliases in Bash that are not connected to a function. Thus, at
+## least `evangelist` should be a function. `evn` can be an alias to
+## `evangelist` or its wrapper function.
+
 evangelist () {
   "$EVANGELIST/evangelist.sh" "$@"
 }
 
-alias evn=evangelist
+evn () {
+  if [[ $# -gt 0 ]]; then
+    evangelist "$@"
+  elif [[ $PWD != "$EVANGELIST" ]]; then
+    cd "$EVANGELIST" || return
+  fi
+}
+
+compdef evn=evangelist
+
 
 alias l='ls -lAh'
 alias ll='ls -lh'
@@ -72,6 +82,11 @@ gg () {
   else
     echo Wrong args
   fi
+}
+
+
+r () {
+  fc -s
 }
 
 
@@ -166,11 +181,12 @@ tree () {
 
 swap () {
   [[ -z $1 || -z $2 ]] && { echo 'Requires src and dest'; return 1; }
+  local bak="/tmp/${1##*/}.bak"
 
-  cp -R "$1" "/tmp/$1.bak" \
+  cp -R "$1" "$bak" \
     && rm -rf "$1" \
     && mv "$2" "$1" \
-    && mv "/tmp/$1.bak" "$2"
+    && mv "$bak" "$2"
 }
 
 

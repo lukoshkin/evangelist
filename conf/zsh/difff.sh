@@ -36,15 +36,12 @@ function difff () {
     return 1
   fi
 
-  local files
-  declare -a files_list
-
+  declare -a files
   if [[ $mode = folder ]]; then
-    files_list=( ${folder%/}/**/* )
-    files=${files_list[*]}
+    files=( ${folder%/}/**/* )
   else
     git status &> /dev/null || { echo Not a git project.; return 1; }
-    files=$(git diff $staged --name-only "$folder")
+    files=( $(git diff $staged --name-only "$folder") )
   fi
 
   if [[ -z $trim_cnt ]]; then
@@ -73,11 +70,11 @@ function difff () {
 
         desc=
         echo "Not in project: $counter."
-        desc+='copy to project [c]\t'
-        desc+='remove from counterpart [r]\t'
-        desc+='exclude parent dir of the current file [e]\n'
-        desc+='Press the corresponding key to take an action\n'
-        desc+='Or any other key to continue\n'
+        desc+='[c] copy to project\t'
+        desc+='[r] remove from counterpart\t'
+        desc+='[e] exclude parent dir of the current file\n'
+        desc+='Press the corresponding key to take an action.\n'
+        desc+='Or any other key to continue.\n'
         echo -e $desc
 
         # read -srk1    # zsh syntaxis
@@ -103,7 +100,7 @@ function difff () {
   fi
 
   local counter
-  for file in $files; do
+  for file in "${files[@]}"; do
     counter=$(sed -r "s;([^\/]+\/){$trim_cnt}(.*);\2;" <<< "$file")
     counter="${prefix%/}/$counter"
 

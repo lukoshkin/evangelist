@@ -14,22 +14,34 @@ ENV SHELL /bin/bash
 RUN mkdir -p "$XDG_CONFIG_HOME" \
     && mkdir -p "$XDG_CACHE_HOME" \
     && mkdir -p "$XDG_DATA_HOME" \
-    && mkdir -p "$XDG_CONFIG_HOME/evangelist"
+    && mkdir -p "$XDG_CONFIG_HOME/evangelist" \
+    && mkdir -p "$XDG_CACHE_HOME/nvim/packer.nvim" \
+    && chown -R ${USER:=evn}:$USER "$XDG_CACHE_HOME"
 
 USER root
 ## Install all the libraries required by evangelist
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get -qq update \
     && apt-get install -yq \
+        build-essential libssl-dev \
+        pkg-config automake libtool-bin gettext \
         python3 python3-dev python3-pip \
-        git neovim tmux curl npm nodejs ruby-full \
+        git tmux curl npm nodejs ruby-full \
         locales x11-xserver-utils uuid-runtime tree \
         # zsh \
-    && npm install -g neovim \
-    && gem install neovim \
-    && locale-gen en_US.UTF-8 \
     # && chsh -s $(which zsh) \
+    && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
+
+## Install Neovim (latest version)
+## NOTE: `pkg-config automake libtool-bin gettext` might be
+##        removed after the installation of Neovim.
+RUN git clone https://github.com/neovim/neovim \
+    && cd neovim && git checkout stable \
+    && make CMAKE_BUILD_TYPE=Release \
+    && make install \
+    && npm install -g neovim \
+    && gem install neovim
 
 ## Install Jupyter and its extensions
 RUN pip3 install --no-cache-dir --upgrade \
@@ -47,5 +59,5 @@ SHELL ["/bin/bash", "-c"]
 ## We need to source ~/.bashrc if conda is used.
 RUN . ~/.bashrc \
     && cd $XDG_CONFIG_HOME/evangelist \
-    && ./evangelist.sh install bash+ jupyter
-    # && ./evangelist.sh install zsh+ jupyter
+    && ./evangelist.sh install+ bash+ jupyter
+    # && ./evangelist.sh install+ zsh+ jupyter

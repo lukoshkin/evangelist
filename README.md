@@ -125,7 +125,7 @@ Before to go into details, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.4.0 (!)
+Patch 1.4.1 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -370,6 +370,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n+v | `<Leader>hr` | Undo change made to a hunk (in git diff) under the cursor |
   | <br>n+v | <br>`ga` | Align a block of text <br> One specifies the range by a movement or selection. <br> `<Enter>` switches the alignment mode |
   | n | `<LocalLeader>dg` | Generate documentation for a function or a class |
+  | c | `:Insert <cmd> | Paste the cmd output to the current buffer |
 
   </details>
 </details>
