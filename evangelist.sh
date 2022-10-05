@@ -17,8 +17,8 @@ source "$EVANGELIST/_impl/utils.sh"
 
 
 main() {
-  cd "$EVANGELIST"
-  ## No need to cd back in child process.
+  cd "$EVANGELIST" || { ECHO2 Failed to cd into $EVANGELIST; return; }
+  ## No need to cd back in a child process.
 
   case $1 in
     install)        shift; control::install "$@" ;;

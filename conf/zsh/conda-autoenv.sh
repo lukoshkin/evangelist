@@ -25,11 +25,8 @@ up_hierarchy_search() {
   }
 
   local parent
-  ## Solve this via env variable -
-  ## Too slow to check conditions every time.
-  parent=$(realpath "$1" 2> /dev/null)
-  [[ $? -ne 0 ]] && parent=$(readlink -f "$1" 2> /dev/null) || :
-  [[ $? -ne 0 ]] && return
+  parent=$(realpath "$1" 2> /dev/null) \
+    || parent=$(readlink -f "$1" 2> /dev/null) || return
 
   _up_hierarchy_search "$parent" "$2"
   echo "$found"

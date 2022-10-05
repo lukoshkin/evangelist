@@ -125,13 +125,14 @@ Before to go into details, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.4.0 (!)
+Patch 1.4.1 (!)
 
 <details>
 <summary><b>Shell</b></summary>
 
 * <details>
   <summary>Bindings</summary>
+  modes: ins - insert, cmd - command, tbc - tab completion
 
   | mode | shortcut | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
   |:----:|:--------:|:----------|
@@ -140,6 +141,7 @@ Patch 1.4.0 (!)
   | any | `<M-(j\|k)>` | Go to the (next \| previous) cmd matching the current buffer from <br> the beginning (Note: one more `<j/k>` press to exit from ins mode) |
   | any | `<C-q>` | Deletes the current buffer, so one can execute another cmd, <br> after which the original one would be restored |
   | cmd | `/` | Start interactive fuzzy search over cmds in the history file |
+  | tbc | `?` | Start isearch (# of completion options can be narrowed <br> by typing more chars) |
 
   **NOTE:** the following settings are only supported by X11 based platforms  
   (It means that they will not work or be active on such as macOS or the one with Wayland protocol)
@@ -182,8 +184,6 @@ Patch 1.4.0 (!)
 
 modes: n - normal, v - visual, t - terminal, c - command mapping  
 different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v0.7)
-
-
 
 * <details>
   <summary>General key-bindings and functions (common)</summary>
@@ -370,6 +370,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n+v | `<Leader>hr` | Undo change made to a hunk (in git diff) under the cursor |
   | <br>n+v | <br>`ga` | Align a block of text <br> One specifies the range by a movement or selection. <br> `<Enter>` switches the alignment mode |
   | n | `<LocalLeader>dg` | Generate documentation for a function or a class |
+  | c | `:Insert <cmd> | Paste the cmd output to the current buffer |
 
   </details>
 </details>

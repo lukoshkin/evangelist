@@ -11,7 +11,6 @@ alias zshrc="vim $EVANGELIST/custom/custom.zsh"
 ## To list all active aliases, run `alias`
 
 
-
 ## CONSOLE INPUT
 ## -------------
 ## Some cozy bindings
@@ -35,6 +34,7 @@ function push-input-from-cmd() {
 
 ## Requires installed fuzzy finder (fzf)
 function history-interactive-fuzzy-search() {
+  type fzf &> /dev/null || return
   local _buffer=$BUFFER
   BUFFER=$(cat "$XDG_DATA_HOME/zsh_history" | fzf)
   [[ -z $BUFFER ]] && BUFFER=$_buffer
@@ -42,8 +42,8 @@ function history-interactive-fuzzy-search() {
 
 zle -N history-interactive-fuzzy-search
 
+
 ## Meta(=Alt) + j/k to match the beginning of a command history
-### -------- block begins --------
 autoload -U up-line-or-beginning-search
 autoload -U down-line-or-beginning-search
 zle -N up-line-or-beginning-search
@@ -61,7 +61,6 @@ bindkey -M viins '^[k' insert-space-cmd-mode
 bindkey -M viins '^[j' insert-space-cmd-mode
 bindkey -M vicmd '^[k' up-line-or-beginning-search
 bindkey -M vicmd '^[j' down-line-or-beginning-search
-### -------- block ends --------
 
 bindkey '^[[Z' reverse-menu-complete
 bindkey '^[w' forward-word  # complete word in a suggestion
@@ -80,12 +79,17 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 ## 'ignorecase'+'smartcase'+'hyphen_insensitive' completion on the cmd line.
 zstyle ':completion:*' matcher-list 'm:{[:lower:]-_}={[:upper:]_-}'
 ##  Highlight for the selected completion menu item.
-zstyle ':completion:*' menu select search
+zstyle ':completion:*' menu select
 
-## Except context-sensitive completion (_complete), it enables alias expansion
-## with TAB (_expand_alias), use of glob (_match), ignored-patterns (_ignored),
-## and checking whether the word is eligible for expansion (_expand - unused).
-## order: '_expand', then '_complete', then '_match' - according to ZSH guide
+zmodload zsh/complist
+## Without loading 'zsh/complist', menuselect is not available.
+bindkey -M menuselect '?' history-incremental-search-forward
+
+## In addition to context-sensitive completion (_complete), it also enables
+## alias expansion with TAB (_expand_alias), use of glob (_match),
+## ignored-patterns (_ignored), and checking whether the word is eligible for
+## expansion (_expand - unused). The order: '_expand', then '_complete', then
+## '_match' ─ is according to ZSH guide
 zstyle ':completion:*' completer _expand_alias _complete _match #_ignored
 # zstyle ':completion:*' ignored-patterns '<pattern-to-ignore>'
 
@@ -129,7 +133,6 @@ zshaddhistory() {
 }
 
 
-
 ## ZSH OPTIONS
 ## -----------
 ## zsh options are case insensitive and ignore underscores in the name.
@@ -159,3 +162,4 @@ setopt extendedglob
 ## EVANGELIST COMPLETIONS (ZSH)
 ## ----------------------------
 fpath+=( "$EVANGELIST/completions" )
+compdef evn=evangelist

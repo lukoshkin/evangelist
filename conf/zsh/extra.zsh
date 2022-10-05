@@ -11,7 +11,6 @@ alias zshrc="vim $EVANGELIST/custom/custom.zsh"
 ## To list all active aliases, run `alias`
 
 
-
 ## CONSOLE INPUT
 ## -------------
 ## Key repeat rate (to navigate faster with a key pressed)
@@ -46,8 +45,8 @@ function history-interactive-fuzzy-search() {
 
 zle -N history-interactive-fuzzy-search
 
+
 ## Meta(=Alt) + j/k to match the beginning of a command history
-### -------- block begins --------
 autoload -U up-line-or-beginning-search
 autoload -U down-line-or-beginning-search
 zle -N up-line-or-beginning-search
@@ -65,13 +64,13 @@ bindkey -M viins '^[k' insert-space-cmd-mode
 bindkey -M viins '^[j' insert-space-cmd-mode
 bindkey -M vicmd '^[k' up-line-or-beginning-search
 bindkey -M vicmd '^[j' down-line-or-beginning-search
-### -------- block ends --------
 
 bindkey '^[[Z' reverse-menu-complete
 bindkey '^[w' forward-word  # complete word in a suggestion
 ## * To list zsh bindings, execute 'bindkey' without arguments
 ## * To find some laptop (Ubuntu) bindings that contain <pattern>,
 ##   use 'gsettings list-recursively | grep <pattern>'.
+
 
 ## Export standard ls colors (grep selects everything between '')
 type dircolors &> /dev/null && eval "$(dircolors -b)"
@@ -80,7 +79,11 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 ## 'ignorecase'+'smartcase'+'hyphen_insensitive' completion on the cmd line.
 zstyle ':completion:*' matcher-list 'm:{[:lower:]-_}={[:upper:]_-}'
 ##  Highlight for the selected completion menu item.
-zstyle ':completion:*' menu select search
+zstyle ':completion:*' menu select
+
+zmodload zsh/complist
+## Without loading 'zsh/complist', menuselect is not available.
+bindkey -M menuselect '?' history-incremental-search-forward
 
 ## In addition to context-sensitive completion (_complete), it also enables
 ## alias expansion with TAB (_expand_alias), use of glob (_match),
@@ -121,7 +124,6 @@ bindkey -M vicmd '^[-' decr-transp
 bindkey -M viins '^[-' decr-transp
 
 
-
 ## CLEAN HISTORY LOOKUP
 ## --------------------
 ## Not able to set up the functionality of this section with HISTORY_IGNORE
@@ -160,7 +162,6 @@ zshaddhistory() {
 }
 
 
-
 ## ZSH OPTIONS
 ## -----------
 ## zsh options are case insensitive and ignore underscores in the name.
@@ -190,3 +191,4 @@ setopt extendedglob
 ## EVANGELIST COMPLETIONS (ZSH)
 ## ----------------------------
 fpath+=( "$EVANGELIST/completions" )
+compdef evn=evangelist

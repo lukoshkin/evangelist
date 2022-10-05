@@ -11,7 +11,7 @@ main () {
   then
     period=@monthly
   else
-    safecheck $2
+    safecheck "$2"
     period=$2
   fi
 
@@ -30,12 +30,12 @@ main () {
   elif [[ $1 = dead ]]
   then
     cmd='/bin/sh '
-    parent=$(dirname ${BASH_SOURCE:-$0})
-    cp $parent/$jobid.sh $XDG_DATA_HOME/nvim/site/ \
+    parent=$(dirname "${BASH_SOURCE:-$0}")
+    cp "$parent/$jobid.sh" "$XDG_DATA_HOME/nvim/site/" \
       || { echo "Check that 'evangelist' is installed"; exit; }
     cmd+="$XDG_DATA_HOME/nvim/site/$jobid.sh $XDG_DATA_HOME/nvim/site/undo"
   else
-    echo Wrong argument: $1
+    echo "Wrong argument: $1"
     echo Possible values: old, dead
     exit
   fi
@@ -43,8 +43,8 @@ main () {
   if ! grep -q "$jobid.$1" /etc/anacrontab
   then
     echo -e "$period $delay $jobid.$1 $cmd\n" \
-      | sudo tee -a /etc/anacrontab > /dev/null
-    [[ $? -eq 0 ]] && echo Success! Added the entry!
+      | sudo tee -a /etc/anacrontab > /dev/null \
+      && echo Success! Added the entry!
   else
     echo Already there!
   fi
@@ -54,7 +54,7 @@ main () {
 safecheck () {
   if ! [[ $1 =~ ^@(daily|weekly|monthly)$ || $1 =~ ^[0-9]+$ ]]
   then
-    echo Wrong argument: $1
+    echo "Wrong argument: $1"
     echo 'Pass any positive integer number (without sign)'
     echo or one of these qualifiers: @daily @weekly @monthly
     exit
