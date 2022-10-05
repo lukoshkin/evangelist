@@ -169,6 +169,7 @@ packer.startup(function (use)
     requires = {
       'nvim-treesitter/playground',
       'nvim-treesitter/nvim-treesitter-textobjects',
+      'nvim-treesitter/tree-sitter-query',
       'lewis6991/spellsitter.nvim',
       'JoosepAlviste/nvim-ts-context-commentstring',
     },
@@ -199,6 +200,12 @@ packer.startup(function (use)
   }
 
   use {
+    'tzachar/cmp-tabnine',
+    run = './install.sh',
+    requires = 'hrsh7th/nvim-cmp'
+  }
+
+  use {
     'hrsh7th/nvim-cmp',
     requires = {
       'hrsh7th/cmp-nvim-lsp',
@@ -208,10 +215,7 @@ packer.startup(function (use)
       'rafamadriz/friendly-snippets',
       'L3MON4D3/LuaSnip',
       'jessarcher/cmp-path',
-      {
-        'tzachar/cmp-tabnine',
-        run='./install.sh'
-      },
+      'tzachar/cmp-tabnine',
       'hrsh7th/cmp-nvim-lua',
       'onsails/lspkind-nvim',
     },

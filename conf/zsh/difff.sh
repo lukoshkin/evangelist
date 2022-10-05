@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## TODO: add a function with a help message.
+# diff "$@" || help_msg
 
 function difff () {
   local long_opts='trim-cnt:,folder:,mode:,staged,dry-run,add-new'
@@ -29,7 +31,7 @@ function difff () {
 
   local prefix=$1
   ! [[ -d $prefix ]] && { echo Prefix $prefix not found; return 1; }
-  ! [[ -d ${folder:-.} ]] && { echo Folder $folder not found; return 1; }
+  ! [[ -d ${folder:=.} ]] && { echo Folder $folder not found; return 1; }
 
   if [[ ${mode:=git} != git ]] && [[ $mode != folder ]]; then
     echo Invalid mode: $mode
@@ -62,14 +64,16 @@ function difff () {
         [[ $file =~ ($(IFS=\|; echo "${exclude[*]}")) ]] && continue
       fi
 
-      find_out=$(find "$folder" -type f -wholename "$file")
+      ## constructing `file` variable may leave double slash (//),
+      ## which `find` command does not handle.
+      find_out=$(find "$folder" -type f -wholename "${file/\/\//\/}")
 
       if [[ -z $find_out ]]; then
         [[ -d $counter ]] && continue
         [[ -n $dry_run ]] && { echo "NEW: ${counter}"; continue; }
 
         desc=
-        echo "Not in project: $counter."
+        echo "Not in project: $counter"
         desc+='[c] copy to project\t'
         desc+='[r] remove from counterpart\t'
         desc+='[e] exclude parent dir of the current file\n'

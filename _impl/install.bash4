@@ -187,7 +187,7 @@ install::vim_settings () {
   ## Possible assembly options: minimal, extended, neovim-lua.
   install::vim_settings::set_assembly
 
-  echo Installing plugings..
+  echo Installing plugings.. It may take a while.
   if [[ $_CODE = ??1 ]]; then
     install::vim_settings::packer_plugins
   else
@@ -435,6 +435,7 @@ install::vim_settings::packer_plugins () {
   export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.lua"
   export VIMINIT=":source $MYVIMRC"
 
+  ## TODO: add a flag to log to stdout.
   local logfile=/tmp/_neovim_lua_setup_packer_installation.log
   nvim --headless -c 'autocmd User PackerComplete quitall' \
     -c 'PackerSync' 2> $logfile
@@ -450,7 +451,9 @@ install::vim_settings::packer_plugins () {
     markdownlint
   )
 
-  nvim --headless -c "MasonInstall ${lsp_servers[*]}" 2>> $logfile
+  echo Installing lsp servers.. It may take a while.
+  nvim --headless -c "MasonInstall ${lsp_servers[*]}" +qa 2>> $logfile
+
   echo Saved logs to $logfile
   echo Try :PackerSync in Neovim to ensure everything is intalled.
 }

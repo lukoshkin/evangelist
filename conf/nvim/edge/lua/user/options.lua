@@ -1,7 +1,6 @@
 vim.g.maplocalleader = ' '
 --- Syntax highlighting for embeded code (e.g., in vim.cmd[[]])
 vim.g.vimsyn_embed = 'lP'
-vim.env.AUENV_SHELL = false
 
 local options = {
   cursorline = true,

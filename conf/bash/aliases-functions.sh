@@ -30,8 +30,6 @@ evn () {
   fi
 }
 
-compdef evn=evangelist
-
 
 alias l='ls -lAh'
 alias ll='ls -lh'
@@ -85,9 +83,11 @@ gg () {
 }
 
 
-r () {
-  fc -s
-}
+if [[ $(ps -p $$ -oargs=) = bash ]]; then
+  r () {
+    fc -s
+  }
+fi
 
 
 mv () {

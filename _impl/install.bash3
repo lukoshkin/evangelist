@@ -154,7 +154,7 @@ install::vim_settings () {
 
   ## Install Vim plugins silently (save installation summary)
   if [[ $TERM != dumb ]]; then
-    echo Installing plugings..
+    echo Installing plugings.. It may take a while.
     $_VIM +PlugInstall +'%w /tmp/vim-plug.log' +qa &> /dev/null
     ## NOTE: During interactive installation, the hanging happens
     ## if some of the plugins being installed throw an error. If the latter
