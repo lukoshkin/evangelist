@@ -11,9 +11,11 @@ packer.init {
 }
 
 local aug = vim.api.nvim_create_augroup('PackerUserConfig', {clear=true})
-local conf_path = vim.fn.stdpath 'config' .. '/lua/user/'
+local plugins = vim.fn.stdpath 'data' .. '/site/pack/packer/'
+local configs = vim.fn.stdpath 'config' .. '/lua/user/'
+
 vim.api.nvim_create_autocmd('BufWritePost', {
-  pattern = conf_path .. '*.lua',
+  pattern = { configs .. '*.lua', plugins .. '*.lua' },
   command = 'source <afile> | PackerCompile',
   group = aug
 })

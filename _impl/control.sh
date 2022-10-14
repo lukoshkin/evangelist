@@ -18,7 +18,7 @@
 
 control::version () {
   echo -e "evangelist $(git describe --abbrev=0)\n"
-  echo "Maintained by <lukoshkin@phystech.edu>"
+  echo "Maintained by <lukoshkin.workspace@gmail.com>"
   sed -n '3p' LICENSE
 }
 

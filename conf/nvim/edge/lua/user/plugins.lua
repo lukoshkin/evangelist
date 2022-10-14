@@ -169,7 +169,6 @@ packer.startup(function (use)
     requires = {
       'nvim-treesitter/playground',
       'nvim-treesitter/nvim-treesitter-textobjects',
-      'nvim-treesitter/tree-sitter-query',
       'lewis6991/spellsitter.nvim',
       'JoosepAlviste/nvim-ts-context-commentstring',
     },
@@ -200,12 +199,6 @@ packer.startup(function (use)
   }
 
   use {
-    'tzachar/cmp-tabnine',
-    run = './install.sh',
-    requires = 'hrsh7th/nvim-cmp'
-  }
-
-  use {
     'hrsh7th/nvim-cmp',
     requires = {
       'hrsh7th/cmp-nvim-lsp',
@@ -215,7 +208,10 @@ packer.startup(function (use)
       'rafamadriz/friendly-snippets',
       'L3MON4D3/LuaSnip',
       'jessarcher/cmp-path',
-      'tzachar/cmp-tabnine',
+      {
+        'tzachar/cmp-tabnine',
+        run='./install.sh'
+      },
       'hrsh7th/cmp-nvim-lua',
       'onsails/lspkind-nvim',
     },
@@ -273,7 +269,10 @@ packer.startup(function (use)
       'lukoshkin/auenv.nvim',
     },
     config = function ()
-      require'auenv'.setup()
+      if vim.env.CONDA_PREFIX ~= nil then
+        require'auenv'.setup()
+      end
+
       require'bottom-term'.setup()
       require'slime-wrapper'.setup()
     end
