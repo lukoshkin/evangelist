@@ -6,14 +6,13 @@ local nls_sources = require'null-ls.sources'
 local b_ins = nls.builtins
 
 local notify = require'notify'
-
+local fn = require'lib.function'
 
 local with_diagnostics_code = function (builtin)
   return builtin.with {
     diagnostics_format = "#{m} [#{c}]",
   }
 end
-
 
 local with_root_file = function (builtin, file)
   return builtin.with {
@@ -22,7 +21,6 @@ local with_root_file = function (builtin, file)
     end,
   }
 end
-
 
 local sources = {
   -- formatting
@@ -78,26 +76,6 @@ local organize_imports = {
 }
 
 
-local function only_normal_windows ()
-  local normal_windows = vim.tbl_filter(function (key)
-    return vim.api.nvim_win_get_config(key).relative == ''
-  end, vim.api.nvim_tabpage_list_wins(0))
-
-  return normal_windows
-end
-
-
-function table.contains (tbl, elem)
-  for _, v in pairs(tbl) do
-    if v == elem then
-      return true
-    end
-  end
-
-  return false
-end
-
-
 local function in_compare_mode (normal_windows)
   if vim.t.ca_cmp_bufs == nil then
     return false
@@ -108,7 +86,7 @@ local function in_compare_mode (normal_windows)
   end
 
   for _, v in pairs(vim.t.ca_cmp_bufs) do
-    if not table.contains(normal_windows, v) then
+    if not vim.tbl_contains(normal_windows, v) then
       return false
     end
   end
@@ -118,7 +96,7 @@ end
 
 
 local function cmp_two_bufs ()
-  vim.t.ca_cmp_bufs = only_normal_windows()
+  vim.t.ca_cmp_bufs = fn.only_normal_windows()
 
   --- winnr() checks the number of wins IN A TAB.
   if vim.fn.winnr() == 2 then
@@ -165,7 +143,7 @@ local compare_buffers = {
   filetypes = {},
   generator = {
     fn = function (_)
-      local normal_windows = only_normal_windows()
+      local normal_windows = fn.only_normal_windows()
 
       if #normal_windows ~= 2 then
         return
@@ -188,7 +166,7 @@ local stop_comparing_buffers = {
   filetypes = {},
   generator = {
     fn = function (_)
-      if not in_compare_mode(only_normal_windows()) then
+      if not in_compare_mode(fn.only_normal_windows()) then
         return
       end
 

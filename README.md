@@ -125,7 +125,7 @@ Before to go into details, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.4.1 (!)
+Patch 1.4.2 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -210,6 +210,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | v | `//` | Search for selected text <br> (doesn't work in `VISUAL LINE` mode) |
   | any | `<M-m>` | Toggle mouse |
   | v | `p` | Paste the last yanked text in place of selected one |
+  | n | `<A-r>` | Repeat the last colon command used |
 
   </details>
 
@@ -370,7 +371,9 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n+v | `<Leader>hr` | Undo change made to a hunk (in git diff) under the cursor |
   | <br>n+v | <br>`ga` | Align a block of text <br> One specifies the range by a movement or selection. <br> `<Enter>` switches the alignment mode |
   | n | `<LocalLeader>dg` | Generate documentation for a function or a class |
-  | c | `:Insert <cmd> | Paste the cmd output to the current buffer |
+  | c | `:Insert <cmd>` | Paste the cmd output to the current buffer |
+  | c | `:Print <lua_table>` | Print lua table in the cmdline window |
+  | <br>n | <br>`<C-(Up\|Down\|Left\|Right)>` | Resize window <br> vertically (Up+/Down-) <br> or horizontally (Left-/Right+) |
 
   </details>
 </details>
@@ -543,4 +546,4 @@ This work is based primarily on leveraging the following projects and resources.
  - [x] Test LunarVim / SpaceVim
  ---
 
- - [ ] Clean up the repository
+ - [ ] Tidy up the repository

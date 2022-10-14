@@ -1,14 +1,15 @@
 local keymap = require'lib.utils'.keymap
 local open = require'lib.utils'._opener
 local fn = require'lib.function'
+local api = vim.api
 
-local aug_jj = vim.api.nvim_create_augroup('EasierJJ', {clear = true})
-vim.api.nvim_create_autocmd('InsertEnter', {
+local aug_jj = api.nvim_create_augroup('EasierJJ', {clear = true})
+api.nvim_create_autocmd('InsertEnter', {
   command = 'set timeoutlen=200',
   group = aug_jj
 })
 
-vim.api.nvim_create_autocmd('InsertLeave', {
+api.nvim_create_autocmd('InsertLeave', {
   command = 'set timeoutlen=1000',
   group = aug_jj
 })
@@ -31,6 +32,11 @@ keymap('n', '<C-j>', ':m+1<CR>==')
 keymap('n', '<C-k>', ':m-2<CR>==')
 keymap('v', '<C-j>', ":m'>+<CR>gv=gv")
 keymap('v', '<C-k>', ':m-2<CR>gv=gv')
+
+keymap('n', '<C-Left>', function () fn.resize('-2', {vertical=true}) end)
+keymap('n', '<C-Right>', function () fn.resize('+2', {vertical=true}) end)
+keymap('n', '<C-Down>', function () fn.resize('-2') end)
+keymap('n', '<C-Up>', function () fn.resize('+2') end)
 
 --- Copy to clipboard selected text or the whole file.
 keymap('x', '<Leader>y', '"+y')
@@ -65,7 +71,7 @@ keymap('', 'gf', ':edit <cfile><CR>')
 keymap('n', '<Leader>x', ':!'.. open ..' <C-R>=expand("<cfile>")<CR><CR>')
 
 --- Save changes to a file.
-keymap('n', '<C-s>', ':w<CR>')
+keymap('n', '<C-s>', ':update<CR>')
 --- Source the current buffer.
 keymap('n', '<A-s>', ':so<CR>')
 
@@ -80,25 +86,39 @@ keymap('x', '<Space>bb', [[:call SplitBySep(getreg('/'))<CR>]])
 --- Paste last yanked text in place of selected one.
 keymap('v', 'p', '"_dP')
 
+--- Repeat the last colon command.
+keymap('n', '<A-r>', ':@:<CR>')
+
 --- Trim trailing whitespaces.
---- TODO: rewrite it so the cursor position doesn't change.
-vim.api.nvim_create_user_command(
+api.nvim_create_user_command(
   'Trim',
-  -- [[<line1>,<line2>s/\s\+$//e | nohlsearch]],
   fn.trim,
   { range = '%' }
 )
 
 --- Remove swap files of the file opened.
-vim.api.nvim_create_user_command(
+api.nvim_create_user_command(
   'Rmswp',
   [[silent !rm "$XDG_DATA_HOME/nvim/swap/"*'%:t'*]],
   {}
 )
 
 --- Paste cmd's output into the current buffer.
-vim.api.nvim_create_user_command(
+api.nvim_create_user_command(
   'Insert', -- 'In*' is easier to complete with Tab than 'Pa*'.
   fn.paste_into_buffer,
   { nargs='+' }
 )
+
+--- Print lua table in the cmdline window.
+api.nvim_create_user_command(
+  'Print', -- 'In*' is easier to complete with Tab than 'Pa*'.
+  fn.lua_print_inspect,
+  { nargs='+' }
+)
+
+local aug_tw = api.nvim_create_augroup('AutoTW', {clear = true})
+api.nvim_create_autocmd({ 'BufWinEnter', 'WinEnter' }, {
+  callback = fn.narrow_wins_nowrap,
+  group = aug_tw,
+})

@@ -180,15 +180,9 @@ packer.startup(function (use)
   }
 
   use {
-    'neovim/nvim-lspconfig',
-    requires = {
-      'folke/lsp-colors.nvim',
-      'weilbith/nvim-code-action-menu',
-      'jose-elias-alvarez/null-ls.nvim',
-    },
-    config = function ()
-      require'user.plugins.lspconfig'
-    end
+    'tzachar/cmp-tabnine',
+    run = './install.sh',
+    requires = 'hrsh7th/nvim-cmp'
   }
 
   use {
@@ -197,12 +191,6 @@ packer.startup(function (use)
     config = function ()
       require'lsp_signature'.setup()
     end
-  }
-
-  use {
-    'tzachar/cmp-tabnine',
-    run = './install.sh',
-    requires = 'hrsh7th/nvim-cmp'
   }
 
   use {
@@ -273,7 +261,10 @@ packer.startup(function (use)
       'lukoshkin/auenv.nvim',
     },
     config = function ()
-      require'auenv'.setup()
+      if vim.env.CONDA_PREFIX ~= nil then
+        require'auenv'.setup()
+      end
+
       require'bottom-term'.setup()
       require'slime-wrapper'.setup()
     end

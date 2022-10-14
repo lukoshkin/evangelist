@@ -19,6 +19,7 @@ cmp.setup {
   --- with the cursor in the form of grayed out virtual text.
   --   ghost_text = true,
   -- },
+  preselect = cmp.PreselectMode.None,
   formatting = {
     --- How completion menu looks.
     format = lspkind.cmp_format {

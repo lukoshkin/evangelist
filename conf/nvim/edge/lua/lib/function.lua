@@ -3,7 +3,17 @@ local api = vim.api
 local unpack = unpack or table.unpack
 local M = {}
 
-function M.toggle_mouse()
+
+function M.only_normal_windows ()
+  local normal_windows = vim.tbl_filter(function (key)
+    return vim.api.nvim_win_get_config(key).relative == ''
+  end, vim.api.nvim_tabpage_list_wins(0))
+
+  return normal_windows
+end
+
+
+function M.toggle_mouse ()
   --- https://unix.stackexchange.com/questions/156707
   if vim.o.mouse == 'a' then
     vim.o.mouse = ''
@@ -35,28 +45,51 @@ function M.toggle_numbers_signs ()
 end
 
 
-function M.trim ()
-  local pos = api.nvim_win_get_cursor(0)
-  if fn.search('\\s\\+$') <= 0 then
-    vim.notify(' Nothing to trim!')
+function M.trim (opts)
+  --- Second arg is 'flags' string:
+  --- 'n' - do NOT move cursor;
+  --- 'b' - search in the backward direction.
+  --- Third arg is 'endline'. If the end line is given, the search
+  --- starts from the line where the cursor is currently located.
+  if fn.search('\\s\\+$', 'n', opts.line2) <= 0
+      and fn.search('\\s\\+$', 'bn', opts.line1) <= 0 then
+    vim.notify(' Nothing to trim!\n (Search range: '
+      .. opts.line1 .. '-' .. opts.line2 .. ' lines)')
     return
   end
 
-  local l1, r1 = unpack(api.nvim_buf_get_mark(0, '<'))
-  local l2, r2 = unpack(api.nvim_buf_get_mark(0, '>'))
-
-  local cmd = 's/\\s\\+$//e'
-  local range = '%'
-
-  if l2 - l1 ~= 0 or r2 - r1 ~= 0 then
-    range = l1 .. ',' .. l2
-  end
-
-  cmd = range .. cmd .. '| nohlsearch'
+  local pos = api.nvim_win_get_cursor(0)
+  local cmd = opts.line1 .. ',' .. opts.line2
+    .. 's/\\s\\+$//e' .. '| nohlsearch'
   vim.cmd(cmd)
 
   api.nvim_win_set_cursor(0, pos)
   vim.notify(' Trimmed!')
+end
+
+
+function M.narrow_wins_nowrap ()
+  for _, wid in pairs(M.only_normal_windows()) do
+    local tw = api.nvim_win_get_width(wid)
+    if tw < 110 then
+      api.nvim_win_set_option(wid, 'wrap', false)
+    else
+      api.nvim_win_set_option(wid, 'wrap', true)
+    end
+  end
+end
+
+
+function M.resize (arg, opts)
+  local cmd = 'resize ' .. arg
+  opts = opts or {}
+
+  if opts.vertical then
+    cmd = 'vertical ' .. cmd
+  end
+
+  vim.cmd(cmd)
+  M.narrow_wins_nowrap()
 end
 
 
@@ -123,5 +156,11 @@ function M.paste_into_buffer (cmd)
   vim.paste(lines, -1)
 end
 
+
+--- `:Print object` instead of `:lua print(vim.inspect(object))`.
+--- However, tab completion is not possible with this command.
+function M.lua_print_inspect (cmd)
+  vim.cmd(':lua print(vim.inspect(' .. cmd.args .. '))')
+end
 
 return M
