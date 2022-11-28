@@ -61,8 +61,7 @@ HISTFILE=~/.bash_history
 ## ignoreboth  = ignoredups + ignorespace
 HISTCONTROL=ignorespace:erasedups
 ## Don't store easy and frequently used commands
-HISTIGNORE="v:d:l:G:cd:ll:ls:pwd:tmux:clear \
-  :gg*:md*:mv*:man*:echo*:mkdir*:type*:which*"
+HISTIGNORE="v:d:l:G:cd:ll:ls:lt:pwd:tmux:clear:gg*:md*:type*:which*"
 
 ## Append to the history file, don't overwrite it.
 shopt -s histappend

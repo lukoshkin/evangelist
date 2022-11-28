@@ -94,48 +94,9 @@ zstyle ':completion:*' completer _expand_alias _complete _match #_ignored
 # zstyle ':completion:*' ignored-patterns '<pattern-to-ignore>'
 
 
-
-## CLEAN HISTORY LOOKUP
-## --------------------
-## Not able to set up the functionality of this section with HISTORY_IGNORE
-## Exporting HISTORY_IGNORE ruins everything (why?)
-
-_ignorecommon="(\
-^d ?$|\
-^gg ?[0-9-]*$|\
-^G ?$|\
-^cd ?$|\
-^l[lst]? ?$|\
-^vi?m? ?$|\
-^echo ?$|\
-^pwd ?$|\
-^clear ?$|\
-^man \S*$|\
-^tmux ?$|\
-\.unknowno"
-
-_ignorecommon+="|\
-^vi[m]? ~?\/?\.?\w+[^/ ]*$|\
-^l[las]? \S+$|\
-^cd \/?[^/]*$|\
-^mkdir .*|\
-^mv .*|\
-^type .*|\
-^which .*|\
-^whence .*|\
-^echo \S+$)"
-
-## Zsh hook on appending lines to the history file. Note:
-## a command is added to history before being executed.
-zshaddhistory() {
-  emulate -L zsh
-  ! [[ $(tr -s ' ' <<< ${1%%$'\n'}) =~ $_ignorecommon ]];
-}
-
-
 ## ZSH OPTIONS
 ## -----------
-## zsh options are case insensitive and ignore underscores in the name.
+## Zsh options are case insensitive and ignore underscores in the name.
 setopt autopushd
 setopt pushdignoredups
 ## Option prefixed with 'no' is the inversion of the original.
@@ -144,13 +105,6 @@ setopt nobeep
 setopt noflow_control
 ## The last one is for unbinding flow control keys: C-s and C-q
 
-setopt histignorespace
-setopt histignorealldups
-setopt histreduceblanks
-
-## Add entries to $HISTFILE immediately if running ssh.
-[[ -n $SSH_CLIENT ]] || [[ -n $SSH_TTY ]] && setopt sharehistory
-
 setopt extendedglob
 ## quite powerful option which enables:
 ## - recursive globbing     ls **/foo       foo, dir1/foo, dir1/dir2/foo
@@ -158,6 +112,17 @@ setopt extendedglob
 ## - approximate matching   ls (#a1)foobar  fobar,
 ## - qualifiers             ls foo/*(#q@)   finds all symblic links (@) in foo
 ## more info by googling article: 37-ZSH-Gem-2-Extended-globbing-and-expansion.html
+
+## ZSH HISTORY
+## -----------
+## Append entries to $HISTFILE immediately if running ssh.
+[[ -n $SSH_CLIENT ]] || [[ -n $SSH_TTY ]] && setopt sharehistory
+## Don't append the following patterns to the $history array.
+ignore_list=('.{1,3}' 'gg [0-9-]+' echo clear tmux )
+HIST_SCRAPER_IGNORE="(^$(join_by '$|^' ${ignore_list[@]})$)"
+## Remove these patterns from $HISTFILE on shell logout.
+HISTORY_IGNORE="(mv *|mkdir *|man *|math *|type *|which *|whence *)"
+unset ignore_list
 
 ## EVANGELIST COMPLETIONS (ZSH)
 ## ----------------------------

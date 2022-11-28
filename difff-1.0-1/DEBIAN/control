@@ -1,0 +1,6 @@
+Package: difff
+Version: 1.0
+Architecture: all
+Maintainer: Vladislav Lukoshkin <lukoshkin.workspace@gmail.com>
+Description: Compare multiple files in a git project or a regular folder with those in a counterpart directory.
+ Comparison is done using `vim diff` sequentially for every two files from target directory and its counterpart, respectively.

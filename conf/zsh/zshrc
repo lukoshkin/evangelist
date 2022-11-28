@@ -4,6 +4,7 @@ zcomet load zsh-users/zsh-autosuggestions
 zcomet load zsh-users/zsh-syntax-highlighting
 zcomet load zsh-users/zsh-history-substring-search
 zcomet load zsh-users/zsh-completions
+zcomet load lukoshkin/impeccable-history
 zcomet load agkozak/zsh-z
 
 ## One can use more configurable 'powerlvl10k', but be aware of its bugs.
@@ -38,5 +39,6 @@ then
 fi
 
 ## Static imports.
-source "$ZDOTDIR/extra.zsh"
+## We import aliases & functions first to use `join_by` in 'extra.zsh'.
 source "$EVANGELIST/conf/bash/aliases-functions.sh"
+source "$ZDOTDIR/extra.zsh"

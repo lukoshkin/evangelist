@@ -125,7 +125,7 @@ Before to go into details, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.4.2 (!)
+Patch 1.4.3 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -354,6 +354,14 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n | `<Space>q` | Open diagnostics in the location list |
   | n | `<Leader>fs` | Open documents symbols in the location list |
   | n+v | `<Leader>ca` | Open code action menu |
+
+  Completions
+
+  |    |    |   |
+  |:--:|:--:|:--|
+  | i | `<C-e>` | Close the completion menu \& restore the current line to its original state |
+  | i | `<C-y>` | Close the completion menu \& complete to the currently selected option |
+  | i | `<Tab>` | Jump to the next position in a snippet |
 
   Some mappings of evangelist's offspring projects
 

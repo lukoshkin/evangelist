@@ -1,4 +1,5 @@
 #!/bin/bash
+## Not executable, the shebang is for syntax.
 
 ## Setting search path for `cd` command properly.
 if ! [[ $CDPATH =~ :?\.: ]]; then
@@ -83,43 +84,64 @@ gg () {
 }
 
 
+_math () {
+  echo $(( $* ))
+}
+
+
 if [[ $(ps -p $$ -oargs=) = bash ]]; then
+  ## Repeat the last command in Bash (just like in Zsh).
   r () {
     fc -s
   }
+
+  ## Similar to Fish's `math`.
+  alias math='_math'
+else
+  alias math='noglob _math'
 fi
 
 
 mv () {
+  ## TODO: Add check that the file being moved is not already in /tmp.
   ## Something like 'gvfs-trash' implementation
   ## When passing just one argument, it "removes" file or folder
-  ## backing up it at "trash bin" (/tmp).
+  ## backing it up at the "trash bin" (/tmp).
 
   ## This is an early implementation. Probably, the dummy one.
   ## Some of concerns:
   ## - /tmp is a limited in size partition
   ## - there is a way to get rid of `while`-loop
-  if [[ $# -gt 1 ]]; then
+  command -v realpath &> /dev/null
+  local code=$?
+
+  if [[ $# != 1 || $code -ne 0 ]]; then
     command mv "$@"
   else
     local no copy_no
     local name=$1 landing=/tmp
+    local parent=$(realpath "$(dirname "$name")")
+
+    if [[ $parent = "/tmp" ]]; then
+      echo "You can't use one-arg mv cmds in /tmp dir."
+      return 1
+    fi
 
     while [[ -e /tmp/$name ]]; do
-      no=$(sed -nr 's;.*\(([0-9]+)\)\.[^\.]*;\1;p' <<< $name)
+      no=$(sed -nr 's;.*\(([0-9]+)\)\.[^\.]*;\1;p' <<< "$name")
 
       if [[ -z $no ]]; then
-        name=$(sed -r 's;(.*)(\.[^\.]*);\1(1)\2;' <<< $name)
+        name=$(sed -r 's;(.*)(\.[^\.]*);\1(1)\2;' <<< "$name")
       else
         copy_no=$(( no + 1 ))
-        name=$(sed -r "s;(.*\()$no(\)\.[^\.]*);\1$copy_no\2;" <<< $name)
+        name=$(sed -r "s;(.*\()$no(\)\.[^\.]*);\1$copy_no\2;" <<< "$name")
       fi
     done
 
-    [[ $name != $1 ]] && landing+="/$name"
+    [[ $name != "$1" ]] && landing+="/$name"
 
-    mv "$1" "$landing" \
-      && echo $1 has been moved to $landing.
+    command mv "$1" "$landing" \
+      && echo "$1 has been moved to $landing."
   fi
 }
 
@@ -144,8 +166,9 @@ dtree () {
     return
   fi
 
-  ls -R | grep ":$" | sed -e 's/:$//' \
-    -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+  # ls -R | grep ":$" | sed -e 's/:$//' \
+  find . -not -path '*/.*' -type d -print | sed -e \
+    's;[^-][^\/]*\/;--;g' -e 's;^;   ;' -e 's;-;|;'
 }
 
 
@@ -197,9 +220,17 @@ vrmswp () {
 }
 
 
+## https://stackoverflow.com/questions/1527049
+join_by () {
+  local d=$1 f=$2
+  if shift 2; then
+    printf %s "$f" "${@/#/$d}"
+  fi
+}
+
+
 (which tmux &> /dev/null \
   && grep -qE '^n?vim' "$EVANGELIST/.update-list" \
   && grep -q '^source .*slime\.vim' "$XDG_CONFIG_HOME/nvim/init.vim" \
   && grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME/nvim/init.vim") \
   &> /dev/null && source "$EVANGELIST/conf/tmux/templates.sh"
-

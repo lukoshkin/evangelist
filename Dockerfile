@@ -71,6 +71,7 @@ COPY --chown=$USER . "$XDG_CONFIG_HOME/evangelist/"
 
 ## We need to source ~/.bashrc if conda is used.
 RUN . ~/.bashrc \
+    # . ~/.zshrc \
     && cd $XDG_CONFIG_HOME/evangelist \
     && ./evangelist.sh install+ bash+ \
     # && ./evangelist.sh install+ zsh+ \
@@ -79,5 +80,5 @@ RUN . ~/.bashrc \
     fi
 
 ## WORKDIR is commented out, since the image is used on top of another,
-## and we may want to preserve the original value of WORKDIR.
+## and we may want to preserve the original value.
 # WORKDIR $HOME

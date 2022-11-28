@@ -112,7 +112,7 @@ api.nvim_create_user_command(
 
 --- Print lua table in the cmdline window.
 api.nvim_create_user_command(
-  'Print', -- 'In*' is easier to complete with Tab than 'Pa*'.
+  'Print',
   fn.lua_print_inspect,
   { nargs='+' }
 )
