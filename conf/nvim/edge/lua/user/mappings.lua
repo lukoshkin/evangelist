@@ -89,6 +89,14 @@ keymap('v', 'p', '"_dP')
 --- Repeat the last colon command.
 keymap('n', '<A-r>', ':@:<CR>')
 
+--- Center cursor when moving half-page or searching (@ThePrimeagen).
+keymap('n', '<C-d>', '<C-d>zz')
+keymap('n', '<C-u>', '<C-u>zz')
+keymap('n', '<A-n>', 'n')
+keymap('n', '<A-N>', 'N')
+keymap('n', 'n', 'nzzzv')
+keymap('n', 'N', 'Nzzzv')
+
 --- Trim trailing whitespaces.
 api.nvim_create_user_command(
   'Trim',

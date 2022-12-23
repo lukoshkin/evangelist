@@ -1,5 +1,7 @@
 #!/bin/bash
 ## Not executable, the shebang is for syntax.
+_shell=$(ps -p $$ -oargs=)
+_shell=${_shell##*/}
 
 ## Setting search path for `cd` command properly.
 if ! [[ $CDPATH =~ :?\.: ]]; then
@@ -85,11 +87,13 @@ gg () {
 
 
 _math () {
-  echo $(( $* ))
+  ## _ANS can be reused later.
+  _ANS=$(( $* ))
+  echo $_ANS
 }
 
 
-if [[ $(ps -p $$ -oargs=) = bash ]]; then
+if [[ $_shell = bash ]]; then
   ## Repeat the last command in Bash (just like in Zsh).
   r () {
     fc -s
@@ -234,3 +238,6 @@ join_by () {
   && grep -q '^source .*slime\.vim' "$XDG_CONFIG_HOME/nvim/init.vim" \
   && grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME/nvim/init.vim") \
   &> /dev/null && source "$EVANGELIST/conf/tmux/templates.sh"
+
+## Save to use from the interective shell?
+# unset _shell

@@ -1,8 +1,9 @@
+local api = vim.api
 local buf_option = vim.api.nvim_buf_set_option
 local buf_keymap = require'lib.utils'.buf_keymap
 local nls_conf = require'user.plugins.null-ls'
 
--- local ns = vim.api.nvim_create_namespace('copy-from-help-diagnostic-handlers')
+-- local ns = api.nvim_create_namespace('copy-from-help-diagnostic-handlers')
 -- local orig_virt_text_handler = vim.diagnostic.handlers.virtual_text
 
 -- vim.diagnostic.handlers.virtual_text = {
@@ -22,7 +23,7 @@ local nls_conf = require'user.plugins.null-ls'
 --       local twcol = 80 - #vim.fn.getline(d.lnum+1)
 --       if twcol >= 0 then twcol = 81 else twcol = 82 - twcol end
 
---       vim.api.nvim_buf_set_extmark(
+--       api.nvim_buf_set_extmark(
 --         bufnr, ns, d.lnum, d.col,
 --         { id=i,
 --           virt_text = {{ string.rep('◆', line_sign_cnt[d.lnum]) }},
@@ -42,7 +43,7 @@ local nls_conf = require'user.plugins.null-ls'
 
 --- Create a custom namespace. This will aggregate signs from all other
 --- namespaces and only show the one with the highest severity on a given line
-local ns = vim.api.nvim_create_namespace('copy-from-help-diagnostic-handlers')
+local ns = api.nvim_create_namespace('copy-from-help-diagnostic-handlers')
 
 
 --- Get a reference to the original signs handler
@@ -101,7 +102,7 @@ vim.diagnostic.config {
 }
 
 
-local function set_lsp_mappings (_, bufnr)
+local function set_lsp_mappings (client, bufnr)
   buf_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
   buf_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>')
   buf_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>')
@@ -129,22 +130,29 @@ local function set_lsp_mappings (_, bufnr)
   buf_keymap(bufnr, 'n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>')
   --- ][e ─ over just error messages.
   buf_keymap(
-    bufnr, "n", "[e", '<cmd>lua vim.diagnostic.goto_prev('
+    bufnr, 'n', '[e', '<cmd>lua vim.diagnostic.goto_prev('
     .. '{severity = vim.diagnostic.severity.ERROR})<CR>')
   buf_keymap(
-    bufnr, "n", "]e", '<cmd>lua vim.diagnostic.goto_next('
+    bufnr, 'n', ']e', '<cmd>lua vim.diagnostic.goto_next('
     .. '{severity = vim.diagnostic.severity.ERROR})<CR>')
 
 
   --- Open full diagnostics in location-list + find symbols(primitive data type) using telescope.
-  buf_keymap(bufnr, 'n', '<Space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
+  buf_keymap(bufnr, 'n', '<Space>q', '<cmd>lua vim.diagnostic.setloclist()<CR>')
   buf_keymap(bufnr, 'n', '<Leader>fs', [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]])
 
-  vim.api.nvim_create_user_command(
+  api.nvim_create_user_command(
     'Format',
     vim.lsp.buf.formatting,
     {}
   )
+
+  if client.server_capabilities.documentFormatting then
+    api.nvim_buf_set_option(bufnr, 'formatexpr', 'v:lua.vim.lsp.formatexpr()')
+    buf_keymap(bufnr, 'n', '<leader>gq', '<cmd>lua vim.lsp.buf.format({async = true})')
+  else
+    api.nvim_buf_set_option(bufnr, 'formatexpr', '')
+  end
 end
 
 
@@ -203,7 +211,7 @@ require 'lspconfig'.sumneko_lua.setup {
     },
     workspace = {
       --- Make the server aware of Neovim runtime files
-      library = vim.api.nvim_get_runtime_file('', true),
+      library = api.nvim_get_runtime_file('', true),
     },
     --- Do not send telemetry data containing a randomized but unique identifier
     telemetry = {
@@ -230,8 +238,8 @@ vim.fn.sign_define('DiagnosticSignHint', { text = '', texthl = 'DiagnosticSig
 --     return
 --   end
 --   if log_level == vim.log.levels.ERROR then
---     vim.api.nvim_err_writeln(msg)
+--     api.nvim_err_writeln(msg)
 --   else
---     vim.api.nvim_echo({ { msg } }, true, {})
+--     api.nvim_echo({ { msg } }, true, {})
 --   end
 -- end

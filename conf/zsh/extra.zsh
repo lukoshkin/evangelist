@@ -71,6 +71,20 @@ bindkey '^[w' forward-word  # complete word in a suggestion
 ## * To find some laptop (Ubuntu) bindings that contain <pattern>,
 ##   use 'gsettings list-recursively | grep <pattern>'.
 
+## Delete the first 'word' in a command and go into insert mode.
+function change-prefix {
+  # local all_but_f1=$(cut -d' ' -f2- <<< "$BUFFER")
+  # BUFFER=" $all_but_f1"
+  zle beginning-of-line
+  zle delete-word
+  zle vi-insert
+}
+
+zle -N change-prefix
+
+bindkey -M viins '^a' change-prefix
+bindkey -M vicmd '^a' change-prefix
+
 
 ## Export standard ls colors (grep selects everything between '')
 type dircolors &> /dev/null && eval "$(dircolors -b)"

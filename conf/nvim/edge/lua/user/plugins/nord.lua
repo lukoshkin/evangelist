@@ -18,6 +18,9 @@ vim.api.nvim_create_autocmd('ColorScheme', {
     vim.api.nvim_set_hl(0, 'SpellLocal', {
       fg = 'NONE', bg = 'NONE', undercurl = true, sp = 'SkyBlue1',
     })
+    vim.api.nvim_set_hl(0, 'CursorLineNr', {
+      fg='gold3', bold=true,
+    })
   end,
   group = aug_cc
 })
