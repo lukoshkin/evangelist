@@ -46,7 +46,9 @@ packer.startup(function (use)
   use 'lukoshkin/trailing-whitespace'
   use {
     'shaunsingh/nord.nvim',
-    config =function ()
+    --- ↓ Stable commit ↓
+    -- commit = '78f5f00',
+    config = function ()
       require'user.plugins.nord'
     end
   }
@@ -214,7 +216,6 @@ packer.startup(function (use)
 
   use {
     'puremourning/vimspector',
-    requires = 'szw/vim-maximizer',
     config = function ()
       require'user.plugins.vimspector'
     end

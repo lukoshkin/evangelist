@@ -1,16 +1,42 @@
 local fn = vim.fn
 local api = vim.api
-local unpack = unpack or table.unpack
 local M = {}
 
 
 function M.only_normal_windows ()
   local normal_windows = vim.tbl_filter(function (key)
-    return vim.api.nvim_win_get_config(key).relative == ''
-  end, vim.api.nvim_tabpage_list_wins(0))
+    return api.nvim_win_get_config(key).relative == ''
+  end, api.nvim_tabpage_list_wins(0))
 
   return normal_windows
 end
+
+
+--- Not involved anywhere.
+function M.get_active_bufs ()
+  local bufs = api.nvim_list_bufs()
+  bufs = vim.tbl_filter(function (b) return vim.bo[b].buflisted end, bufs)
+  return bufs
+end
+
+
+--- Not involved anywhere.
+function M.find_active_bufs (pat)
+  local bufs = M.get_active_bufs()
+  bufs = vim.tbl_filter(function (b)
+    return api.nvim_buf_get_name(b):match(pat)
+  end, bufs)
+  return bufs
+end
+
+
+--- Usage example of the function above.
+-- local function close_codelldb ()
+--   local bufs = M.find_active_bufs('term://.*/codelldb')
+--   vim.tbl_map(function (b)
+--     api.nvim_buf_delete(b, {force=true})
+--   end, bufs)
+-- end
 
 
 function M.toggle_mouse ()
@@ -68,7 +94,7 @@ function M.trim (opts)
 end
 
 
-function M.narrow_wins_nowrap ()
+function M.narrow_win_nowrap ()
   for _, wid in pairs(M.only_normal_windows()) do
     local tw = api.nvim_win_get_width(wid)
     if tw < 110 then
@@ -89,7 +115,7 @@ function M.resize (arg, opts)
   end
 
   vim.cmd(cmd)
-  M.narrow_wins_nowrap()
+  M.narrow_win_nowrap()
 end
 
 

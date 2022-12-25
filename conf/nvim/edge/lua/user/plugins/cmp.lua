@@ -52,7 +52,9 @@ cmp.setup {
     ['<C-Space>'] = cmp.mapping.complete(), -- same as `cmp.complete()`
     --- Close and restore original (abort) and just close (close) mappings.
     ['<C-e>'] = cmp.mapping.abort(),
-    ['<S-A-e>'] = cmp.mapping.close(), -- TODO: set completed_successfully to true.
+    ['<C-y>'] = cmp.mapping.close(), -- TODO: set completed_successfully to true.
+    --- It seems like the same mappings are used for the wildmenu.
+    --- That is, we adhere to the spirit of Vim.
 
     ['<C-b>'] = cmp.mapping.scroll_docs(-4),
     ['<C-f>'] = cmp.mapping.scroll_docs(4),

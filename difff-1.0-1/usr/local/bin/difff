@@ -1,16 +1,34 @@
 #!/bin/bash
 
-## TODO: add a function with a help message.
-# diff "$@" || help_msg
+if [[ $EDITOR = nvim ]]; then
+  vimdiff () { nvim -d "$@"; }
+fi
+
+## On which exit status to print help message
+PRINT_ES=21
+
+help_msg () {
+  echo 'Usage: difff [<options>] <prefix>'
+  echo '<prefix> is the path to a counterpart directory'
+  echo
+  echo -e '-s|--staged\t use --staged flag in `git diff`.'
+  echo -e '-n|--dry-run\t show how it would be w/o doing anything.'
+  echo -e '-a|--add-new\t add-new files from the counterpart directory.'
+
+  echo -e '-m|--mode=<mode>\t <mode> can be git or folder.'
+  echo -e '-d|--folder=<dir>\t parent folder of the target directory limiting #files to be compared.'
+  echo -e '-t|--trim-cnt=<N>\t trim <N> leading dirs from the target directory path.'
+}
+
 
 function difff () {
   local long_opts='trim-cnt:,folder:,mode:,staged,dry-run,add-new'
   local short_opts='t:,d:,m:,s,n,a'
+  local params
 
-  params=$(getopt -o $short_opts  -l $long_opts --name "$0" -- "$@")
-  [[ $? -ne 0 ]] && { echo No args. Aborting..; return; }
-  eval set -- $params
-  unset params
+  params=$(getopt -o $short_opts  -l $long_opts --name "$0" -- "$@") \
+    || { echo Aborting..; return $PRINT_ES; }
+  eval set -- "$params"
 
   local staged dry_run add_new mode folder trim_cnt
   while [[ $1 != -- ]]; do
@@ -27,7 +45,7 @@ function difff () {
   done
 
   shift 1
-  [[ $# -eq 0 ]] && { echo Prefix not set; return 1; }
+  [[ $# -eq 0 ]] && { echo Prefix not set; return $PRINT_ES; }
 
   local prefix=$1
   ! [[ -d $prefix ]] && { echo Prefix $prefix not found; return 1; }
@@ -35,11 +53,12 @@ function difff () {
 
   if [[ ${mode:=git} != git ]] && [[ $mode != folder ]]; then
     echo Invalid mode: $mode
-    return 1
+    return $PRINT_ES
   fi
 
   declare -a files
   if [[ $mode = folder ]]; then
+    shopt -s globstar  # won't work for older Bash shells
     files=( ${folder%/}/**/* )
   else
     git status &> /dev/null || { echo Not a git project.; return 1; }
@@ -123,3 +142,12 @@ function difff () {
     vimdiff $file $counter
   done
 }
+
+
+difff "$@"
+es=$?
+
+case $es in
+  $PRINT_ES) echo; help_msg ;;
+  *) exit $es ;;
+esac
