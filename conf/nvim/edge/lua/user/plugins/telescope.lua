@@ -85,21 +85,41 @@ require'telescope'.load_extension 'fzf'
 require'telescope'.load_extension 'projects'
 require'telescope'.load_extension 'neoclip'
 
+--- Just a couple of shorthands.
+local builtin = require'telescope.builtin'
+local ext = telescope.extensions
+
 --- Find files in the current directory (except hidden ones).
-keymap('n', '<Leader>ff', [[<cmd>lua require'telescope.builtin'.find_files()<CR>]])
+keymap('n', '<Leader>ff', builtin.find_files)
+
 --- Find files exactly how the names are spelled.
-keymap('n', '<Leader>fe', [[<cmd>lua require'telescope.builtin'.find_files({fuzzy = false})<CR>]])
+keymap('n', '<Leader>fe', function ()
+  builtin.find_files({fuzzy = false})
+end)
+
 --- All files not matched by `file_ignore_patterns`.
-keymap('n', '<Leader>fa', [[<cmd>lua require'telescope.builtin'.find_files({ no_ignore = true, prompt_title = 'All Files' })<CR>]])
---- Vim buffers (thanks to bufferline plugin, open buffers are always listed above).
-keymap('n', '<Leader>b', [[<cmd>lua require'telescope.builtin'.buffers()<CR>]])
---- Find word. `live_grep_args` adds to `live_grep` allows to use regex and pass CLI flags right from Telescope prompt.
-keymap('n', '<Leader>fg', [[<cmd>lua require'telescope'.extensions.live_grep_args.live_grep_args()<CR>]])
+keymap('n', '<Leader>fa', function ()
+  builtin.find_files({ no_ignore = true, prompt_title = 'All Files' })
+end)
+
+--- Vim buffers ('bufferline' lists active buffers in the barline above).
+keymap('n', '<Leader>b', builtin.buffers)
+
+--- Find word. `live_grep_args` adds to `live_grep` allows to use regex
+--- and pass CLI flags right from Telescope prompt.
+keymap('n', '<Leader>fg', ext.live_grep_args.live_grep_args)
+
 -- Find MRU files.
-keymap('n', '<Leader>fo', [[<cmd>lua require'telescope.builtin'.oldfiles()<CR>]])
+keymap('n', '<Leader>fo', builtin.oldfiles)
+
 --- Find a project
-keymap('n', '<Leader>fp', [[<cmd>lua require'telescope'.extensions.projects.projects()<CR>]])
+keymap('n', '<Leader>fp', ext.projects.projects)
+
 --- Request help using fuzzy search and preview.
 keymap('n', '<Leader>fh', [[<cmd>Telescope help_tags<CR>]])
+
+--- Find a key mapping.
+keymap('n', '<Leader>fk', [[<cmd>Telescope keymaps<CR>]])
+
 --- Find yanks made during the current session.
-keymap( 'n', '<Leader>fy', [[<cmd> lua require'telescope'.extensions.neoclip.neoclip()<CR>]])
+keymap( 'n', '<Leader>fy', ext.neoclip.neoclip)

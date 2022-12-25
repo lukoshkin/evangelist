@@ -97,6 +97,10 @@ keymap('n', '<A-N>', 'N')
 keymap('n', 'n', 'nzzzv')
 keymap('n', 'N', 'Nzzzv')
 
+--- Open the current buffer in a new tab.
+--- When it is not needed anymore, one can close it with ZZ or ZQ.
+keymap('n', '<Space>t', ':tabnew %<CR>')
+
 --- Trim trailing whitespaces.
 api.nvim_create_user_command(
   'Trim',
@@ -125,8 +129,9 @@ api.nvim_create_user_command(
   { nargs='+' }
 )
 
+--- Set 'nowrap' if window width is < 110 char.
 local aug_tw = api.nvim_create_augroup('AutoTW', {clear = true})
 api.nvim_create_autocmd({ 'BufWinEnter', 'WinEnter' }, {
-  callback = fn.narrow_wins_nowrap,
+  callback = fn.narrow_win_nowrap,
   group = aug_tw,
 })

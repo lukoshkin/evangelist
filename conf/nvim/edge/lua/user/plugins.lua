@@ -224,7 +224,6 @@ packer.startup(function (use)
 
   use {
     'puremourning/vimspector',
-    requires = 'szw/vim-maximizer',
     config = function ()
       require'user.plugins.vimspector'
     end

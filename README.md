@@ -125,7 +125,7 @@ Before to go into details, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.4.4 (!)
+Patch 1.4.5 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -213,7 +213,8 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | any | `<M-m>` | Toggle mouse |
   | v | `p` | Paste the last yanked text in place of selected one |
   | n | `<A-r>` | Repeat the last colon command used |
-  | n | `<A-(n|N)> | Do not center window when searching |
+  | n | `<A-(n\|N)>` | Do not center window when searching |
+  | n | `<Space>t` | Open the current buffer in a new tab.<br> One can close the tab later with `ZZ` or `ZQ` |
 
   </details>
 
@@ -248,7 +249,6 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   |:--|:--|
   | [vimspector](https://github.com/puremourning/vimspector) | Code debugger |
   | [vimtex](https://github.com/lervag/vimtex) | Mappings, highlighting, compilation for LaTex files |
-  | [vim-maximizer](https://github.com/szw/vim-maximizer) | Maximizes and restores window in a split |
   | [markdown-preview.nvim](https://github.com/iamcco/markdown-preview.nvim) | Preview markdown in the user's browser |
   | [vim-slime](https://github.com/jpalardy/vim-slime.git) | Send code on the left to a split on the right and execute it if possible |
   | [vim-ipython-cell](https://github.com/hanschen/vim-ipython-cell.git) | Build cell layout for Python code with a delimiter |
@@ -256,15 +256,14 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   |    |    |   |
   |:--:|:--:|:--|
   | n | `<Leader>md` | Open/close markdown preview |
-  | n | `<Space>mm` | Maximize/minimize the current window |
   | n | `<C-p>` | Open CtrlP fuzzy finder |
 
   Vimspector
 
   |    |    |   |
   |:--:|:--:|:--|
-  | n | `<Leader>dc` | Switch to the debug mode |
-  | n | `<Leader>dr` | Switch to regular editing |
+  | n | `<Leader>dc` | Switch to the debug mode <br> or continue running |
+  | n | `<Leader>dr` | Terminate debug session and switch to regular editing |
   | <br>n | <br>`<Leader>ds` | Stop the debugger <br> (You can not continue from where you have stopped. <br> Unlike reset, all windows remain оpen) |
   | n | `<Leader>dd` | Pause the debugger |
   | n | `<Leader>d0` | Restart the debugger |
@@ -274,7 +273,13 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n | `<Space>.` | Toggle breakpoint |
   | n | `<Space>,` | Add a conditional breakpoint |
   | n | `<Space>:` | Add a function breakpoint |
-  | n | `<Space>v` | Go to the variables section |
+  | n | `<Space>db` | Toggle section with breakpoints list |
+  | n | `<Space>dd` | Go to the section with source code |
+  | n | `<Space>dv` | Go to the variables section |
+  | n | `<Space>dw` | Go to the watches section |
+  | n | `<Space>do` | Go to the section with output |
+  | n | `<Space>dt` | Go to the terminal <br> if Vimspector has opened it |
+  | n | `<Space>ds` | Go to the 'stack trace' section |
 
   **With extended settings**
 
@@ -334,13 +339,14 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n | `<Leader>b` | Open available buffers in Telescope |
   | n | `<Leader>fo` | Open most recently used files in Telescope |
   | n | `<Leader>fp` | Open projects in Telescope |
-  | n | `<Leader>fy` | Open yanks in Telescope |
+  | n | `<Leader>fy` | Open previous yanks in Telescope |
   | n | `<Leader>fe` | Open files in Telescope (exact search) |
   | n | `<Leader>ff` | Open files in Telescope (fuzzy search) |
   | n | `<Leader>fa` | Same but abolish all external ignore patterns |
   | n | `<Leader>fg` | Find string with grep options in Telescope |
   | n | `gr` | Open LSP references of the symbol under the cursor in Telescope |
-  | n | `<Leader>fh` | Find a help tag in Telescope |
+  | n | `<Leader>fh` | Find a help tag with Telescope |
+  | n | `<Leader>fk` | Find a key mapping with Telescope |
 
   LSP keymaps (most of LSP mappings are valid for extended settings as well)
 
