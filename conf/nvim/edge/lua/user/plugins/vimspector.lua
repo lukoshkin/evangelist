@@ -5,13 +5,21 @@ local fn = vim.fn
 --- BP & BPCond & BPDisabled (green bullet) priorities are increased
 --- to 200 to ensure their visibility.
 vim.g.vimspector_sign_priority = {
-  vimspectorPC            = 200,
-  vimspectorPCBP          = 200,
-  vimspectorBP            = 200,
-  vimspectorBPCond        = 200,
-  vimspectorBPDisabled    = 200,
-  vimspectorCurrentThread = 200
+  vimspectorBP                 = 200,
+  vimspectorBPCond             = 200,
+  vimspectorBPLog              = 200,
+  vimspectorBPDisabled         = 200,
+  vimspectorPC                 = 201,
+  vimspectorPCBP               = 201,
+  vimspectorCurrentThread      = 201,
+  vimspectorCurrentFrame       = 201,
 }
+--- 'singcolumn' is wide enough to fit both a bp and the dbg cursor.
+--- Having two circles near to each other is vague; thus, it is better
+--- to change the default 'vimspectorPCBP' sign.
+vim.cmd [[ sign define vimspectorPCBP text=➲ ]]
+
+-- vim.cmd [[ sign define vimspectorPCBP text= ]]
 
 
 local dap_caller = {}
@@ -54,6 +62,7 @@ local default_config = {
 
 default_config.cpp = vim.deepcopy(default_config.rust)
 default_config.cpp.launch.hint = nil
+default_config.rust.launch.build = { 'cargo', 'build' }
 
 
 local function vimspector_reset ()
@@ -62,8 +71,11 @@ local function vimspector_reset ()
   end
 
   --- Save terminal window id for later use.
-  local twid = vim.g.vimspector_session_windows.terminal
-  vim.cmd ':call vimspector#Reset()'
+  local twid
+  if vim.g.vimspector_session_windows ~= nil then
+    twid = vim.g.vimspector_session_windows.terminal
+    vim.cmd ':call vimspector#Reset()'
+  end
 
   --- Cleaning.
   dap_caller['tab'] = nil
@@ -92,22 +104,31 @@ local function vimspector_continue ()
     return
   end
 
-  dap_caller['buf'] = bnr
   local ft = api.nvim_buf_get_option(0, 'filetype')
-
   if default_config[ft] == nil then
     vim.notify("No default config for '"
       .. ft .."' file", vim.log.levels.WARN)
     return
   end
 
-
+  dap_caller['buf'] = bnr
   local query, cfg = next(default_config[ft])
   cfg = vim.deepcopy(cfg)
 
+  if cfg.build ~= nil and cfg.build ~= '' then
+    fn.jobstart(cfg.build)
+  end
+
   if cfg.configuration.program == nil then
-    local hint = vim.loop.cwd() .. (cfg.hint or '')
-    local name = fn.input('Path to the executable: ', hint)
+    local hint = vim.loop.cwd() .. (cfg.hint or '/')
+    local name = fn.input('Path to the executable: ', hint, 'file')
+
+    if name == '' then
+      vim.notify(' Vimspector: Aborted!')
+      vimspector_reset()
+      return
+    end
+
     cfg.configuration.program = name
     cfg.hint = nil
   end
@@ -141,7 +162,12 @@ keymap('n', '<Space>:', '<Plug>VimspectorAddFunctionBreakpoint')
 
 keymap('n', '<Space>db', '<Plug>VimspectorBreakpoints')
 keymap('n', '<Space>dd', function ()
-  fn.win_gotoid(vim.g.vimspector_session_windows.code)
+  if fn.win_getid() ~= vim.g.vimspector_session_windows.code then
+    api.nvim_set_current_win(vim.g.vimspector_session_windows.code)
+    return
+  end
+
+  fn['vimspector#GoToCurrentLine']()
 end)
 keymap('n', '<Space>dv', function ()
   fn.win_gotoid(vim.g.vimspector_session_windows.variables)

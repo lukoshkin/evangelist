@@ -92,10 +92,8 @@ keymap('n', '<A-r>', ':@:<CR>')
 --- Center cursor when moving half-page or searching (@ThePrimeagen).
 keymap('n', '<C-d>', '<C-d>zz')
 keymap('n', '<C-u>', '<C-u>zz')
-keymap('n', '<A-n>', 'n')
-keymap('n', '<A-N>', 'N')
-keymap('n', 'n', 'nzzzv')
-keymap('n', 'N', 'Nzzzv')
+keymap('n', '<A-n>', 'nzzzv')
+keymap('n', '<A-N>', 'Nzzzv')
 
 --- Open the current buffer in a new tab.
 --- When it is not needed anymore, one can close it with ZZ or ZQ.
@@ -118,16 +116,13 @@ api.nvim_create_user_command(
 --- Paste cmd's output into the current buffer.
 api.nvim_create_user_command(
   'Insert', -- 'In*' is easier to complete with Tab than 'Pa*'.
-  fn.paste_into_buffer,
-  { nargs='+' }
+  fn.paste_into_buffer, { nargs='+', complete=fn.complete_lua_or_vim }
 )
 
 --- Print lua table in the cmdline window.
-api.nvim_create_user_command(
-  'Print',
-  fn.lua_print_inspect,
-  { nargs='+' }
-)
+api.nvim_create_user_command('Print', fn.print_inspect, {
+    nargs='+', complete=fn.complete_lua_or_vim
+})
 
 --- Set 'nowrap' if window width is < 110 char.
 local aug_tw = api.nvim_create_augroup('AutoTW', {clear = true})

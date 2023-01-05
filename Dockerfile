@@ -1,5 +1,5 @@
 ARG IMG_NAME=ubuntu:20.04
-ARG SKIP_JUPYTER=false
+ARG SKIP_JUPYTER=true
 
 FROM $IMG_NAME
 SHELL ["/bin/bash", "-c"]
@@ -41,12 +41,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && curl -fsSL https://deb.nodesource.com/setup_current.x | bash - \
     && apt-get install -yq nodejs  \
     && locale-gen en_US.UTF-8 \
-    && rm -rf /var/lib/apt/lists/*
-
-## Install Neovim (latest version)
-## NOTE: `pkg-config automake libtool-bin gettext` might be
-##        removed after the installation of Neovim from source.
-RUN git clone https://github.com/neovim/neovim \
+    && rm -rf /var/lib/apt/lists/* \
+    ## Install Neovim (latest version)
+    ## NOTE: `pkg-config automake libtool-bin gettext` might be
+    ##        removed after the installation of Neovim from source.
+    && git clone https://github.com/neovim/neovim \
     && cd neovim && git checkout stable \
     && make CMAKE_BUILD_TYPE=Release \
     && make install \
@@ -54,15 +53,14 @@ RUN git clone https://github.com/neovim/neovim \
     && gem install neovim \
     && cd .. && rm -rf neovim \
     ## Ensure everything in HOME belongs to USER.
-    && chown -R $USER:$(id -gn $USER) "$HOME"
+    && chown -R $USER:$(id -gn $USER) "$HOME" \
+    ## Upgrade pip and install pynvim & IPython.
+    && pip3 install --no-cache-dir --upgrade pip pynvim ipython
 
 ## Install Jupyter and its extensions
 RUN if ! $SKIP_JUPYTER; then \
       pip3 install --no-cache-dir --upgrade \
-        pip \
-        pynvim \
-        jupyter \
-        jupyter_contrib_nbextensions \
+        jupyter jupyter_contrib_nbextensions \
         jupyter_nbextensions_configurator; \
     fi
 

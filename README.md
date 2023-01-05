@@ -125,7 +125,7 @@ Before to go into details, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.4.5 (!)
+Patch 1.4.6 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -213,7 +213,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | any | `<M-m>` | Toggle mouse |
   | v | `p` | Paste the last yanked text in place of selected one |
   | n | `<A-r>` | Repeat the last colon command used |
-  | n | `<A-(n\|N)>` | Do not center window when searching |
+  | n | `<A-(n\|N)>` | Center window when searching |
   | n | `<Space>t` | Open the current buffer in a new tab.<br> One can close the tab later with `ZZ` or `ZQ` |
 
   </details>
@@ -243,7 +243,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | [vim-surround](https://github.com/tpope/vim-surround) | Surround with quotation marks, tags, and more. Remove them or substitute |
   | [vim-commentary](https://github.com/tpope/vim-commentary) | Commenting and uncommenting lines |
 
-  **With Neovim-Lua setup and entended settings**
+  **With Neovim-Lua setup and extended settings**
 
   |   |   |
   |:--|:--|
@@ -256,7 +256,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   |    |    |   |
   |:--:|:--:|:--|
   | n | `<Leader>md` | Open/close markdown preview |
-  | n | `<C-p>` | Open CtrlP fuzzy finder |
+  | n | `<C-p>` | Open CtrlP fuzzy finder (not present in Neovim) |
 
   Vimspector
 
@@ -274,11 +274,11 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n | `<Space>,` | Add a conditional breakpoint |
   | n | `<Space>:` | Add a function breakpoint |
   | n | `<Space>db` | Toggle section with breakpoints list |
-  | n | `<Space>dd` | Go to the section with source code |
+  | n | `<Space>dd` | Go to the section with source code <br> or move the debugger cursor to the current line |
   | n | `<Space>dv` | Go to the variables section |
   | n | `<Space>dw` | Go to the watches section |
   | n | `<Space>do` | Go to the section with output |
-  | n | `<Space>dt` | Go to the terminal <br> if Vimspector has opened it |
+  | n | `<Space>dt` | Go to the terminal if Vimspector has opened it |
   | n | `<Space>ds` | Go to the 'stack trace' section |
 
   **With extended settings**
@@ -337,7 +337,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   |    |    |   |
   |:--:|:--:|:--|
   | n | `<Leader>b` | Open available buffers in Telescope |
-  | n | `<Leader>fo` | Open most recently used files in Telescope |
+  | n | `<Leader>fo` | Open the most recently used files in Telescope |
   | n | `<Leader>fp` | Open projects in Telescope |
   | n | `<Leader>fy` | Open previous yanks in Telescope |
   | n | `<Leader>fe` | Open files in Telescope (exact search) |
@@ -347,6 +347,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n | `gr` | Open LSP references of the symbol under the cursor in Telescope |
   | n | `<Leader>fh` | Find a help tag with Telescope |
   | n | `<Leader>fk` | Find a key mapping with Telescope |
+  | n | `<Leader>fn` | Open notifications received during the session in Telescope |
 
   LSP keymaps (most of LSP mappings are valid for extended settings as well)
 

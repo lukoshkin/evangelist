@@ -1,6 +1,6 @@
-local cmp = require 'cmp'
-local luasnip = require 'luasnip'
-local lspkind = require 'lspkind'
+local cmp = require'cmp'
+local luasnip = require'luasnip'
+local lspkind = require'lspkind'
 
 --- Load snippets from 'rafamadriz/friendly-snippets'.
 require'luasnip.loaders.from_vscode'.lazy_load()

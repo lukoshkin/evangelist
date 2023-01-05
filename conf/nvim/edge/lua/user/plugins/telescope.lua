@@ -84,6 +84,7 @@ telescope.setup {
 require'telescope'.load_extension 'fzf'
 require'telescope'.load_extension 'projects'
 require'telescope'.load_extension 'neoclip'
+require'telescope'.load_extension 'notify'
 
 --- Just a couple of shorthands.
 local builtin = require'telescope.builtin'
@@ -120,6 +121,9 @@ keymap('n', '<Leader>fh', [[<cmd>Telescope help_tags<CR>]])
 
 --- Find a key mapping.
 keymap('n', '<Leader>fk', [[<cmd>Telescope keymaps<CR>]])
+
+--- Find a key mapping.
+keymap('n', '<Leader>fn', [[<cmd>Telescope notify<CR>]])
 
 --- Find yanks made during the current session.
 keymap( 'n', '<Leader>fy', ext.neoclip.neoclip)

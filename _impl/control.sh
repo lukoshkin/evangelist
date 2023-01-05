@@ -297,6 +297,8 @@ control::update () {
   fi
 
   ECHO Successfully updated.
+  ## Enforce printing further instructions.
+  _PARAMS=$shell write::instructions_after_install $shell
 }
 
 

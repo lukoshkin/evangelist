@@ -153,12 +153,24 @@ vim.cmd[[
   endfun
 ]]
 
+
+function M.multi_source_completion (pat, sources)
+  local all = {}
+  for _, src in pairs(sources) do
+    local particular = vim.fn.getcompletion(pat, src)
+    all = vim.tbl_extend('keep', all, particular)
+  end
+
+  return all
+end
+
+
 --- Paste into the current buffer return value of a command or its output to
 --- stdout (if no return value). Useful when the inspection of the cmd output
 --- is limited, and interaction in the buffer is more convenient.
 function M.paste_into_buffer (cmd)
-  local lang = cmd.fargs[2]
   local call = load('return ' .. cmd.fargs[1])
+  local lang = cmd.fargs[2]
   local return_value
 
   vim.cmd 'redir => _msg'
@@ -183,10 +195,53 @@ function M.paste_into_buffer (cmd)
 end
 
 
---- `:Print object` instead of `:lua print(vim.inspect(object))`.
---- However, tab completion is not possible with this command.
-function M.lua_print_inspect (cmd)
-  vim.cmd(':lua print(vim.inspect(' .. cmd.args .. '))')
+--- Print Lua or Vim function's return value in the cmdline window.
+function M.print_inspect (cmd)
+  xpcall(function()
+    vim.cmd(':lua print(vim.inspect(' .. cmd.args .. '))')
+  end, function()
+    vim.cmd('echo(' .. cmd.args .. ')')
+  end)
+
+  --- The version below can print almost anything, but we actually don't need
+  --- to hit the case with `vim.cmd(cmd.args)`, since the latter is equivalent
+  --- to just typing `:cmd` in the cmdline.
+  -- if not pcall(
+  --   function()
+  --     vim.cmd(':lua print(vim.inspect(' .. cmd.args .. '))')
+  --   end) then
+  --   if not pcall(function ()
+  --     vim.cmd(cmd.args)
+  --   end) then
+  --     vim.cmd('echo(' .. cmd.args .. ')')
+  --   end
+  -- end
 end
+
+
+--- Custom completion function for Insert (M.paste_into_buffer)
+--- and Print (M.print_inspect) commands. (Currently, in beta state.)
+function M.complete_lua_or_vim (arg_lead)
+  local sources = {'lua', 'expression', 'option' }
+  local pat = arg_lead:match'^.+%.(.+)$' or arg_lead
+  local prefix = arg_lead:match'^(.+%.).+$'
+
+  if arg_lead:match'%.' then
+    if arg_lead:match'%.[gbw]?o%.'
+      or arg_lead:match'%.opt%.' then
+      sources = { 'option' }
+    end
+  end
+
+  local all = M.multi_source_completion(pat, sources)
+  if prefix ~= nil and prefix ~= '' then
+    all = vim.tbl_map(function (val)
+      return  prefix .. val
+    end, all)
+  end
+
+  return all
+end
+
 
 return M

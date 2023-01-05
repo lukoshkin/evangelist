@@ -10,6 +10,7 @@ packer.startup(function (use)
     end
   }
 
+
   --- CORE
   use {
     'simnalamburt/vim-mundo',
@@ -30,17 +31,19 @@ packer.startup(function (use)
   use {
     'nvim-telescope/telescope.nvim',
     requires = {
-      { 'nvim-lua/plenary.nvim' },
-      { 'kyazdani42/nvim-web-devicons' },
-      { 'AckslD/nvim-neoclip.lua' },
+      'nvim-lua/plenary.nvim',
+      'kyazdani42/nvim-web-devicons',
+      'AckslD/nvim-neoclip.lua',
+      'rcarriga/nvim-notify',
       { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
-      { 'nvim-telescope/telescope-live-grep-args.nvim' },
-      { 'ahmedkhalf/project.nvim' },
+      'nvim-telescope/telescope-live-grep-args.nvim',
+      'ahmedkhalf/project.nvim',
     },
     config = function ()
       require'user.plugins.telescope'
     end
   }
+
 
   --- APPEARANCE
   use 'lukoshkin/trailing-whitespace'
@@ -91,6 +94,7 @@ packer.startup(function (use)
     config = function () require'fidget'.setup() end
   }
 
+
   --- MISCELLANEA
   use 'sickill/vim-pasta'
   use 'tpope/vim-sleuth'
@@ -98,16 +102,16 @@ packer.startup(function (use)
   use 'jessarcher/vim-heritage'
 
   use {
-    'unblevable/quick-scope',
+    'rcarriga/nvim-notify',
     config = function ()
-      require'user.plugins.quick-scope'
+      require'user.plugins.notify'
     end
   }
 
   use {
-    'rcarriga/nvim-notify',
+    'unblevable/quick-scope',
     config = function ()
-      vim.notify = require'notify'
+      require'user.plugins.quick-scope'
     end
   }
 
@@ -164,6 +168,7 @@ packer.startup(function (use)
     end
   }
 
+
   --- IDE-LIKE
   use {
     'nvim-treesitter/nvim-treesitter',
@@ -171,7 +176,6 @@ packer.startup(function (use)
     requires = {
       'nvim-treesitter/playground',
       'nvim-treesitter/nvim-treesitter-textobjects',
-      'nvim-treesitter/tree-sitter-query',
       'lewis6991/spellsitter.nvim',
       'JoosepAlviste/nvim-ts-context-commentstring',
     },
@@ -182,9 +186,15 @@ packer.startup(function (use)
   }
 
   use {
-    'tzachar/cmp-tabnine',
-    run = './install.sh',
-    requires = 'hrsh7th/nvim-cmp'
+    'neovim/nvim-lspconfig',
+    requires = {
+      'folke/lsp-colors.nvim',
+      'weilbith/nvim-code-action-menu',
+      'jose-elias-alvarez/null-ls.nvim',
+    },
+    config = function ()
+      require'user.plugins.lspconfig'
+    end
   }
 
   use {
@@ -205,7 +215,10 @@ packer.startup(function (use)
       'rafamadriz/friendly-snippets',
       'L3MON4D3/LuaSnip',
       'jessarcher/cmp-path',
-      'tzachar/cmp-tabnine',
+      {
+        'tzachar/cmp-tabnine',
+        run='./install.sh'
+      },
       'hrsh7th/cmp-nvim-lua',
       'onsails/lspkind-nvim',
     },

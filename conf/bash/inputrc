@@ -17,10 +17,10 @@ Tab: menu-complete
 
 set keymap vi-command
 v: ''
-"j": history-search-forward
-"k": history-search-backward
+j: history-search-forward
+k: history-search-backward
 "gg": beginning-of-history
-"G": end-of-history
+G: end-of-history
 
 ## bash >= 4.3
 set show-mode-in-prompt on

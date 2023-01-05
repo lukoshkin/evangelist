@@ -445,7 +445,7 @@ install::vim_settings::packer_plugins () {
     pyright flake8 pylint black
     cpplint clangd
     rust-analyzer
-    lua-language-server
+    lua-language-server stylua
     dockerfile-language-server
     cmake-language-server
     markdownlint

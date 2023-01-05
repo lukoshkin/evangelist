@@ -23,7 +23,6 @@ RESET=$(tput sgr0)
 ##########################
 ## -----> MACROS -----> ##
 ##########################
-
 ECHO () {
   local RAIN=$(tput setaf 152)
   local PURPLE=$(tput setaf 111)
@@ -63,7 +62,6 @@ PIPHAS () {
   # pip3 show "$1" 2> /dev/null
   pip3 --disable-pip-version-check list 2>&1 | grep -qP "$1"
 }
-
 ##########################
 ## <----- MACROS <----- ##
 ##########################
