@@ -81,7 +81,8 @@ telescope.setup {
   },
 }
 
-require'telescope'.load_extension 'fzf'
+--- Telescope builds its own 'fzf' starting from some version.
+-- require'telescope'.load_extension 'fzf'
 require'telescope'.load_extension 'projects'
 require'telescope'.load_extension 'neoclip'
 require'telescope'.load_extension 'notify'

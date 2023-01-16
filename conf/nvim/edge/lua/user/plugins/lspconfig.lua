@@ -93,7 +93,7 @@ vim.diagnostic.config {
       if ((diagnostic.user_data ~= nil)
           and (diagnostic.user_data.lsp.code ~= nil)) then
         return string.format(
-          "%s: %s", diagnostic.user_data.lsp.code, diagnostic.message)
+          '%s: %s', diagnostic.user_data.lsp.code, diagnostic.message)
       end
 
       return diagnostic.message
@@ -136,6 +136,21 @@ local function set_lsp_mappings(_, bufnr)
     bufnr, 'n', ']e', '<cmd>lua vim.diagnostic.goto_next('
     .. '{severity = vim.diagnostic.severity.ERROR})<CR>')
 
+  api.nvim_create_user_command('Format', function(opts)
+    if vim.lsp.buf.format then
+      local args = { async = true }
+      if opts.range > 0 then
+        args.range = {}
+        args.range['start'] = api.nvim_buf_get_mark(0, '<')
+        args.range['end'] = api.nvim_buf_get_mark(0, '>')
+      end
+
+      vim.lsp.buf.format(args)
+      return
+    end
+    --- Deprecated formatting for older Nvim versions.
+    vim.lsp.buf.formatting()
+  end, { range = '%' })
 
   --- Open full diagnostics in location-list + find symbols(primitive data type) using telescope.
   buf_keymap(bufnr, 'n', '<Space>q', '<cmd>lua vim.diagnostic.setloclist()<CR>')

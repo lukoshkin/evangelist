@@ -14,6 +14,7 @@ alias zshrc="vim $EVANGELIST/custom/custom.zsh"
 ## CONSOLE INPUT
 ## -------------
 ## Key repeat rate (to navigate faster with a key pressed)
+## (`xset` works with Xorg. Ubuntu 22.04 stars with Wayland by default.)
 xset r rate 250 70 2> /dev/null
 
 ## Some cozy bindings

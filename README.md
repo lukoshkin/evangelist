@@ -125,7 +125,7 @@ Before to go into details, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.4.6 (!)
+Patch 1.4.7 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -160,6 +160,7 @@ Patch 1.4.6 (!)
   | `md` | Create a directory (or nested folders) and cd there |
   | `tree` | Draw a project tree (files and directories); <br> if not installed `dtree` is called instead <br> (a "safe" wrapper around Unix `tree`) |
   | `dtree` | Draw a project tree (folders only) |
+  | `o` | Alias for xdg-open |
   | `v` | Open the last file closed (in Vim) |
   | `vip` | Make the "vim-ipython" split in tmux <br> (available only if tmux settings are installed; former configuration) |
   | `vrmswp [name]` | Delete swap file by name or part of its name |
@@ -392,6 +393,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | c | `:Insert <cmd>` | Paste the cmd output to the current buffer |
   | c | `:Print <lua_table>` | Print lua table in the cmdline window |
   | <br>n | <br>`<C-(Up\|Down\|Left\|Right)>` | Resize window <br> vertically (Up+/Down-) <br> or horizontally (Left-/Right+) |
+  | c | `:Format` | Formats a specified range in the file with available formatter |
 
   </details>
 </details>

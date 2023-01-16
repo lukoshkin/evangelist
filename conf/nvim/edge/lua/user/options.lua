@@ -25,6 +25,9 @@ local options = {
   smartcase = true,
   lazyredraw = true,
 
+  --- The mouse is turned off by default.
+  mouse = "",
+
   --- completeopt is relevant for standard Vim menu
   --- and won't work if the latter is overriden by a plugin.
   completeopt = 'menuone,longest,preview',

@@ -13,28 +13,20 @@ LABEL maintainer="lukoshkin.workspace@gmail.com" \
 ENV USER=${USER:-evn}
 ENV HOME=${HOME:-/home/$USER} SHELL=/bin/bash
 ## Set SHELL to get rid of errors in Tmux.
-ENV XDG_CACHE_HOME="$HOME/.cache" \
-    XDG_CONFIG_HOME="$HOME/.config" \
-    XDG_DATA_HOME="$HOME/.local/share"
 
 USER root
 RUN if ! id -u $USER &> /dev/null; then \
       ## Add a user if need be.
       useradd -m -s /bin/bash $USER; \
-    fi \
-    && mkdir -p "$HOME" \
-        "$XDG_DATA_HOME" \
-        "$XDG_CONFIG_HOME/evangelist" \
-        "$XDG_CACHE_HOME/nvim/packer.nvim"
-
-## Install all the libraries required by evangelist.
-RUN export DEBIAN_FRONTEND=noninteractive \
+    fi; \
+    export DEBIAN_FRONTEND=noninteractive \
     && apt-get -qq update \
     && apt-get install -yq \
         build-essential libssl-dev cmake \
         pkg-config automake libtool-bin gettext \
         locales x11-xserver-utils uuid-runtime \
-        git tmux wget curl ruby-full ripgrep tree \
+        git tmux wget curl tree ninja-build \
+        ruby-full ripgrep fd-find libxcb-xinerama0 \
         python3 python3-dev python3-pip \
         # zsh \
     # && chsh -s $(which zsh) \
@@ -53,7 +45,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && gem install neovim \
     && cd .. && rm -rf neovim \
     ## Ensure everything in HOME belongs to USER.
-    && chown -R $USER:$(id -gn $USER) "$HOME" \
+    && mkdir $HOME/.config && chown -R $USER:$(id -gn $USER) "$HOME" \
     ## Upgrade pip and install pynvim & IPython.
     && pip3 install --no-cache-dir --upgrade pip pynvim ipython
 
@@ -65,18 +57,14 @@ RUN if ! $SKIP_JUPYTER; then \
     fi
 
 USER $USER
-COPY --chown=$USER . "$XDG_CONFIG_HOME/evangelist/"
+COPY --chown=$USER:$USER . "$HOME/.config/evangelist/"
 
-## We need to source ~/.bashrc if conda is used.
-RUN . ~/.bashrc \
-    # . ~/.zshrc \
-    && cd $XDG_CONFIG_HOME/evangelist \
+RUN cd "$HOME/.config/evangelist" \
     && ./evangelist.sh install+ bash+ \
     # && ./evangelist.sh install+ zsh+ \
     && if ! $SKIP_JUPYTER; then \
         ./evangelist.sh install jupyter; \
     fi
 
-## WORKDIR is commented out, since the image is used on top of another,
-## and we may want to preserve the original value.
-# WORKDIR $HOME
+## We don't use WORKDIR, since the image may be used on top of another.
+## In this case, preserving the original value might be more preferable.

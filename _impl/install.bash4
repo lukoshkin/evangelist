@@ -444,7 +444,7 @@ install::vim_settings::packer_plugins () {
     bash-language-server shellcheck
     pyright flake8 pylint black
     cpplint clangd
-    rust-analyzer
+    rust-analyzer rustfmt
     lua-language-server stylua
     dockerfile-language-server
     cmake-language-server

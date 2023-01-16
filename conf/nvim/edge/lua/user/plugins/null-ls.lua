@@ -3,7 +3,7 @@ local M = {}
 local nls = require'null-ls'
 local nls_utils = require'null-ls.utils'
 local nls_sources = require'null-ls.sources'
-local b_ins = nls.builtins
+local bins = nls.builtins
 
 local notify = require'notify'
 local fn = require'lib.function'
@@ -24,26 +24,27 @@ end
 
 local sources = {
   -- formatting
-  b_ins.formatting.prettierd,
-  b_ins.formatting.shfmt,
-  b_ins.formatting.fixjson,
-  b_ins.formatting.black.with { extra_args = { "--fast" } },
-  b_ins.formatting.isort,
-  with_root_file(b_ins.formatting.stylua, "stylua.toml"),
+  bins.formatting.prettierd,
+  bins.formatting.shfmt,
+  bins.formatting.rustfmt,
+  bins.formatting.fixjson,
+  bins.formatting.black.with { extra_args = { "--fast" } },
+  bins.formatting.isort,
+  with_root_file(bins.formatting.stylua, "stylua.toml"),
 
   -- diagnostics
-  b_ins.diagnostics.write_good,
-  b_ins.diagnostics.flake8,
-  b_ins.diagnostics.pylint,
-  with_root_file(b_ins.diagnostics.selene, "selene.toml"),
-  with_diagnostics_code(b_ins.diagnostics.shellcheck),
+  bins.diagnostics.write_good,
+  bins.diagnostics.flake8,
+  bins.diagnostics.pylint,
+  with_root_file(bins.diagnostics.selene, "selene.toml"),
+  with_diagnostics_code(bins.diagnostics.shellcheck),
 
   -- code actions
-  b_ins.code_actions.gitsigns,
-  b_ins.code_actions.gitrebase,
+  bins.code_actions.gitsigns,
+  bins.code_actions.gitrebase,
 
   -- hover
-  b_ins.hover.dictionary,
+  bins.hover.dictionary,
 }
 
 --- Custom actions

@@ -3,7 +3,7 @@ local open = require'lib.utils'._opener
 local fn = require'lib.function'
 local api = vim.api
 
-local aug_jj = api.nvim_create_augroup('EasierJJ', {clear = true})
+local aug_jj = api.nvim_create_augroup('EasierJJ', {clear=true})
 api.nvim_create_autocmd('InsertEnter', {
   command = 'set timeoutlen=200',
   group = aug_jj
@@ -98,6 +98,13 @@ keymap('n', '<A-N>', 'Nzzzv')
 --- Open the current buffer in a new tab.
 --- When it is not needed anymore, one can close it with ZZ or ZQ.
 keymap('n', '<Space>t', ':tabnew %<CR>')
+
+--- Clear the terminal screen with a shortcut.
+--- (the same nmap is in 'lukoshkin/slime-wrapper.nvim', but for '.py')
+--- It might be better to move it to `bottom-term` plugin settings.
+keymap('n', '<Space>l', function ()
+  require'bottom-term.core'.execute'clear'
+end)
 
 --- Trim trailing whitespaces.
 api.nvim_create_user_command(

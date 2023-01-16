@@ -42,6 +42,7 @@ alias fd='find . -type d -name'
 alias ff='find . -type f -name'
 alias grep='grep --color'
 alias rexgrep="grep -rIn --exclude-dir='.?*'"
+alias o='xdg-open'
 
 ## Open the last file closed:
 # alias v="vim +'e #<1'"
@@ -93,6 +94,13 @@ _math () {
 }
 
 
+st () {
+  if [[ -n $1 ]] || ! git status 2> /dev/null; then
+    eval "du -hm --max-depth=1 $1" | sort -n -r
+  fi
+}
+
+
 if [[ $_shell = bash ]]; then
   ## Repeat the last command in Bash (just like in Zsh).
   r () {
@@ -106,25 +114,43 @@ else
 fi
 
 
+_mangle_name () {
+  local name=$1
+  no=$(sed -nr 's;.*\(([0-9]+)\)(\.[^\.]+)?$;\1;p' <<< "$name")
+
+  if [[ -z $no ]]; then
+    if [[ $name != *.* || -d /tmp/$name  ]]; then
+      name+='(1)'
+    else
+      name=$(sed -r 's;(.*)(\.[^\.]+);\1(1)\2;' <<< "$name")
+    fi
+  else
+    copy_no=$(( no + 1 ))
+    name=$(sed -r "s;(.*\()$no(\)(\.[^\.]+)?)\$;\1$copy_no\2;" <<< "$name")
+  fi
+
+  echo "$name"
+}
+
+
 mv () {
-  ## TODO: Add check that the file being moved is not already in /tmp.
-  ## Something like 'gvfs-trash' implementation
+  ## Something like 'gvfs-trash' implementation.
   ## When passing just one argument, it "removes" file or folder
   ## backing it up at the "trash bin" (/tmp).
 
-  ## This is an early implementation. Probably, the dummy one.
   ## Some of concerns:
   ## - /tmp is a limited in size partition
-  ## - there is a way to get rid of `while`-loop
+  ## - `while`-loop
   command -v realpath &> /dev/null
   local code=$?
 
   if [[ $# != 1 || $code -ne 0 ]]; then
     command mv "$@"
   else
-    local no copy_no
+    local no copy_no parent
+    local loop_cnt=0 max_loop_cnt=100
     local name=$1 landing=/tmp
-    local parent=$(realpath "$(dirname "$name")")
+    parent=$(realpath "$(dirname "$name")")
 
     if [[ $parent = "/tmp" ]]; then
       echo "You can't use one-arg mv cmds in /tmp dir."
@@ -132,13 +158,12 @@ mv () {
     fi
 
     while [[ -e /tmp/$name ]]; do
-      no=$(sed -nr 's;.*\(([0-9]+)\)\.[^\.]*;\1;p' <<< "$name")
+      name=$(_mangle_name "$name")
 
-      if [[ -z $no ]]; then
-        name=$(sed -r 's;(.*)(\.[^\.]*);\1(1)\2;' <<< "$name")
-      else
-        copy_no=$(( no + 1 ))
-        name=$(sed -r "s;(.*\()$no(\)\.[^\.]*);\1$copy_no\2;" <<< "$name")
+      (( loop_cnt ++ ))
+      if [[ $loop_cnt -ge $max_loop_cnt ]]; then
+        echo "EVANGELIST's Impl.error: infinite loop"
+        return 1
       fi
     done
 

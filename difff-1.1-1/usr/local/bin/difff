@@ -8,50 +8,68 @@ fi
 PRINT_ES=21
 
 help_msg () {
-  echo 'Usage: difff [<options>] <prefix>'
-  echo '<prefix> is the path to a counterpart directory'
-  echo
-  echo -e '-s|--staged\t use --staged flag in `git diff`.'
-  echo -e '-n|--dry-run\t show how it would be w/o doing anything.'
-  echo -e '-a|--add-new\t add-new files from the counterpart directory.'
+  printf 'Usage from anywhere:\n'
+  printf '    diff [<options>] -D1 <project> -D2 <counter>\n'
+  printf 'From a <project> directory:\n'
+  printf '    difff [<options>] <prefix>\n'
+  printf '<prefix> is the path to a <counter> directory\n\n'
 
-  echo -e '-m|--mode=<mode>\t <mode> can be git or folder.'
-  echo -e '-d|--folder=<dir>\t parent folder of the target directory limiting #files to be compared.'
-  echo -e '-t|--trim-cnt=<N>\t trim <N> leading dirs from the target directory path.'
+  printf 'Allowed <options>:\n'
+  printf '%-20s %s\n' '-s|--staged' 'use --staged flag in `git diff`.'
+  printf '%-20s %s\n' '-n|--dry-run' 'show how it would be w/o doing anything.'
+  printf '%-20s %s\n' '-a|--add-new' 'add-new files from the counterpart directory.'
+
+  printf '%-20s %s\n' '-m|--mode=<mode>' '<mode> can be git or folder.'
+  printf '%-20s %s\n' '-d|--folder=<dir>' 'parent folder of the target directory limiting #files to be compared.'
+  printf '%-20s %s\n' '-t|--trim-cnt=<N>' 'trim <N> leading dirs from the target directory path.'
 }
 
 
 function difff () {
-  local long_opts='trim-cnt:,folder:,mode:,staged,dry-run,add-new'
-  local short_opts='t:,d:,m:,s,n,a'
+  local long_opts='trim-cnt:,folder:,mode:,staged,dry-run,add-new,D1:,D2:,help'
+  local short_opts='t:,d:,m:,s,n,a,h'
   local params
 
   params=$(getopt -o $short_opts  -l $long_opts --name "$0" -- "$@") \
     || { echo Aborting..; return $PRINT_ES; }
   eval set -- "$params"
 
-  local staged dry_run add_new mode folder trim_cnt
+  local folder prefix
+  local staged dry_run add_new mode trim_cnt
   while [[ $1 != -- ]]; do
     case $1 in
-      -s|--staged)    staged=--staged; shift 1 ;;
-      -n|--dry-run)   dry_run=yes; shift 1 ;;
-      -a|--add-new)   add_new=yes; shift 1 ;;
-      -m|--mode)      mode=$2; shift 2;;
-      -d|--folder)    folder=./$2; shift 2 ;;
-      -t|--trim-cnt)  trim_cnt=$2; shift 2 ;;
+      -h|--help)        help_msg; return ;;
+      -s|--staged)      staged=--staged; shift 1 ;;
+      -n|--dry-run)     dry_run=yes; shift 1 ;;
+      -a|--add-new)     add_new=yes; shift 1 ;;
+      -m|--mode)        mode=$2; shift 2;;
+      --D2)             prefix=$2; shift 2 ;;
+      -d|--D1|--folder) folder=$2; shift 2 ;;
+      -t|--trim-cnt)    trim_cnt=$2; shift 2 ;;
 
       *) echo Impl.error; return 1 ;;
     esac
   done
 
   shift 1
-  [[ $# -eq 0 ]] && { echo Prefix not set; return $PRINT_ES; }
+  if [[ -n $prefix ]]; then
+    if [[ -n $1 ]]; then
+      echo Unexpected pos. arg.
+      return $PRINT_ES;
+    fi
+  else
+    if [[ -z $1 ]]; then
+      echo Prefix not set
+      return $PRINT_ES;
+    else
+      prefix=$1
+    fi
+  fi
 
-  local prefix=$1
   ! [[ -d $prefix ]] && { echo Prefix $prefix not found; return 1; }
   ! [[ -d ${folder:=.} ]] && { echo Folder $folder not found; return 1; }
 
-  if [[ ${mode:=git} != git ]] && [[ $mode != folder ]]; then
+  if [[ ${mode:=folder} != folder ]] && [[ $mode != git ]]; then
     echo Invalid mode: $mode
     return $PRINT_ES
   fi
@@ -59,19 +77,19 @@ function difff () {
   declare -a files
   if [[ $mode = folder ]]; then
     shopt -s globstar  # won't work for older Bash shells
-    files=( ${folder%/}/**/* )
+    files=( "${folder%/}"/**/* )
   else
     git status &> /dev/null || { echo Not a git project.; return 1; }
-    files=( $(git diff $staged --name-only "$folder") )
+    mapfile -t < <( git diff $staged --name-only "$folder" ) files
   fi
 
   if [[ -z $trim_cnt ]]; then
-    trim_cnt=0
-  else
-    (( trim_cnt ++ ))
+    local shards
+    IFS='/' read -ra shards <<< "${folder#/}"
+    trim_cnt=${#shards[@]}
   fi
 
-  echo "$folder .vs. $prefix"
+  echo "$folder (project) .vs. $prefix (counterpart)"
   echo
 
   local file find_out desc
@@ -127,11 +145,11 @@ function difff () {
     counter=$(sed -r "s;([^\/]+\/){$trim_cnt}(.*);\2;" <<< "$file")
     counter="${prefix%/}/$counter"
 
-    [[ $mode = folder ]] && [[ -d $counter ]] && continue
+    [[ $mode = folder ]] && [[ -d $file || -d $counter ]] && continue
 
     ## Why check `file`? ─ `git diff` reports also deleted.
     ! [[ -f $file ]] && { echo Not in project: $file; continue; }
-    ! [[ -f $counter ]] && { echo Not in couterpart: $counter; continue; }
+    ! [[ -f $counter ]] && { echo Not in counterpart: $counter; continue; }
 
     if [[ -n $dry_run ]]; then
       echo $file -- $counter
@@ -148,6 +166,6 @@ difff "$@"
 es=$?
 
 case $es in
-  $PRINT_ES) echo; help_msg ;;
+  "$PRINT_ES") echo; help_msg ;;
   *) exit $es ;;
 esac
