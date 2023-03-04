@@ -207,7 +207,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | any | `<C-s>` | Save changes to a file |
   | n+v | `<C-(j\|k)>` | Move lines (down\|up) |
   | n | `<M-(h\|j\|k\|l)>` | Insert an empty line or space in the direction <br> which a movement key specifies |
-  | n | `<S-M-(h\|j\|k\|l)>` |  Same, but the cursor remains on the current char |
+  | n | `<S-M-(h\|j\|k\|l)>` | Same, but the cursor remains on the current char |
   | c | `Trim` | Remove all trailing spaces in the whole file or for visual selection |
   | c | `Rmswp` | Delete the swap file corresponding to the current buffer |
   | v | `//` | Search for selected text <br> (doesn't work in `VISUAL LINE` mode) |

@@ -162,6 +162,9 @@ end
 local on_attach = function(client, bufnr)
   set_lsp_mappings(client, bufnr)
   nls_conf.setup_formatters(client, bufnr)
+  if client.server_capabilities.documentSymbolProvider then
+    require('nvim-navic').attach(client, bufnr)
+  end
 end
 
 --- nvim-cmp supports additional completion capabilities
@@ -210,7 +213,7 @@ table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
 
 local lua_ls_bin = os.getenv 'XDG_DATA_HOME' .. '/lua-ls/bin/'
-require'lspconfig'.sumneko_lua.setup {
+require'lspconfig'.lua_ls.setup {
   on_attach = on_attach,
   capabilities = capabilities,
   cmd = {

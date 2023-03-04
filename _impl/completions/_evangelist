@@ -6,6 +6,8 @@ _evangelist() {
   cmds=(
       'checkhealth:Show the installation status or readiness to install.'
       'install:Install one or all of the specified setups: bash zsh vim tmux jupyter.'
+      "save:Back up important folders specified in the '.xport-list.txt'."
+      "load:Load archives previously saved at 'moving-over' directory."
       'update:Update the repository and installed configs.'
       'reinstall:Force update of the repository in case of merge conflicts.'
       'uninstall:Roll back to the original settings.'
@@ -58,4 +60,3 @@ _evangelist() {
 
 compdef evn=evangelist
 _evangelist
-

@@ -87,6 +87,13 @@ gg () {
 }
 
 
+tmp () {
+  cd /tmp || return
+  [[ -z $1 ]] && return
+  eval "$*"
+  cd - > /dev/null
+}
+
 _math () {
   ## _ANS can be reused later.
   _ANS=$(( $* ))
@@ -119,7 +126,7 @@ _mangle_name () {
   no=$(sed -nr 's;.*\(([0-9]+)\)(\.[^\.]+)?$;\1;p' <<< "$name")
 
   if [[ -z $no ]]; then
-    if [[ $name != *.* || -d /tmp/$name  ]]; then
+    if [[ $name != *.* || -d /tmp/$name ]]; then
       name+='(1)'
     else
       name=$(sed -r 's;(.*)(\.[^\.]+);\1(1)\2;' <<< "$name")
@@ -213,7 +220,7 @@ tree () {
 
   [[ -n $1 ]] && w8=$1 || w8=.1
   ## 'script' preserves output colors (one of its assets)
-  ##  Since script saves the output to a file, /dev/null is used to discard it
+  ## Since script saves the output to a file, /dev/null is used to discard it
 
   ## -e - return exit code of the child process
   ## -q - don't write start-end timestamps

@@ -94,12 +94,12 @@ control::checkhealth () {
     o:'pip pip3':pip3 o:'nodejs conda':npm o:xclip \
     +:node::12.12 +l:libxcb-xinerama0 \
     +:ninja:ninja-build +:rg:ripgrep +l:fd-find:fd-find \
-    +:gcc:build-essential +:cmake:cmake
+    +:xelatex:texlive-xetex +:gcc:build-essential +:cmake:cmake \
     ## Many plugins require node (particularly CoC).
     ## `nvim-treesitter` wants gcc compiler, `telescope-fzf-native` ─ CMake.
-    ## 'xclip' to enable Vim's clipboard. 'xinerama0' is needed for
+    ## 'xclip' is to enable Vim's clipboard. 'xinerama0' is needed for
     ## slime-ipython setup. 'telescope.nvim' exploits rg and fd.
-    ## 'ninja' to build Lua LSP.
+    ## 'ninja' to build Lua LSP, xelatex ─ for 'markdown-preview.nvim' plugin.
   write::modulecheck JUPYTER r:'pip pip3':pip3 r:git
   write::modulecheck TMUX r:tmux
 
@@ -116,6 +116,11 @@ control::install () {
 
   mkdir -p .bak
   mkdir -p "$EVANGELIST/custom"
+
+  if ! [[ -f .xport-list.txt ]]; then
+    echo "$EVANGELIST" > .xport-list.txt
+    echo "$HOME/.ssh" >> .xport-list.txt
+  fi
 
   touch .update-list
   if ! grep -q 'LOGIN-SHELL' .update-list
@@ -296,6 +301,8 @@ control::update () {
       ## lstrip 'conf/' in names of the form 'conf/nvim/conf/...'
       cp $OBJ "$XDG_CONFIG_HOME/${OBJ#*/}"
     done
+    echo 'Vim settings: run update command of your plugin manager.'
+    echo 'Vim settings: one may also need to update lsp-servers.'
   fi
 
   ECHO Successfully updated.

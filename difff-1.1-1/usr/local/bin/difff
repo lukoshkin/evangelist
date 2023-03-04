@@ -30,7 +30,7 @@ function difff () {
   local short_opts='t:,d:,m:,s,n,a,h'
   local params
 
-  params=$(getopt -o $short_opts  -l $long_opts --name "$0" -- "$@") \
+  params=$(getopt -o $short_opts -l $long_opts --name "$0" -- "$@") \
     || { echo Aborting..; return $PRINT_ES; }
   eval set -- "$params"
 

@@ -1,9 +1,10 @@
 local nls_conf = require'user.plugins.null-ls'
 local unique = require'lib.utils'.unique
+local api = vim.api
 
 
 local function lsp_clients ()
-  local msg = 'No Active LSP'
+  local msg = 'None'
   local clients = vim.lsp.buf_get_clients()
 
   if next(clients) == nil then
@@ -11,7 +12,7 @@ local function lsp_clients ()
   end
 
   local client_names = {}
-  local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
+  local buf_ft = api.nvim_buf_get_option(0, 'filetype')
 
   for _, client in pairs(clients) do
     if client.name ~= 'null-ls' then
@@ -41,7 +42,7 @@ end
 
 local function conda_env ()
   local msg = ''
-  local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
+  local buf_ft = api.nvim_buf_get_option(0, 'filetype')
 
   if buf_ft == 'python' then
     msg = '(' .. vim.env.CONDA_DEFAULT_ENV .. ')'
@@ -56,7 +57,7 @@ local function cursor_column ()
   local msg = ''
 
   if x > 1 then
-    msg = string.format('j=%d', x)
+    msg = string.format('♟ %d', x)
   end
 
   return msg
@@ -65,6 +66,7 @@ end
 
 require('lualine').setup {
   options = {
+    globalstatus = true,
     theme = 'nord',
     -- component_separators = { left = '', right = ''},
     -- section_separators = { left = '', right = ''},
@@ -76,7 +78,13 @@ require('lualine').setup {
   sections = {
     --- Never contracted, highlighted in theme colors.
     lualine_a = {
-      'filename',
+      { function () return '★☭  ' end,
+        color = function ()
+          if api.nvim_get_mode().mode == 'c' then
+            return { fg = 'yellow' }
+          end
+          return { fg = 'black' }
+        end }
     },
     --- Never contracted.
     lualine_b = {
@@ -92,7 +100,8 @@ require('lualine').setup {
     lualine_c = {},
     lualine_x = {
       --- Get only the cursor column.
-      { cursor_column },
+      { cursor_column,
+        color = { gui = 'bold', fg = 'plum' } },
       { lsp_clients,
         icon = ' LSP:',
         color = { fg = '#87afff' },
@@ -105,8 +114,9 @@ require('lualine').setup {
       -- 'encoding',
       -- 'fileformat',
     },
+    --- This one repeats bufferline and winbar in some sense.
     lualine_y = {
-      'filetype',
+    --   'filetype',
     },
     lualine_z = {
       'progress',

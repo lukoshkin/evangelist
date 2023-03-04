@@ -18,7 +18,7 @@ telescope.setup {
     -- path_display = { 'smart' },
     path_display = { truncate = 1 },
     --- if doesn't fit, truncate path keeping the gap
-    --- between edge and text  at specified size.
+    --- between edge and text at specified size.
     layout_config = {
       prompt_position = 'top',
       preview_width = 80,

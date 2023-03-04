@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
-set -e
 
-bakdir="$EVANGELIST/moving-over"
-baklist="$EVANGELIST/xport.txt"
-
-## TODO: Analyze files in directories specified in xport.txt:
+## TODO: Analyze files in directories specified in .xport-list.txt:
 ## - gather code and text files (with ext-s: .rs, .py, .txt and so on)
 ##   and those that are smaller than some threshold in MB and tar them.
 ## - write names of the rest files in a file, so a user can decide
 ##   themselves what to back up out of this collection.
-## For this functionality, `bakup_analyze` and `unpack_analyze`
+## For this functionality, `save_analyze` and `load_analyze`
 ## can be introduced.
 
 _backup () {
@@ -25,7 +21,8 @@ _backup () {
     && echo "$file tar-ed successfully"
 }
 
-backup_all () {
+xport::save_all () {
+  local bakdir=$1 baklist=$2
   mkdir -p "$bakdir"
 
   while read -r line; do
@@ -45,25 +42,14 @@ _unpack () {
     return
   fi
 
-  tar xf "$bakdir/$name.tar.gz" -kC "$prefix" \
+  tar xf "$bakdir/$name.tar.gz" --keep-newer-files -C "$prefix" \
     && echo "$file untar-ed successfully"
 }
 
-unpack_all () {
+xport::load_all () {
+local bakdir=$1 baklist=$2
+
   while read -r line; do
     _unpack "$line"
   done < "$baklist"
 }
-
-help_msg () {
-  echo 'Backs up directories specified in xport.txt'
-  echo 'Allowed commands: backup/unpack/help'
-}
-
-
-case "$1" in
-  backup)  backup_all ;;
-  unpack)  unpack_all ;;
-  -h|help) help_msg ;;
-  *)       echo "Unrecognized command: '$1'" ;;
-esac

@@ -1,6 +1,7 @@
 vim.g.maplocalleader = ' '
 --- Syntax highlighting for embeded code (e.g., in vim.cmd[[]])
 vim.g.vimsyn_embed = 'lP'
+vim.g.winbar_first_sep = ' 〉'
 
 local options = {
   cursorline = true,
@@ -24,6 +25,7 @@ local options = {
   ignorecase = true,
   smartcase = true,
   lazyredraw = true,
+  updatetime = 250,
 
   --- The mouse is turned off by default.
   mouse = "",

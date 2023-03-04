@@ -52,8 +52,8 @@ local default_config = {
       },
       breakpoints = {
         exception = {
-          cpp_throw  = '',
-          cpp_catch  = ''
+          cpp_throw = '',
+          cpp_catch = ''
         }
       }
     }

@@ -12,6 +12,7 @@ export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
 
 source "$EVANGELIST/_impl/control.sh"
 source "$EVANGELIST/_impl/install.bash4"
+source "$EVANGELIST/_impl/backup.sh"
 source "$EVANGELIST/_impl/write.sh"
 source "$EVANGELIST/_impl/utils.sh"
 
@@ -24,6 +25,8 @@ main() {
     install)        shift; control::install "$@" ;;
     install+)       shift; _EXTEND=-; control::install "$@" ;;
                     ## _EXTEND ─ to install with extensions.
+    save)           backup::save ;;
+    load)           backup::load ;;
 
     update)         control::update $2 ;;
     reinstall)      control::reinstall $2 ;;

@@ -2,7 +2,7 @@
 
 _evangelist () {
   opts=--version
-  cmds='checkhealth install update reinstall uninstall'
+  cmds='checkhealth install save load update reinstall uninstall'
   subcmds='zsh bash vim tmux jupyter'
 
   list=$cmds

@@ -47,6 +47,7 @@ packer.startup(function (use)
 
   --- APPEARANCE
   use 'lukoshkin/trailing-whitespace'
+  use 'lukoshkin/unititle.nvim'
   use {
     'shaunsingh/nord.nvim',
     --- ↓ Stable commit ↓
@@ -56,12 +57,12 @@ packer.startup(function (use)
     end
   }
 
-  use {
-    'glepnir/dashboard-nvim',
-    config = function ()
-      require'user.plugins.dashboard'
-    end
-  }
+  -- use {
+  --   'glepnir/dashboard-nvim',
+  --   config = function ()
+  --     require'user.plugins.dashboard'
+  --   end
+  -- }
 
   use {
     'akinsho/bufferline.nvim',
@@ -140,7 +141,7 @@ packer.startup(function (use)
     --- keys = {'ys', 'cs', 'ds' }}, --> malfunctioning with 'ds'
     {
       'junegunn/vim-easy-align',
-      keys  = 'ga',
+      keys = 'ga',
       config = function ()
         require'user.plugins.vim-easy-align'
       end
@@ -191,6 +192,7 @@ packer.startup(function (use)
       'folke/lsp-colors.nvim',
       'weilbith/nvim-code-action-menu',
       'jose-elias-alvarez/null-ls.nvim',
+      'SmiteshP/nvim-navic',
     },
     config = function ()
       require'user.plugins.lspconfig'
@@ -227,10 +229,22 @@ packer.startup(function (use)
     end
   }
 
+  -- use {
+  --   'puremourning/vimspector',
+  --   config = function ()
+  --     require'user.plugins.vimspector'
+  --   end
+  -- }
+
   use {
-    'puremourning/vimspector',
+    'mfussenegger/nvim-dap',
+    requires = {
+      'rcarriga/nvim-dap-ui',
+      'mfussenegger/nvim-dap-python',
+      'nvim-telescope/telescope-dap.nvim',
+    },
     config = function ()
-      require'user.plugins.vimspector'
+      require'user.plugins.dap'
     end
   }
 

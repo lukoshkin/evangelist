@@ -93,7 +93,7 @@ type dircolors &> /dev/null && eval "$(dircolors -b)"
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 ## 'ignorecase'+'smartcase'+'hyphen_insensitive' completion on the cmd line.
 zstyle ':completion:*' matcher-list 'm:{[:lower:]-_}={[:upper:]_-}'
-##  Highlight for the selected completion menu item.
+## Highlight for the selected completion menu item.
 zstyle ':completion:*' menu select
 
 zmodload zsh/complist
@@ -171,5 +171,5 @@ unset ignore_list
 
 ## EVANGELIST COMPLETIONS (ZSH)
 ## ----------------------------
-fpath+=( "$EVANGELIST/completions" )
+fpath+=( "$EVANGELIST/_impl/completions" )
 compdef evn=evangelist

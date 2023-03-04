@@ -58,7 +58,7 @@ inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 
 function! s:check_back_space() abort
   let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
+  return !col || getline('.')[col - 1] =~# '\s'
 endfunction
 
 "" <C-Space> triggers the completion.
@@ -100,9 +100,9 @@ endfunction
 "" Rename symbol.
 nmap <leader>rn <Plug>(coc-rename)
 "" Apply CodeAction to the current buffer.
-nmap <leader>ca  <Plug>(coc-codeaction)
+nmap <leader>ca <Plug>(coc-codeaction)
 "" Apply AutoFix to a problem on the current line.
-nmap <leader>qf  <Plug>(coc-fix-current)
+nmap <leader>qf <Plug>(coc-fix-current)
 
 "" Manage function and class objects (better to use visual selection).
 "" NOTE: Requires 'textDocument.documentSymbol' support.

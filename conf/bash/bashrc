@@ -151,7 +151,7 @@ fi
 ### Import more aliases.
 source "$EVANGELIST/conf/bash/aliases-functions.sh"
 ### evangelist completions for bash
-source "$EVANGELIST/completions/evn-compl.bash"
+source "$EVANGELIST/_impl/completions/evn-compl.bash"
 
 ## Misc
 ### Increase key repeat rate with xset if it is available.

@@ -220,12 +220,11 @@ install::jupyter_settings () {
 
   ## Install Jupyter if need be.
   HAS jupyter \
-    || { pip install -q jupyter \
-         && HAS jupyter && echo - Installed jupyter.; } \
-      || { ECHO2 Jupyter is not accessible. Aborted.; return 1; }
+    || { pip install -q notebook \
+         && HAS jupyter && echo - Installed notebook.; } \
+       || { ECHO2 "Jupyter (notebook) is not accessible. Aborted."; return 1; }
 
   JUPCONFDIR=$(jupyter --config-dir)
-
   utils::back_up_original_configs jupyter \
     f:"$JUPCONFDIR/custom/custom.js" \
     f:"$JUPCONFDIR/nbconfig/notebook.json"
@@ -441,7 +440,7 @@ install::vim_settings::packer_plugins () {
     -c 'PackerSync' 2> $logfile
 
   declare -a lsp_servers=(
-    bash-language-server shellcheck
+    bash-language-server shellcheck shfmt
     pyright flake8 pylint black
     cpplint clangd
     rust-analyzer rustfmt
