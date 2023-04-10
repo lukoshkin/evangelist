@@ -23,27 +23,35 @@ local with_root_file = function (builtin, file)
 end
 
 local sources = {
-  -- formatting
   bins.formatting.prettierd,
   bins.formatting.shfmt,
   bins.formatting.rustfmt,
   bins.formatting.fixjson,
-  bins.formatting.black.with { extra_args = { "--fast" } },
+  bins.formatting.black.with {
+    extra_args = {
+      "--fast",
+      "--line-length=79",
+      "--preview",
+    }
+  },
   bins.formatting.isort,
   with_root_file(bins.formatting.stylua, "stylua.toml"),
 
-  -- diagnostics
   bins.diagnostics.write_good,
-  bins.diagnostics.flake8,
+  bins.diagnostics.flake8.with {
+    extra_args = {
+      --- Ignore flake8's complaints about `##` and `#<not_whitespace_char>`.
+      '--ignore=E265,E266',
+      '--max-line-length=80',
+    }
+  },
   bins.diagnostics.pylint,
   with_root_file(bins.diagnostics.selene, "selene.toml"),
   with_diagnostics_code(bins.diagnostics.shellcheck),
 
-  -- code actions
   bins.code_actions.gitsigns,
   bins.code_actions.gitrebase,
 
-  -- hover
   bins.hover.dictionary,
 }
 
@@ -55,21 +63,12 @@ local format_text = {
     fn = function (_)
       return {{
         title = 'Format code',
-        action = vim.lsp.buf.formatting
-      }}
-    end
-  }
-}
-
-local organize_imports = {
-  method = nls.methods.CODE_ACTION,
-  filetypes = { 'python' },
-  generator = {
-    fn = function (_)
-      return {{
-        title = 'Organize imports (pyright)',
         action = function ()
-          vim.cmd ':PyrightOrganizeImports'
+          if vim.lsp.buf.format then
+            vim.lsp.buf.format { async = true }
+            return
+          end
+          vim.lsp.buf.formatting()
         end
       }}
     end
@@ -184,7 +183,7 @@ function M.list_registered (ft, method_string)
   local registered = {}
   for _, src in pairs(nls_sources.get_available(ft)) do
     for method in pairs(src.methods) do
-      --- the next line is sth like Python `defaultdict` implementation.
+      --- The next line is sth like Python `defaultdict` implementation.
       registered[method] = registered[method] or {}
       table.insert(registered[method], src.name)
     end
@@ -229,7 +228,6 @@ end
 
 function M.setup (on_attach)
   nls.register(format_text)
-  nls.register(organize_imports)
   nls.register(compare_buffers)
   nls.register(stop_comparing_buffers)
 

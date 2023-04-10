@@ -173,7 +173,6 @@ local capabilities = require(
   vim.lsp.protocol.make_client_capabilities())
 
 local servers = {
-  'pyright',
   'clangd',
   'bashls',
   'dockerls',
@@ -204,21 +203,12 @@ require'lspconfig'.rust_analyzer.setup {
   }
 }
 
---- Lua setup follows this guide:
---- https://jdhao.github.io/2021/08/12/nvim_sumneko_lua_conf/
---- FIXME: multiple instances sumneko_lua.
---- https://github.com/neovim/nvim-lspconfig/issues/319
 local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
-
-local lua_ls_bin = os.getenv 'XDG_DATA_HOME' .. '/lua-ls/bin/'
 require'lspconfig'.lua_ls.setup {
   on_attach = on_attach,
   capabilities = capabilities,
-  cmd = {
-    lua_ls_bin .. 'lua-language-server', '-E', lua_ls_bin .. 'main.lua'
-  },
   settings = {
     Lua = {
       --- Get the language server to recognize the `vim` global

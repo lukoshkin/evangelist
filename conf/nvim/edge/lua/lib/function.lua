@@ -193,7 +193,7 @@ end
 --- Custom completion function for Insert (M.paste_into_buffer)
 --- and Print (M.print_inspect) commands. (Currently, in beta state.)
 function M.complete_lua_or_vim (arg_lead)
-  local sources = {'lua', 'expression', 'option' }
+  local sources = { 'lua', 'expression', 'option' }
   local pat = arg_lead:match'^.+%.(.+)$' or arg_lead
   local prefix = arg_lead:match'^(.+%.).+$'
 

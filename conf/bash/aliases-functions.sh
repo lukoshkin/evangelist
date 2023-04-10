@@ -94,6 +94,12 @@ tmp () {
   cd - > /dev/null
 }
 
+
+tarz () {
+  tar czf "$1.tar.gz" "$@"
+}
+
+
 _math () {
   ## _ANS can be reused later.
   _ANS=$(( $* ))

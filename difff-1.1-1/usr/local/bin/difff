@@ -142,7 +142,7 @@ function difff () {
 
   local counter
   for file in "${files[@]}"; do
-    counter=$(sed -r "s;([^\/]+\/){$trim_cnt}(.*);\2;" <<< "$file")
+    counter=$(sed -r "s;\/?([^\/]+\/){$trim_cnt}(.*);\2;" <<< "$file")
     counter="${prefix%/}/$counter"
 
     [[ $mode = folder ]] && [[ -d $file || -d $counter ]] && continue

@@ -158,8 +158,6 @@ install::vim_settings () {
       packman="$XDG_DATA_HOME/nvim/site/pack/packer/start/packer.nvim"
       install_packman="git clone \
         --depth 1 https://github.com/wbthomason/packer.nvim $packman"
-
-      # install::vim_settings::sumneko_lua
       ;;&
 
     ?00)
@@ -496,27 +494,6 @@ install::vim_settings::vim_plug_plugins () {
   ## Add Vim customization template, if installing from scratch.
   ! [[ -f $EVANGELIST/custom/custom.vim ]] \
     && cp "$EVANGELIST/conf/nvim/custom.vim" "$EVANGELIST/custom"
-}
-
-
-install::vim_settings::sumneko_lua () {
-  [[ -d "$XDG_DATA_HOME/lua-ls" ]] && return
-  HAS ninja || return
-
-  echo 'Installing Lua-LSP..'
-  git clone --depth=1 \
-    https://hub.fastgit.xyz/sumneko/lua-language-server \
-    "$XDG_DATA_HOME/lua-ls"
-
-  local back="$PWD"
-  cd "$XDG_DATA_HOME/lua-ls" \
-    && git submodule update --init --recursive \
-    && cd 3rd/luamake \
-    && compile/install.sh \
-    && cd ../.. \
-    && ./3rd/luamake/luamake rebuild
-
-  cd "$back" && { echo Impl.error: broken dir hierarchy; exit; }
 }
 
 

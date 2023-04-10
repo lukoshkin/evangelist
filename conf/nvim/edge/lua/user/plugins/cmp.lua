@@ -8,9 +8,9 @@ require'luasnip.loaders.from_vscode'.lazy_load()
 
 --- Check if there is no space before the cursor.
 local is_completable = function()
-  local col = vim.fn.col '.' - 1
+  local col = vim.fn.col'.' - 1
   local char = vim.fn.getline('.'):sub(col, col)
-  return col ~= 0 and char:match '%s' == nil
+  return col ~= 0 and char:match'%s' == nil
 end
 
 cmp.setup {
@@ -77,7 +77,7 @@ cmp.setup {
       --- initiate completion (e.g. re-initiate after confirmation).
       if cmp.visible() then
         cmp.select_next_item { behavior = cmp.SelectBehavior.Insert }
-      elseif luasnip.expand_or_jumpable() then
+      elseif luasnip.expand_or_locally_jumpable() then
         luasnip.expand_or_jump()
         --- TODO: set `b:completed_successfully` to false
       elseif is_completable() then
@@ -88,17 +88,17 @@ cmp.setup {
       end
     end, { 'i', 's' }),
 
-    ['<S-Tab>'] = cmp.mapping(function(fallback)
+    ['<S-Tab>'] = cmp.mapping(function(_)
       --- When moving back, we give the same preference order to items
       --- selection in completion menu and hops within the snippet. However,
       --- we don't need to expand anything when moving back, since it had
       --- been expanded during direct passage.
       if cmp.visible() then
         cmp.select_prev_item()
-      elseif luasnip.jumpable(-1) then
+      elseif luasnip.locally_jumpable(-1) then
         luasnip.jump(-1)
       else
-        if vim.fn.col '.' ~= 1 and not is_completable() then
+        if vim.fn.col'.' ~= 1 and not is_completable() then
           --- not is_completable --> col '.' == 1 or prev_char == ' '
           vim.api.nvim_feedkeys(
             vim.api.nvim_replace_termcodes(
@@ -107,6 +107,7 @@ cmp.setup {
       end
     end, { 'i', 's' }),
   },
+
   sources = {
   --- for completion options (corresponding plugins should be installed).
     --- Order matters.

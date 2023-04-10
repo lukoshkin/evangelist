@@ -173,7 +173,7 @@ packer.startup(function (use)
   --- IDE-LIKE
   use {
     'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate',
+    run = ':TSUpdate | :TSInstall query',
     requires = {
       'nvim-treesitter/playground',
       'nvim-treesitter/nvim-treesitter-textobjects',
