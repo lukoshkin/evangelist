@@ -26,13 +26,28 @@ function M.dismiss_distractive ()
 end
 
 
-function M.toggle_numbers_signs ()
+function M.toggle_numbers_signs_diags ()
   if vim.opt.number:get() ~= vim.opt.relativenumber:get() then
     vim.opt.number = vim.opt.relativenumber:get()
   end
 
   vim.opt.number = not vim.opt.number:get()
   vim.opt.relativenumber = not vim.opt.relativenumber:get()
+
+  if vim.g.bak_lspcfg == nil then
+    vim.g.bak_lspcfg = vim.diagnostic.config()
+    vim.g.diag_active = true
+  end
+
+  if vim.g.diag_active then
+    vim.diagnostic.config({ virtual_text = false })
+    vim.diagnostic.config({ underline = false })
+    vim.g.diag_active = false
+  else
+    vim.diagnostic.config({ virtual_text = vim.g.bak_lspcfg.virtual_text })
+    vim.diagnostic.config({ underline = vim.g.bak_lspcfg.underline })
+    vim.g.diag_active = true
+  end
 
   if vim.opt.signcolumn:get() == 'no' then
     vim.opt.signcolumn = 'yes'

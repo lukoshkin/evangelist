@@ -23,6 +23,8 @@ local with_root_file = function (builtin, file)
 end
 
 local sources = {
+  bins.completion.spell,
+
   bins.formatting.prettierd,
   bins.formatting.shfmt,
   bins.formatting.rustfmt,
@@ -38,19 +40,24 @@ local sources = {
   with_root_file(bins.formatting.stylua, "stylua.toml"),
 
   bins.diagnostics.write_good,
+  bins.diagnostics.cspell,  -- grammar
+  bins.formatting.codespell,  -- grammar
   bins.diagnostics.flake8.with {
     extra_args = {
-      --- Ignore flake8's complaints about `##` and `#<not_whitespace_char>`.
-      '--ignore=E265,E266',
+      --- Ignore flake8's complaints about:
+      --- * `##` and `#<not_whitespace_char>`
+      --- * line break before a binary operator
+      '--ignore=E265,E266,W503',
       '--max-line-length=80',
     }
   },
   bins.diagnostics.pylint,
-  with_root_file(bins.diagnostics.selene, "selene.toml"),
+  with_root_file(bins.diagnostics.selene, "selene.toml"),  -- Lua
   with_diagnostics_code(bins.diagnostics.shellcheck),
 
   bins.code_actions.gitsigns,
   bins.code_actions.gitrebase,
+  bins.code_actions.cspell,
 
   bins.hover.dictionary,
 }
@@ -232,6 +239,7 @@ function M.setup (on_attach)
   nls.register(stop_comparing_buffers)
 
   nls.setup {
+    fallback_severity = vim.diagnostic.severity.HINT,
     save_after_format = false,
     sources = sources,
     on_attach = on_attach,

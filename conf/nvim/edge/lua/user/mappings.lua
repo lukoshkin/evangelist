@@ -54,7 +54,7 @@ keymap('n', '<Space><Space>', fn.dismiss_distractive)
 keymap('', '<Leader>en', ':setlocal spell! spelllang=en_us<CR>')
 
 --- Toggle line numbering and signcolumn.
-keymap('n', '<Leader>nu', fn.toggle_numbers_signs)
+keymap('n', '<Leader>nu', fn.toggle_numbers_signs_diags)
 
 --- Put a timestamp (Russian format).
 keymap('n', '<Leader>ts', "i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>")

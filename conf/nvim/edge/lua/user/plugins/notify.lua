@@ -1,4 +1,3 @@
-local api = vim.api
 local notify = require'notify'
 
 --- Suppress error messages from lang servers.

@@ -74,4 +74,4 @@ endfunction
 
 
 Plug 'arcticicestudio/nord-vim'
-colorscheme nord
+silent! colorscheme nord

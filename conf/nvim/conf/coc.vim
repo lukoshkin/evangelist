@@ -1,11 +1,12 @@
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
-let g:coc_global_extensions = [
-      \ 'coc-sh',
-      \ 'coc-json',
-      \ 'coc-pyright',
-      \ 'coc-vimlsp',
-      \ 'coc-clangd' ]
+"" Bad idea since if breaks it leaves the installation window open.
+" let g:coc_global_extensions = [
+"       \ 'coc-sh',
+"       \ 'coc-json',
+"       \ 'coc-pyright',
+"       \ 'coc-vimlsp',
+"       \ 'coc-clangd' ]
 
 "" Make linting popups readable in the colorscheme used by evangelist
 hi CocErrorSign ctermfg=DarkRed

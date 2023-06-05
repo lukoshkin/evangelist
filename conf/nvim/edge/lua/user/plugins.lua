@@ -173,7 +173,7 @@ packer.startup(function (use)
   --- IDE-LIKE
   use {
     'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate | :TSInstall query',
+    run = ':TSUpdate | :TSInstall! query',
     requires = {
       'nvim-treesitter/playground',
       'nvim-treesitter/nvim-treesitter-textobjects',
@@ -263,7 +263,7 @@ packer.startup(function (use)
     'ahmedkhalf/project.nvim',
     config = function()
       require'project_nvim'.setup {
-        --- use pattern. If it does't find anything, use lsp.
+        --- use pattern. If it doesn't find anything, use lsp.
         --- https://github.com/ahmedkhalf/project.nvim/issues/67
         -- detection_methods = { 'pattern', 'lsp' },
 
