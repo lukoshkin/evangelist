@@ -113,6 +113,9 @@ control::install () {
   mkdir -p "$XDG_DATA_HOME"
   mkdir -p "$XDG_CACHE_HOME"
   mkdir -p "$XDG_CONFIG_HOME"
+  mkdir -p "$XDG_STATE_HOME"
+  ## It seems like Neovim does not require manual creation of the latter.
+  ## Most likely, more recent versions of Neovim.
 
   mkdir -p .bak
   mkdir -p "$EVANGELIST/custom"
@@ -298,8 +301,9 @@ control::update () {
   if grep -qE '^n?vim' .update-list
   then
     for OBJ in $(sed -n '/nvim/p' <<< "$UPD"); do
-      ## lstrip 'conf/' in names of the form 'conf/nvim/conf/...'
-      cp $OBJ "$XDG_CONFIG_HOME/${OBJ#*/}"
+      local name=${OBJ#*/}  # lstrip 'conf/' from 'conf/nvim/conf/...'
+      name=${name//edge\//}  # there is no edge dir in dest path
+      cp $OBJ "$XDG_CONFIG_HOME/$name"
     done
     echo 'Vim settings: run update command of your plugin manager.'
     echo 'Vim settings: one may also need to update lsp-servers.'

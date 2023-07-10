@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+PURGEDIR=${PURGEDIR:-$XDG_STATE_HOME/nvim/undo}
+SCRIPTDIR=${SCRIPTDIR:-$EVANGELIST/anacron}
+
 
 main () {
   if [[ $# -eq 0 ]]
@@ -7,18 +10,20 @@ main () {
     help_msg
   fi
 
-  if [[ -z $2 ]]
+  local job_suffix=$1
+  local period=$2
+
+  if [[ -z $period ]]
   then
     period=@monthly
   else
-    safecheck "$2"
-    period=$2
+    safecheck "$period"
   fi
 
-  delay=15
-  jobid='purgeVimUndo'
+  delay=15  # default delay in execution is 15 min.
+  jobid=${PURGEDIR##*/}
 
-  if [[ $1 = old ]]
+  if [[ $job_suffix = old ]]
   then
     case $period in
       @daily) days=1 ;;
@@ -26,27 +31,27 @@ main () {
       @monthly) days=30 ;;
       *) days=$period ;;
     esac
-    cmd="find $XDG_DATA_HOME/nvim/site/undo -type f -mtime +$days -delete"
-  elif [[ $1 = dead ]]
+    cmd="find $PURGEDIR -type f -mtime +$days -delete 2> /dev/null"
+  elif [[ $job_suffix = dead ]]
   then
-    cmd='/bin/sh '
-    parent=$(dirname "${BASH_SOURCE:-$0}")
-    cp "$parent/$jobid.sh" "$XDG_DATA_HOME/nvim/site/" \
-      || { echo "Check that 'evangelist' is installed"; exit; }
-    cmd+="$XDG_DATA_HOME/nvim/site/$jobid.sh $XDG_DATA_HOME/nvim/site/undo"
+    if ! [[ -d $SCRIPTDIR ]]; then
+      echo 'You must specify valid path for SCRIPTDIR'
+      exit 1
+    fi
+    cmd="/bin/sh $SCRIPTDIR/dead-killer.sh $PURGEDIR"
   else
-    echo "Wrong argument: $1"
+    echo "Wrong argument: $job_suffix"
     echo Possible values: old, dead
     exit
   fi
 
-  if ! grep -q "$jobid.$1" /etc/anacrontab
+  if ! grep -q "$jobid.$job_suffix" /etc/anacrontab
   then
-    echo -e "$period $delay $jobid.$1 $cmd\n" \
+    echo "$period $delay $jobid.$job_suffix $cmd" \
       | sudo tee -a /etc/anacrontab > /dev/null \
-      && echo Success! Added the entry!
+      && echo 'Success! Added the entry!'
   else
-    echo Already there!
+    echo 'Already there!'
   fi
 }
 
@@ -56,7 +61,7 @@ safecheck () {
   then
     echo "Wrong argument: $1"
     echo 'Pass any positive integer number (without sign)'
-    echo or one of these qualifiers: @daily @weekly @monthly
+    echo 'or one of these qualifiers: @daily @weekly @monthly'
     exit
   fi
 }
@@ -74,6 +79,4 @@ help_msg () {
 }
 
 
-
 main "$@"
-

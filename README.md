@@ -59,18 +59,37 @@ and the setup script will become more universal and cross-platform.
 5. **Adjust for yourself** (optional).  
     Use `vimrc`, `zshrc` or `bashrc` commands to customize settings.
 
-<br>
+---
+#### Nuances
 
-Since Vim keeps all changes made to files with it, on Linux, one might consider
+Since Vim keeps all changes made to files during editing, on Linux, one might consider
 adding anacron job (or its equivalent on macOS) by running `anacron/anacron.sh` script.
 
+(Suppose we are in anacron folder.)
 * to remove old undofiles  
-`./anacron.sh old @monthly`
+  `./anacron.sh old @monthly`
 
 * or those undofiles which counterparts no longer exist  
-`./anacron.sh dead 30`
+  `./anacron.sh dead 30`
 
-Note, if you are a user of a different OS, you will have to set up 'auto-purge' of the undodir manually.  
+The latter is valid if a user installed vim settings together with bash settings.
+If only vim settings are installed, one must manually copy 'anacron/purgeVimUndo.sh'
+to a location where they want to store this script. And then, specify `SCRIPTDIR` variable
+before the installation command. For instance,
+```bash
+## If we are currently in the evangelist repo
+cp anacron/dead-killer.sh path/to/some/dir
+SCRIPTDIR=path/to/some/dir anacron/anacron.sh dead 30
+```
+
+In the Neovim-Lua setup, the editor also backups once modified files and store their copies in `$XDG_STATE_HOME`.
+To set up automatic clean-up in a similar fashion, one should prepend to the command variable `PURGEDIR` telling
+to the script where Vim's backup folder resides:
+```bash
+PURGEDIR=$XDG_STATE_HOME/nvim/backup ./anacron.sh old @monthly
+```
+
+Note, if you are a user of a different OS, you will have to set up 'auto-purge' of the undodir or backupdir manually.  
 To get more information about what arguments `anacron.sh` takes, type `./anacron.sh`.
 
 Also, check the `develop` branch for recent updates. If there are any,
@@ -125,7 +144,7 @@ Before to go into details, let's get familiar with the imposed notation:
 ---
 
 
-Patch 1.4.7 (!)
+Patch 1.5.0 (!)
 
 <details>
 <summary><b>Shell</b></summary>
@@ -156,6 +175,8 @@ Patch 1.4.7 (!)
 
   | alias/function | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
   |:--------------:|:-----------|
+  | `rm` | slightly more foolproof version of a regular `rm` |
+  | `bak` | create backup copies of files/directories, <br> put them in the same folder |
   | `mkenv [env]` | Remember the environment used in a folder to <br> [de]activate the former when [leaving]/entering the latter <br> _(supports only conda environments)_ |
   | `md` | Create a directory (or nested folders) and cd there |
   | `tree` | Draw a project tree (files and directories); <br> if not installed `dtree` is called instead <br> (a "safe" wrapper around Unix `tree`) |
@@ -197,7 +218,8 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n | `<Leader>y` | Yank current buffer |
   | v | `<Leader>y` | Yank selected text |
   | n | `<Leader>ts` | Paste date and time before the cursor |
-  | n | `<Leader>nu` | Toggle line numbering and sign column |
+  | n | `<Leader>nu` | Toggle line numbering, sign column, and diagnostics |
+  | n | `<Leader>nU` | Toggle line numbering and sign column |
   | n | `<Space>b<Space>` | Split line at the next space after the cursor position |
   | v | `<Space>b<Space>` | Split the entire line at spaces |
   | n | `<Space>bb` | Split line at the next char you previously searched with `f` |

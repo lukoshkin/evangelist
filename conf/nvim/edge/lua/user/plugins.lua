@@ -46,7 +46,7 @@ packer.startup(function (use)
 
 
   --- APPEARANCE
-  use 'lukoshkin/trailing-whitespace'
+  use 'lukoshkin/highlight-whitespace'
   use 'lukoshkin/unititle.nvim'
   use {
     'shaunsingh/nord.nvim',

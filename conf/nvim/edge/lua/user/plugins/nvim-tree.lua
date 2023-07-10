@@ -1,3 +1,4 @@
+local keymap = vim.keymap.set
 local function _opts(bufnr, desc)
   return {
     desc = 'nvim-tree: ' .. desc,

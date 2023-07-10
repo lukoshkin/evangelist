@@ -255,8 +255,33 @@ swap () {
 }
 
 
+bak () {
+  for file in "$@"; do
+    [[ -e bak.$file ]] && { echo "bak.$file already exists"; return 1; }
+    cp -r "$file" "bak.$file"
+  done
+}
+
+
+_think_before () {
+  local nsec=$1
+  while [[ $(( nsec -= 1 )) -gt 0 ]]; do
+    echo "You have $nsec second(s) to change your mind"
+    sleep 1
+  done
+}
+
+
+rm () {
+  if [[ " $* " =~ ' -rf ' ]]; then
+    _think_before 5
+  fi
+  command rm -I "$@"
+}
+
+
 vrmswp () {
-  [[ -z $1 ]] && "Pass the name of swap file to delete."
+  [[ -z $1 ]] && { echo "Pass the name of swap file to delete."; return 1; }
   local swp=${1//\//%}
   rm "$XDG_DATA_HOME/nvim/swap/"*$swp*
 }
@@ -277,5 +302,5 @@ join_by () {
   && grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME/nvim/init.vim") \
   &> /dev/null && source "$EVANGELIST/conf/tmux/templates.sh"
 
-## Save to use from the interective shell?
+## Save to use from the interactive shell?
 # unset _shell

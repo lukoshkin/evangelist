@@ -41,7 +41,15 @@ local options = {
   splitbelow = true,
 
   undofile = true,
-  directory = vim.fn.stdpath 'data' .. '/swap//',
+  backup = true,
+  writebackup = true,
+
+  --- Defaults in recent Neovim versions.
+  directory = vim.fn.stdpath 'state' .. '/swap//',
+  backupdir = vim.fn.stdpath 'state' .. '/backup//',
+  undodir = vim.fn.stdpath 'state' .. '/undo//',
+  --- '//' at the end tells vim to use absolute file paths
+  --- (when saving swap, undo, or backup files) to avoide name collisions.
 }
 
 for k, v in pairs(options) do

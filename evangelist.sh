@@ -9,6 +9,7 @@ export EVANGELIST=${EVANGELIST:-.}
 export XDG_CACHE_HOME=${XDG_CACHE_HOME:-"$HOME/.cache"}
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
 export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
+export XDG_STATE_HOME=${XDG_STATE_HOME:-"$HOME/.local/state"}
 
 source "$EVANGELIST/_impl/control.sh"
 source "$EVANGELIST/_impl/install.bash4"
@@ -40,7 +41,7 @@ main() {
 
 ctrl_c () {
   NOTE 210 '\nInterrupted by user. Aborting..'
-  echo You may need to do a manual clean-up.
+  echo 'You may need to do a manual clean-up.'
   kill -9 $$
 }
 

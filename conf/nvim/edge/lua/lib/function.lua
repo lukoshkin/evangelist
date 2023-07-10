@@ -26,6 +26,33 @@ function M.dismiss_distractive ()
 end
 
 
+function M.toggle_numbers_signs ()
+  if vim.opt.number:get() ~= vim.opt.relativenumber:get() then
+    vim.opt.number = vim.opt.relativenumber:get()
+  end
+
+  vim.opt.number = not vim.opt.number:get()
+  vim.opt.relativenumber = not vim.opt.relativenumber:get()
+
+  if vim.opt.signcolumn:get() == 'no' then
+    vim.opt.signcolumn = 'yes'
+  else
+    vim.opt.signcolumn = 'no'
+  end
+end
+
+
+function M.toggle_diags ()
+  if vim.b.diag_active ~= false then
+    vim.diagnostic.hide(nil, 0)
+    vim.b.diag_active = false
+  else
+    vim.diagnostic.show(nil, 0)
+    vim.b.diag_active = true
+  end
+end
+
+
 function M.toggle_numbers_signs_diags ()
   if vim.opt.number:get() ~= vim.opt.relativenumber:get() then
     vim.opt.number = vim.opt.relativenumber:get()
@@ -34,25 +61,16 @@ function M.toggle_numbers_signs_diags ()
   vim.opt.number = not vim.opt.number:get()
   vim.opt.relativenumber = not vim.opt.relativenumber:get()
 
-  if vim.g.bak_lspcfg == nil then
-    vim.g.bak_lspcfg = vim.diagnostic.config()
-    vim.g.diag_active = true
-  end
-
-  if vim.g.diag_active then
-    vim.diagnostic.config({ virtual_text = false })
-    vim.diagnostic.config({ underline = false })
-    vim.g.diag_active = false
-  else
-    vim.diagnostic.config({ virtual_text = vim.g.bak_lspcfg.virtual_text })
-    vim.diagnostic.config({ underline = vim.g.bak_lspcfg.underline })
-    vim.g.diag_active = true
-  end
-
   if vim.opt.signcolumn:get() == 'no' then
     vim.opt.signcolumn = 'yes'
+    if vim.b.diag_active == false then
+      M.toggle_diags()
+    end
   else
     vim.opt.signcolumn = 'no'
+    if vim.b.diag_active ~= false then
+      M.toggle_diags()
+    end
   end
 end
 

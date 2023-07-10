@@ -219,6 +219,7 @@ write::file_header () {
   _prepend_text $1 ''
   _prepend_text $1 "export XDG_CACHE_HOME=\"$XDG_CACHE_HOME\""
   _prepend_text $1 "export XDG_DATA_HOME=\"$XDG_DATA_HOME\""
+  _prepend_text $1 "export XDG_STATE_HOME=\"$XDG_STATE_HOME\""
   _prepend_text $1 "export XDG_CONFIG_HOME=\"$XDG_CONFIG_HOME\""
   _prepend_text $1 '## XDG bash directory specification'
 

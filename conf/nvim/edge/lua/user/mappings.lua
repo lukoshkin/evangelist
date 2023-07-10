@@ -55,6 +55,7 @@ keymap('', '<Leader>en', ':setlocal spell! spelllang=en_us<CR>')
 
 --- Toggle line numbering and signcolumn.
 keymap('n', '<Leader>nu', fn.toggle_numbers_signs_diags)
+keymap('n', '<Leader>nU', fn.toggle_numbers_signs)
 
 --- Put a timestamp (Russian format).
 keymap('n', '<Leader>ts', "i<C-R>=strftime('%d/%m/%y %H:%M:%S')<CR><Esc>")
@@ -78,7 +79,7 @@ keymap('n', '<A-s>', ':so<CR>')
 --- Break a line at the next space or at the char you searched with `f<char>`.
 --- In visual selection, it is applied to all spanned lines.
 keymap('n', '<Space>b<Space>', 'f<Space>r<CR>')
-keymap('n', '<Space>b', ';li<CR><Esc>')
+keymap('n', '<Space>bb', 'i<CR><Esc>')
 
 keymap('x', '<Space>b<Space>', ':call SplitBySep()<CR>')
 keymap('x', '<Space>bb', [[:call SplitBySep(getreg('/'))<CR>]])
