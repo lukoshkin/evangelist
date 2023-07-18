@@ -81,7 +81,7 @@ require('lualine').setup {
       { function () return '★☭  ' end,
         color = function ()
           if api.nvim_get_mode().mode == 'c' then
-            return { fg = 'yellow' }
+            return { fg = 'yellow', bg = 'PaleVioletRed3' }
           end
           return { fg = 'black' }
         end }

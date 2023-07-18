@@ -1,7 +1,3 @@
-vim.g.nord_contrast = true
-vim.g.nord_borders = true
-vim.g.nord_italic = false
-
 local aug_cc = vim.api.nvim_create_augroup('CustomColors', {clear=true})
 
 vim.api.nvim_create_autocmd('ColorScheme', {
@@ -25,4 +21,19 @@ vim.api.nvim_create_autocmd('ColorScheme', {
   group = aug_cc
 })
 
-vim.cmd 'colorscheme nord'
+require'nightfox'.setup{
+  options = {
+    styles = {
+      comments = "italic",
+      -- variables = "NONE",
+      -- keywords = "NONE",
+      types = "italic, bold",
+      strings = "italic",
+      -- functions = "NONE",
+    }
+  }
+}
+
+vim.cmd.colorscheme 'nordfox'
+--- Also, a good colorscheme:
+-- vim.cmd.colorscheme 'terafox'

@@ -50,7 +50,7 @@ install::vim_settings () {
   ! grep -qE '^(z|ba)sh' .update-list
   _CODE+=$?
 
-  ! ([[ -n $_EXTEND ]] && utils::v1_ge_v2 "$version" 0.7)
+  ! ($_EXTEND && utils::v1_ge_v2 "$version" 0.7)
   _CODE+=$?
 
   ## _CODE[0]:
@@ -501,7 +501,7 @@ install::vim_settings::set_assembly () {
   local assembly
   local set_assembly=minimal
 
-  if [[ -n $_EXTEND ]]; then
+  if $_EXTEND; then
     if [[ $_CODE = ??0 ]]; then
       sed -i 's;^" ;;' "$XDG_CONFIG_HOME/nvim/init.vim"
       sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"

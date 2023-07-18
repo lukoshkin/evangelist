@@ -49,11 +49,9 @@ packer.startup(function (use)
   use 'lukoshkin/highlight-whitespace'
   use 'lukoshkin/unititle.nvim'
   use {
-    'shaunsingh/nord.nvim',
-    --- ↓ Stable commit ↓
-    -- commit = '78f5f00',
+    'EdenEast/nightfox.nvim',
     config = function ()
-      require'user.plugins.nord'
+      require'user.plugins.colors'
     end
   }
 
@@ -88,11 +86,6 @@ packer.startup(function (use)
     config = function ()
       require'user.plugins.gitsigns'
     end
-  }
-
-  use {
-    'j-hui/fidget.nvim',
-    config = function () require'fidget'.setup() end
   }
 
 

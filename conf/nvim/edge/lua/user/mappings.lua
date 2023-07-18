@@ -117,7 +117,7 @@ api.nvim_create_user_command(
 --- Remove swap files of the file opened.
 api.nvim_create_user_command(
   'Rmswp',
-  [[silent !rm "$XDG_DATA_HOME/nvim/swap/"*'%:t'*]],
+  [[silent !rm "$XDG_STATE_HOME/nvim/swap/"*'%:t'*]],
   {}
 )
 

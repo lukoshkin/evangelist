@@ -2,7 +2,6 @@ local keymap = require'lib.utils'.keymap
 
 
 require'gitsigns'.setup {
-  sign_priority = 20,
   on_attach = function(bufnr)
     local gs = package.loaded.gitsigns
 

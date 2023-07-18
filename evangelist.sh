@@ -19,13 +19,14 @@ source "$EVANGELIST/_impl/utils.sh"
 
 
 main() {
+  local _EXTEND=false  # whether to install with extensions
   cd "$EVANGELIST" || { ECHO2 Failed to cd into $EVANGELIST; return; }
   ## No need to cd back in a child process.
 
   case $1 in
     install)        shift; control::install "$@" ;;
-    install+)       shift; _EXTEND=-; control::install "$@" ;;
-                    ## _EXTEND ─ to install with extensions.
+    install+)       shift; _EXTEND=true; control::install "$@" ;;
+
     save)           backup::save ;;
     load)           backup::load ;;
 

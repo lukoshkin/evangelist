@@ -394,7 +394,7 @@ control::reinstall () {
   [[ -f .update-list ]] || { ECHO2 Missing '.update-list'.; exit; }
 
   assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
-  [[ $assembly = extended ]] && _EXTEND=-
+  [[ $assembly =~ (extended|neovim-lua) ]] && _EXTEND=true
 
   local components
   utils::get_installed_components

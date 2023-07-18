@@ -60,6 +60,8 @@ v () {
   fi
 }
 
+alias vf='vim +"normal \ff"'
+
 alias _vimrc="vim $XDG_CONFIG_HOME/nvim/init.*"
 alias vimrc="vim $EVANGELIST/custom/custom.vim"
 
@@ -283,7 +285,7 @@ rm () {
 vrmswp () {
   [[ -z $1 ]] && { echo "Pass the name of swap file to delete."; return 1; }
   local swp=${1//\//%}
-  rm "$XDG_DATA_HOME/nvim/swap/"*$swp*
+  rm "$XDG_STATE_HOME/nvim/swap/"*$swp*
 }
 
 

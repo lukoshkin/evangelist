@@ -132,7 +132,7 @@ install::vim_settings () {
   fi
 
   set_assembly=minimal
-  if [[ -n $_EXTEND ]]; then
+  if $_EXTEND; then
     sed -i 's;^" ;;' "$XDG_CONFIG_HOME/nvim/init.vim"
     sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
     ## CoC is chosen to be a default code-completion engine,
