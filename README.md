@@ -195,6 +195,9 @@ Patch 1.5.0 (!)
   | `_(bash\|zsh\|vim)rc` | Open main config file for the specified target |
   | `math` | Calculate simple expressions <br> (the result is stored in `_ANS` and can be reused) |
   | `evn\|evangelist` | Alias for evangelist.sh executable script |
+  | `gl` | Alias for `git log` |
+  | `gd`/ `gds` | `git diff` / `git diff --staged` |
+  | `glpr` | Prettier `git log`s with short commit hashes, <br> graph visualization, and etc. |
 
   \* Note, the priority is given to custom settings. Also, they will not be overwritten by
   updates or new installations.
@@ -371,6 +374,20 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n | `<Leader>fh` | Find a help tag with Telescope |
   | n | `<Leader>fk` | Find a key mapping with Telescope |
   | n | `<Leader>fn` | Open notifications received during the session in Telescope |
+
+  Nvim-tree file explorer
+
+  |    |    |   |
+  |:--:|:--:|:--|
+  | n | `t` | Open file in a new tab |
+  | n | `<C-s>` | Open file in a horizontal split |
+  | n | `go` | Preview file (don't jump with the cursor there) |
+  | n | `?` | Display a window with the help info |
+  | n | `I` | Toggle .gitignore files |
+  | n | `r` | Refresh the file explorer tree |
+  | n | `R` | Rename file |
+  | n | `d` | Move file to the trash bin |
+  | n | `D` | Permanently delete file |
 
   LSP keymaps (most of LSP mappings are valid for extended settings as well)
 

@@ -55,13 +55,6 @@ packer.startup(function (use)
     end
   }
 
-  -- use {
-  --   'glepnir/dashboard-nvim',
-  --   config = function ()
-  --     require'user.plugins.dashboard'
-  --   end
-  -- }
-
   use {
     'akinsho/bufferline.nvim',
     event = 'BufRead',
@@ -91,6 +84,22 @@ packer.startup(function (use)
 
   --- MISCELLANEA
   use 'sickill/vim-pasta'
+  -- use {
+  --   'sickill/vim-pasta',
+  --   config = function ()
+  --     vim.g.pasta_disabled_filetypes = {
+  --       'python',
+  --       'yaml',
+  --       'coffee',
+  --       'markdown',
+  --       'slim',
+  --       'nerdtree',
+  --       'netrw',
+  --       'startify',
+  --       'ctrlp'
+  --       }
+  --   end
+  -- }
   use 'tpope/vim-sleuth'
   use 'tpope/vim-eunuch'
   use 'jessarcher/vim-heritage'
@@ -170,12 +179,10 @@ packer.startup(function (use)
     requires = {
       'nvim-treesitter/playground',
       'nvim-treesitter/nvim-treesitter-textobjects',
-      'lewis6991/spellsitter.nvim',
       'JoosepAlviste/nvim-ts-context-commentstring',
     },
     config = function ()
       require'user.plugins.treesitter'
-      require'spellsitter'.setup()
     end
   }
 

@@ -44,6 +44,11 @@ alias grep='grep --color'
 alias rexgrep="grep -rIn --exclude-dir='.?*'"
 alias o='xdg-open'
 
+alias gl='git log'
+alias gd='git diff'
+alias gds='git diff --staged'
+alias glpr='git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset"'
+
 ## Open the last file closed:
 # alias v="vim +'e #<1'"
 # alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
