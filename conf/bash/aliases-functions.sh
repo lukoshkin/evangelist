@@ -47,6 +47,9 @@ alias o='xdg-open'
 alias gl='git log'
 alias gd='git diff'
 alias gds='git diff --staged'
+alias gs='git switch'
+alias gsm='git switch master'
+alias gsd='git switch develop'
 alias glpr='git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset"'
 
 ## Open the last file closed:

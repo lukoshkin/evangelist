@@ -1,7 +1,8 @@
 local api = vim.api
+local lspconfig = require "lspconfig"
 local buf_option = vim.api.nvim_buf_set_option
-local buf_keymap = require'lib.utils'.buf_keymap
-local nls_conf = require'user.plugins.null-ls'
+local buf_keymap = require("lib.utils").buf_keymap
+local nls_conf = require "user.plugins.null-ls"
 
 -- local ns = api.nvim_create_namespace('copy-from-help-diagnostic-handlers')
 -- local orig_virt_text_handler = vim.diagnostic.handlers.virtual_text
@@ -43,8 +44,7 @@ local nls_conf = require'user.plugins.null-ls'
 
 --- Create a custom namespace. This will aggregate signs from all other
 --- namespaces and only show the one with the highest severity on a given line
-local ns = api.nvim_create_namespace('copy-from-help-diagnostic-handlers')
-
+local ns = api.nvim_create_namespace "copy-from-help-diagnostic-handlers"
 
 --- Get a reference to the original signs handler
 local orig_signs_handler = vim.diagnostic.handlers.signs
@@ -81,42 +81,42 @@ vim.diagnostic.config {
   signs = true,
   virtual_text = {
     source = false,
-    format = function (_)
-      return ''
-    end
+    format = function(_)
+      return ""
+    end,
   },
 
   float = {
     source = true,
     focus = false,
     format = function(diagnostic)
-      if ((diagnostic.user_data ~= nil)
-          and (diagnostic.user_data.lsp ~= nil)
-          and (diagnostic.user_data.lsp.code ~= nil)) then
-        return string.format(
-          '%s: %s', diagnostic.user_data.lsp.code, diagnostic.message)
+      if
+        (diagnostic.user_data ~= nil)
+        and (diagnostic.user_data.lsp ~= nil)
+        and (diagnostic.user_data.lsp.code ~= nil)
+      then
+        return string.format("%s: %s", diagnostic.user_data.lsp.code, diagnostic.message)
       end
       return diagnostic.message
     end,
   },
 }
 
-
 local function set_lsp_mappings(_, bufnr)
-  buf_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-  buf_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>')
-  buf_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>')
-  buf_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>')
-  buf_keymap(bufnr, 'n', 'gs', '<cmd>lua vim.lsp.buf.signature_help()<CR>')
-  buf_keymap(bufnr, 'n', '<Leader>td', '<cmd>lua vim.lsp.buf.type_definition()<CR>')
-  buf_keymap(bufnr, 'n', '<Leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
-  buf_keymap(bufnr, 'n', 'gr', ':Telescope lsp_references<CR>')
+  buf_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
+  buf_keymap(bufnr, "n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>")
+  buf_keymap(bufnr, "n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>")
+  buf_keymap(bufnr, "n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>")
+  buf_keymap(bufnr, "n", "gs", "<cmd>lua vim.lsp.buf.signature_help()<CR>")
+  buf_keymap(bufnr, "n", "<Leader>td", "<cmd>lua vim.lsp.buf.type_definition()<CR>")
+  buf_keymap(bufnr, "n", "<Leader>rn", "<cmd>lua vim.lsp.buf.rename()<CR>")
+  buf_keymap(bufnr, "n", "gr", ":Telescope lsp_references<CR>")
   --- gi and gI are reserved by original Vim command (see :h gi, e.g.).
-  buf_keymap(bufnr, 'n', '<Leader>i', '<cmd>lua vim.lsp.buf.implementation()<CR>')
+  buf_keymap(bufnr, "n", "<Leader>i", "<cmd>lua vim.lsp.buf.implementation()<CR>")
 
   --- Provided by 'weilbith/nvim-code-action-menu':
-  buf_keymap(bufnr, 'n', '<Leader>ca', ':CodeActionMenu<CR>')
-  buf_keymap(bufnr, 'v', '<Leader>ca', ':CodeActionMenu<CR>')
+  buf_keymap(bufnr, "n", "<Leader>ca", ":CodeActionMenu<CR>")
+  buf_keymap(bufnr, "v", "<Leader>ca", ":CodeActionMenu<CR>")
   --- A standard lsp approach would be
   --- '<cmd>lua vim.lsp.buf.xxx_action()<CR>'
   ---               or
@@ -124,25 +124,31 @@ local function set_lsp_mappings(_, bufnr)
   --- where 'xxx' is 'code' or 'range_code'.
 
   --- 'ge' like (E)xplain (E)rror.
-  buf_keymap(bufnr, 'n', 'ge', '<cmd>lua vim.diagnostic.open_float()<CR>')
+  buf_keymap(bufnr, "n", "ge", "<cmd>lua vim.diagnostic.open_float()<CR>")
   --- ][d for looping over all diagnostic messages.
-  buf_keymap(bufnr, 'n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>')
-  buf_keymap(bufnr, 'n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>')
+  buf_keymap(bufnr, "n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<CR>")
+  buf_keymap(bufnr, "n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>")
   --- ][e ─ over just error messages.
   buf_keymap(
-    bufnr, 'n', '[e', '<cmd>lua vim.diagnostic.goto_prev('
-    .. '{severity = vim.diagnostic.severity.ERROR})<CR>')
+    bufnr,
+    "n",
+    "[e",
+    "<cmd>lua vim.diagnostic.goto_prev(" .. "{severity = vim.diagnostic.severity.ERROR})<CR>"
+  )
   buf_keymap(
-    bufnr, 'n', ']e', '<cmd>lua vim.diagnostic.goto_next('
-    .. '{severity = vim.diagnostic.severity.ERROR})<CR>')
+    bufnr,
+    "n",
+    "]e",
+    "<cmd>lua vim.diagnostic.goto_next(" .. "{severity = vim.diagnostic.severity.ERROR})<CR>"
+  )
 
-  api.nvim_create_user_command('Format', function(opts)
+  api.nvim_create_user_command("Format", function(opts)
     if vim.lsp.buf.format then
       local args = { async = true }
       if opts.range > 0 then
         args.range = {}
-        args.range['start'] = api.nvim_buf_get_mark(0, '<')
-        args.range['end'] = api.nvim_buf_get_mark(0, '>')
+        args.range["start"] = api.nvim_buf_get_mark(0, "<")
+        args.range["end"] = api.nvim_buf_get_mark(0, ">")
       end
 
       vim.lsp.buf.format(args)
@@ -150,11 +156,11 @@ local function set_lsp_mappings(_, bufnr)
     end
     --- Deprecated formatting for older Nvim versions.
     vim.lsp.buf.formatting()
-  end, { range = '%' })
+  end, { range = "%" })
 
   --- Open full diagnostics in location-list + find symbols(primitive data type) using telescope.
-  buf_keymap(bufnr, 'n', '<Space>q', '<cmd>lua vim.diagnostic.setloclist()<CR>')
-  buf_keymap(bufnr, 'n', '<Leader>fs', [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]])
+  buf_keymap(bufnr, "n", "<Space>q", "<cmd>lua vim.diagnostic.setloclist()<CR>")
+  buf_keymap(bufnr, "n", "<Leader>fs", [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]])
 
   --- NOTE: to format relying only on 'textwidth' use 'gw'.
 end
@@ -163,73 +169,80 @@ local on_attach = function(client, bufnr)
   set_lsp_mappings(client, bufnr)
   nls_conf.setup_formatters(client, bufnr)
   if client.server_capabilities.documentSymbolProvider then
-    require('nvim-navic').attach(client, bufnr)
+    require("nvim-navic").attach(client, bufnr)
   end
 end
 
 --- nvim-cmp supports additional completion capabilities
-local capabilities = require(
-  'cmp_nvim_lsp').default_capabilities(
-  vim.lsp.protocol.make_client_capabilities())
+local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
 
 local servers = {
-  'clangd',
-  'bashls',
-  'dockerls',
-  'jsonls',
+  "clangd",
+  "bashls",
+  "dockerls",
+  "jsonls",
 }
 
 for _, lsp in pairs(servers) do
-  require('lspconfig')[lsp].setup {
+  lspconfig[lsp].setup {
     on_attach = on_attach,
     capabilities = capabilities,
   }
 end
 
 --- Add clippy linting (includes performance hints).
-require'lspconfig'.rust_analyzer.setup {
+lspconfig.rust_analyzer.setup {
   on_attach = on_attach,
   capabilities = capabilities,
   settings = {
-    ['rust-analyzer'] = {
+    ["rust-analyzer"] = {
       checkOnSave = {
         allFeatures = true,
         overrideCommand = {
-          'cargo', 'clippy', '--workspace', '--message-format=json',
-          '--all-targets', '--all-features'
-        }
-      }
-    }
-  }
+          "cargo",
+          "clippy",
+          "--workspace",
+          "--message-format=json",
+          "--all-targets",
+          "--all-features",
+        },
+      },
+    },
+  },
+}
+lspconfig.pyright.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  settings = {
+    python = {
+      analysis = { diagnosticMode = "off", typeCheckingMode = "off" },
+    },
+  },
 }
 
-local runtime_path = vim.split(package.path, ';')
-table.insert(runtime_path, 'lua/?.lua')
-table.insert(runtime_path, 'lua/?/init.lua')
-require'lspconfig'.lua_ls.setup {
+local runtime_path = vim.split(package.path, ";")
+table.insert(runtime_path, "lua/?.lua")
+table.insert(runtime_path, "lua/?/init.lua")
+lspconfig.lua_ls.setup {
   on_attach = on_attach,
   capabilities = capabilities,
   settings = {
     Lua = {
       --- Get the language server to recognize the `vim` global
-      diagnostics = { globals = { 'vim' } },
-      runtime = { version = 'LuaJIT', path = runtime_path },
+      diagnostics = { globals = { "vim" } },
+      runtime = { version = "LuaJIT", path = runtime_path },
     },
     --- Make the server aware of Neovim runtime files
-    workspace = { library = api.nvim_get_runtime_file('', true) },
+    workspace = { library = api.nvim_get_runtime_file("", true) },
     --- Do not send telemetry data containing a randomized but unique identifier
     telemetry = { enable = false },
-  }
+  },
 }
 
 --- Configure null-ls here so it reuses `on_attach`.
 nls_conf.setup(on_attach)
 
-vim.fn.sign_define('DiagnosticSignError',
-  { text = '', texthl = 'DiagnosticSignError' })
-vim.fn.sign_define('DiagnosticSignWarn',
-  { text = '', texthl = 'DiagnosticSignWarn' })
-vim.fn.sign_define('DiagnosticSignInfo',
-  { text = '', texthl = 'DiagnosticSignInfo' })
-vim.fn.sign_define('DiagnosticSignHint',
-  { text = '', texthl = 'DiagnosticSignHint' })
+vim.fn.sign_define("DiagnosticSignError", { text = "", texthl = "DiagnosticSignError" })
+vim.fn.sign_define("DiagnosticSignWarn", { text = "", texthl = "DiagnosticSignWarn" })
+vim.fn.sign_define("DiagnosticSignInfo", { text = "", texthl = "DiagnosticSignInfo" })
+vim.fn.sign_define("DiagnosticSignHint", { text = "", texthl = "DiagnosticSignHint" })

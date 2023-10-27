@@ -156,11 +156,11 @@ Patch 1.5.0 (!)
   | mode | shortcut | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
   |:----:|:--------:|:----------|
   | ins | `jj` | Exit insert mode |
-  | cmd | `(j\|k)` | Go to the (next \| Previous) matching substring in cmd history <br> _provided no substring,_ go to the (next \| previous) cmd |
-  | any | `<M-(j\|k)>` | Go to the (next \| previous) cmd matching the current buffer from <br> the beginning (Note: one more `<j/k>` press to exit from ins mode) |
-  | any | `<C-q>` | Deletes the current buffer, so one can execute another cmd, <br> after which the original one would be restored |
+  | cmd | `(j\|k)` | Go to the (next \| Previous) matching substring in cmd history<br>_provided no substring,_ go to the (next \| previous) cmd |
+  | any | `<M-(j\|k)>` | Go to the (next \| previous) cmd matching the current buffer from<br>the beginning (Note: one more `<j/k>` press to exit from ins mode) |
+  | any | `<C-q>` | Deletes the current buffer, so one can execute another cmd,<br>after which the original one would be restored |
   | cmd | `/` | Start interactive fuzzy search over cmds in the history file |
-  | tbc | `?` | Start isearch (# of completion options can be narrowed <br> by typing more chars) |
+  | tbc | `?` | Start isearch (# of completion options can be narrowed<br>by typing more chars) |
   | any | `<C-a>` | Change the prefix of the current command |
 
   **NOTE:** the following settings are only supported by X11 based platforms  
@@ -176,28 +176,29 @@ Patch 1.5.0 (!)
   | alias/function | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;assignment |
   |:--------------:|:-----------|
   | `rm` | slightly more foolproof version of a regular `rm` |
-  | `bak` | create backup copies of files/directories, <br> put them in the same folder |
-  | `mkenv [env]` | Remember the environment used in a folder to <br> [de]activate the former when [leaving]/entering the latter <br> _(supports only conda environments)_ |
+  | `bak` | create backup copies of files/directories,<br>put them in the same folder |
+  | `mkenv [env]` | Remember the environment used in a folder to<br>[de]activate the former when [leaving]/entering the latter<br>_(supports only conda environments)_ |
   | `md` | Create a directory (or nested folders) and cd there |
-  | `tree` | Draw a project tree (files and directories); <br> if not installed `dtree` is called instead <br> (a "safe" wrapper around Unix `tree`) |
+  | `tree` | Draw a project tree (files and directories);<br>if not installed `dtree` is called instead<br>(a "safe" wrapper around Unix `tree`) |
   | `dtree` | Draw a project tree (folders only) |
   | `o` | Alias for xdg-open |
   | `v` | Open the last file closed (in Vim) |
-  | `vip` | Make the "vim-ipython" split in tmux <br> (available only if tmux settings are installed; former configuration) |
+  | `vip` | Make the "vim-ipython" split in tmux<br>(available only if tmux settings are installed; former configuration) |
   | `vrmswp [name]` | Delete swap file by name or part of its name |
   | `d` | Show directories visited by user (autocd zsh option) |
   | `(gg\|G)` | Go through the dir stack in (forward \| backward) direction |
-  | `gg <n>` | Go to n-th directory in the list obtained with `d` <br> &emsp;&emsp;&emsp;&emsp;&emsp; (starting from 0) |
+  | `gg <n>` | Go to n-th directory in the list obtained with `d`<br>&emsp;&emsp;&emsp;&emsp;&emsp; (starting from 0) |
   | `gg -<n>` | Remove n-th directory from the dir stack |
   | `swap` | Swap names of two targets |
-  | `rexgrep <str>` | is equivalent to `grep -rIn --exclude-dir='.?*' <str>`, (exclude <br> hidden directories, binary files from recursive search; add numbering) |
+  | `rexgrep <str>` | is equivalent to `grep -rIn --exclude-dir='.?*' <str>`, (exclude<br>hidden directories, binary files from recursive search; add numbering) |
   | `(bash\|zsh\|vim)rc`\* | Edit user-defined settings for the specified target |
   | `_(bash\|zsh\|vim)rc` | Open main config file for the specified target |
-  | `math` | Calculate simple expressions <br> (the result is stored in `_ANS` and can be reused) |
+  | `math` | Calculate simple expressions<br>(the result is stored in `_ANS` and can be reused) |
   | `evn\|evangelist` | Alias for evangelist.sh executable script |
   | `gl` | Alias for `git log` |
   | `gd`/ `gds` | `git diff` / `git diff --staged` |
-  | `glpr` | Prettier `git log`s with short commit hashes, <br> graph visualization, and etc. |
+  | `gs(m\|d)` | `git switch (master \| develop)` |
+  | `glpr` | Prettier `git log`s with short commit hashes,<br>graph visualization, and etc. |
 
   \* Note, the priority is given to custom settings. Also, they will not be overwritten by
   updates or new installations.
@@ -227,15 +228,15 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | v | `<Space>b<Space>` | Split the entire line at spaces |
   | n | `<Space>bb` | Split line at the next char you previously searched with `f` |
   | v | `<Space>bb` | Split the entire line at a separator you searched with `/` |
-  | n | `<Space><Space>` | Clear a search pattern highlighting, <br> dismiss a message in the cmd line below or in floating wins |
+  | n | `<Space><Space>` | Clear a search pattern highlighting,<br>dismiss a message in the cmd line below or in floating wins |
   | n | `<Leader>x` | Open file under the cursor with xdg-open |
   | any | `<C-s>` | Save changes to a file |
   | n+v | `<C-(j\|k)>` | Move lines (down\|up) |
-  | n | `<M-(h\|j\|k\|l)>` | Insert an empty line or space in the direction <br> which a movement key specifies |
+  | n | `<M-(h\|j\|k\|l)>` | Insert an empty line or space in the direction<br>which a movement key specifies |
   | n | `<S-M-(h\|j\|k\|l)>` | Same, but the cursor remains on the current char |
   | c | `Trim` | Remove all trailing spaces in the whole file or for visual selection |
   | c | `Rmswp` | Delete the swap file corresponding to the current buffer |
-  | v | `//` | Search for selected text <br> (doesn't work in `VISUAL LINE` mode) |
+  | v | `//` | Search for selected text<br>(doesn't work in `VISUAL LINE` mode) |
   | any | `<M-m>` | Toggle mouse |
   | v | `p` | Paste the last yanked text in place of selected one |
   | n | `<A-r>` | Repeat the last colon command used |
@@ -251,9 +252,9 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
 
   |    |    |   |
   |:--:|:--:|:--|
-  | n | `<Leader>nt` | Open tree explorer <br> (helps to navigate through a project tree) |
-  | n | `<Leader>nf` | Open tree explorer <br> starting from a directory of the current file |
-  | n | `<Leader>u` | Open undo-tree |
+  | n | `<Leader>nt` | Open tree explorer<br>(helps to navigate through a project tree) |
+  | n | `<Leader>nf` | Open tree explorer<br>starting from a directory of the current file |
+  | n | `<Leader>u` | Open undo-tree (valid only for old Vim setups;<br>use `<Leader>fu` in Neovim + Lua) |
 
   |   |   |
   |:--|:--|
@@ -288,9 +289,9 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
 
   |    |    |   |
   |:--:|:--:|:--|
-  | n | `<Leader>dc` | Switch to the debug mode <br> or continue running |
+  | n | `<Leader>dc` | Switch to the debug mode<br>or continue running |
   | n | `<Leader>dr` | Terminate debug session and switch to regular editing |
-  | <br>n | <br>`<Leader>ds` | Stop the debugger <br> (You can not continue from where you have stopped. <br> Unlike reset, all windows remain оpen) |
+  | <br>n | <br>`<Leader>ds` | Stop the debugger<br>(You can not continue from where you have stopped.<br>Unlike reset, all windows remain оpen) |
   | n | `<Leader>dd` | Pause the debugger |
   | n | `<Leader>d0` | Restart the debugger |
   | n | `<Space>=` | Step into |
@@ -300,7 +301,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n | `<Space>,` | Add a conditional breakpoint |
   | n | `<Space>:` | Add a function breakpoint |
   | n | `<Space>db` | Toggle section with breakpoints list |
-  | n | `<Space>dd` | Go to the section with source code <br> or move the debugger cursor to the current line |
+  | n | `<Space>dd` | Go to the section with source code<br>or move the debugger cursor to the current line |
   | n | `<Space>dv` | Go to the variables section |
   | n | `<Space>dw` | Go to the watches section |
   | n | `<Space>do` | Go to the section with output |
@@ -322,10 +323,9 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   |:--|:--|
   | [LuaSnip](https://github.com/L3MON4D3/LuaSnip) | Code snippets |
   | [auenv.nvim](https://github.com/lukoshkin/auenv.nvim) | Automatically switch between conda envs |
-  | [bterm.nvim](https://github.com/lukoshkin/bterm.nvim) | Simple terminal call |
+  | [bterm.nvim](https://github.com/lukoshkin/bterm.nvim) | Simple terminal toggle |
+  | [bterm-repl.nvim](https://github.com/lukoshkin/bterm-repl.nvim) | REPL-like extension for 'bterm.nvim' plugin |
   | [bufferline.nvim](https://github.com/akinsho/bufferline.nvim) | Display tabs with buffers at the top |
-  | [dashboard-nvim](https://github.com/glepnir/dashboard-nvim) | Starting page on open |
-  | [fidget.nvim](https://github.com/j-hui/fidget.nvim) | Widget displaying the loading progress of Neovim LSP |
   | [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) | Mark changes to the working tree in the sign column |
   | [vim-easy-align](https://github.com/junegunn/vim-easy-align) | Align block of text |
   | [lsp_signature.nvim](https://github.com/ray-x/lsp_signature.nvim) | Display signature help when modifying function arguments |
@@ -340,10 +340,10 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) | [Tree-sitter](https://github.com/tree-sitter/tree-sitter) in Neovim |
   | [project.nvim](https://github.com/ahmedkhalf/project.nvim) | Automatically change CWD to the root of the project |
   | [quick-scope](https://github.com/unblevable/quick-scope) | Highlight word anchors within the line to do t/f-movement |
-  | [slime-wrapper.nvim](https://github.com/lukoshkin/slime-wrapper.nvim) | Mimic JupyterLab |
   | [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) | Advanced file search with preview |
   | [vim-doge](https://github.com/kkoomen/vim-doge) | Generate documentation template for a function/class |
   | [vim-sayonara](https://github.com/mhinz/vim-sayonara) | Wipe out a buffer, don't close the window |
+  | [hydra.nvim](https://github.com/anuvyklack/hydra.nvim) | Allows to switch to a mode that compresses repeated keys<br>to a shorter sequence |
 
   Jumps
 
@@ -370,6 +370,7 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
   | n | `<Leader>ff` | Open files in Telescope (fuzzy search) |
   | n | `<Leader>fa` | Same but abolish all external ignore patterns |
   | n | `<Leader>fg` | Find string with grep options in Telescope |
+  | n | `<Leader>fu` | Explore Vim's undo-tree in Telescope |
   | n | `gr` | Open LSP references of the symbol under the cursor in Telescope |
   | n | `<Leader>fh` | Find a help tag with Telescope |
   | n | `<Leader>fk` | Find a key mapping with Telescope |
@@ -426,13 +427,16 @@ different setups: old settings (minimal), extended settings, Neovim-Lua (edge, v
 
   |    |    |   |
   |:--:|:--:|:--|
+  | n | `<Leader>g` | Open gitui in a floating window |
   | n+v | `<Leader>hr` | Undo change made to a hunk (in git diff) under the cursor |
-  | <br>n+v | <br>`ga` | Align a block of text <br> One specifies the range by a movement or selection. <br> `<Enter>` switches the alignment mode |
+  | n+v | `<Leader>hs` | Stage selected lines or a hunk under the cursor |
+  | <br>n+v | <br>`ga` | Align a block of text<br>One specifies the range by a movement or selection.<br>`<Enter>` switches the alignment mode |
   | n | `<LocalLeader>dg` | Generate documentation for a function or a class |
   | c | `:Insert <cmd>` | Paste the cmd output to the current buffer |
   | c | `:Print <lua_table>` | Print lua table in the cmdline window |
-  | <br>n | <br>`<C-(Up\|Down\|Left\|Right)>` | Resize window <br> vertically (Up+/Down-) <br> or horizontally (Left-/Right+) |
+  | <br>n | <br>`<C-(Up\|Down\|Left\|Right)>` | Resize window<br>vertically (Up+/Down-)<br>or horizontally (Left-/Right+) |
   | c | `:Format` | Formats a specified range in the file with available formatter |
+  | n | `<Space>(p\|P)` | wrap a (word\|WORD) with Python print statement |
 
   </details>
 </details>
@@ -464,7 +468,7 @@ Check the rest settings with `<F1>` or `H` (`<Shift-h>`) while running Jupyter s
 |:--------:|:-----------|
 | `<C-b> + (h\|j\|k\|l)` | go to the window (on the left \| below \| above \| on the right) |
 | `<M-S-(h\|j\|k\|l)>` | resize pane moving the border (to the left \| down \| up \| to the right) |
-| `<C-b> + (H\|J\|K\|L)` | swap the window that has input focus with <br> the one (on the left \| below \| above \| on the right) |
+| `<C-b> + (H\|J\|K\|L)` | swap the window that has input focus with<br>the one (on the left \| below \| above \| on the right) |
 | `<C-b>Q` | close vim buffers (saving them first if modified) and terminate tmux session |
 | `<C-b>y` | toggle synchronous input in all panes |
 | `<C-b>m` | toggle mouse support |
@@ -581,10 +585,10 @@ This work is based primarily on leveraging the following projects and resources.
 
   <tr>
     <td> - <a href="https://github.com/jessarcher/dotfiles"> dotfiles1 </a>
-    <br> - <a href="https://github.com/alpha2phi/dotfiles"> dotfiles2 </a>
-    <br> - <a href="https://github.com/folke/dot"> dotfiles3 </a>
+   <br>- <a href="https://github.com/alpha2phi/dotfiles"> dotfiles2 </a>
+   <br>- <a href="https://github.com/folke/dot"> dotfiles3 </a>
     </td>
-    <td> <br> custom settings I found on Git </td>
+    <td><br>custom settings I found on Git </td>
   </tr>
 </table>
 

@@ -1,19 +1,33 @@
-local keymap = require'lib.utils'.keymap
+local keymap = require 'lib.utils'.keymap
 
 
-require'gitsigns'.setup {
+require 'gitsigns'.setup {
   on_attach = function(bufnr)
     local gs = package.loaded.gitsigns
 
     keymap('n', ']g', function()
       if vim.wo.diff then return ']g' end
-      vim.schedule(function() gs.next_hunk() end)
+      vim.schedule(function()
+        gs.next_hunk()
+        --- Needs to be executed with a delay.
+        --- Otherwise, not working in version 0.6
+        vim.defer_fn(function()
+          vim.api.nvim_feedkeys('zz', 'n', false)
+        end, 5)
+      end)
       return '<Ignore>'
     end, { expr = true })
 
     keymap('n', '[g', function()
       if vim.wo.diff then return '[g' end
-      vim.schedule(function() gs.prev_hunk() end)
+      vim.schedule(function()
+        gs.prev_hunk()
+        --- Needs to be executed with a delay.
+        --- Otherwise, not working in version 0.6
+        vim.defer_fn(function()
+          vim.api.nvim_feedkeys('zz', 'n', false)
+        end, 5)
+      end)
       return '<Ignore>'
     end, { expr = true })
 
@@ -30,6 +44,6 @@ require'gitsigns'.setup {
     end)
 
     -- Text object
-    keymap({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+    keymap({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
   end
 }

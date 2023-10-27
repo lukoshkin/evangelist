@@ -1,9 +1,9 @@
-local keymap = require'lib.utils'.keymap
-local open = require'lib.utils'._opener
-local fn = require'lib.function'
+local keymap = require 'lib.utils'.keymap
+local open = require 'lib.utils'._opener
+local fn = require 'lib.function'
 local api = vim.api
 
-local aug_jj = api.nvim_create_augroup('EasierJJ', {clear=true})
+local aug_jj = api.nvim_create_augroup('EasierJJ', { clear = true })
 api.nvim_create_autocmd('InsertEnter', {
   command = 'set timeoutlen=200',
   group = aug_jj
@@ -26,17 +26,17 @@ keymap('n', '<S-A-k>', '<S-o><Esc>j')
 keymap('n', '<S-A-h>', 'i<Space><Esc>l')
 keymap('n', '<S-A-l>', 'a<Space><Esc>h')
 
-keymap({'n', 'i'}, '<A-m>', fn.toggle_mouse)
+keymap({ 'n', 'i' }, '<A-m>', fn.toggle_mouse)
 
 keymap('n', '<C-j>', ':m+1<CR>==')
 keymap('n', '<C-k>', ':m-2<CR>==')
 keymap('v', '<C-j>', ":m'>+<CR>gv=gv")
 keymap('v', '<C-k>', ':m-2<CR>gv=gv')
 
-keymap('n', '<C-Left>', function () fn.resize('-2', {vertical=true}) end)
-keymap('n', '<C-Right>', function () fn.resize('+2', {vertical=true}) end)
-keymap('n', '<C-Down>', function () fn.resize('-2') end)
-keymap('n', '<C-Up>', function () fn.resize('+2') end)
+keymap('n', '<C-Left>', function() fn.resize('-2', { vertical = true }) end)
+keymap('n', '<C-Right>', function() fn.resize('+2', { vertical = true }) end)
+keymap('n', '<C-Down>', function() fn.resize('-2') end)
+keymap('n', '<C-Up>', function() fn.resize('+2') end)
 
 --- Copy to clipboard selected text or the whole file.
 keymap('x', '<Leader>y', '"+y')
@@ -69,7 +69,7 @@ keymap('v', '//', [[y/\V<C-R>=escape(@",'/\')<CR><CR>]])
 keymap('', 'gf', ':edit <cfile><CR>')
 
 --- Open file with the system standard utility.
-keymap('n', '<Leader>x', ':!'.. open ..' <C-R>=expand("<cfile>")<CR><CR>')
+keymap('n', '<Leader>x', ':!' .. open .. ' <C-R>=expand("<cfile>")<CR><CR>')
 
 --- Save changes to a file.
 keymap('n', '<C-s>', ':update<CR>')
@@ -96,16 +96,26 @@ keymap('n', '<C-u>', '<C-u>zz')
 keymap('n', '<A-n>', 'nzzzv')
 keymap('n', '<A-N>', 'Nzzzv')
 
+keymap('n', '[c', '[czz')
+keymap('n', ']c', ']czz')
+
 --- Open the current buffer in a new tab.
 --- When it is not needed anymore, one can close it with ZZ or ZQ.
 keymap('n', '<Space>t', ':tabnew %<CR>')
 
---- Clear the terminal screen with a shortcut.
---- (the same nmap is in 'lukoshkin/slime-wrapper.nvim', but for '.py')
---- It might be better to move it to `bottom-term` plugin settings.
-keymap('n', '<Space>l', function ()
-  require'bottom-term.core'.execute'clear'
+--- Wrap Python's <symbol> with print(f"{<symbol>=}")
+keymap('n', '<Space>p', function()
+  -- fn.left_right_paste('ea=}")<Esc>', 'F=hbiprint(f"{<Esc>')
+  fn.left_right_paste('viw<Esc>a=}")<Esc>', 'F=hbiprint(f"{<Esc>')
 end)
+
+keymap('n', '<Space>P', function()
+  -- fn.left_right_paste('Ea=}")<Esc>', 'F=hBiprint(f"{<Esc>')
+  fn.left_right_paste('viW<Esc>a=}")<Esc>', 'F=hBiprint(f"{<Esc>')
+end)
+
+--- Start gutui in FloatingTerm instance of the 'bterm' plugin.
+keymap("n", "<Leader>g", fn.gitui)
 
 --- Trim trailing whitespaces.
 api.nvim_create_user_command(
@@ -124,16 +134,16 @@ api.nvim_create_user_command(
 --- Paste cmd's output into the current buffer.
 api.nvim_create_user_command(
   'Insert', -- 'In*' is easier to complete with Tab than 'Pa*'.
-  fn.paste_into_buffer, { nargs='+', complete=fn.complete_lua_or_vim }
+  fn.paste_into_buffer, { nargs = '+', complete = fn.complete_lua_or_vim }
 )
 
 --- Print lua table in the cmdline window.
 api.nvim_create_user_command('Print', fn.print_inspect, {
-    nargs='+', complete=fn.complete_lua_or_vim
+  nargs = '+', complete = fn.complete_lua_or_vim
 })
 
 --- Set 'nowrap' if window width is < 110 char.
-local aug_tw = api.nvim_create_augroup('AutoTW', {clear = true})
+local aug_tw = api.nvim_create_augroup('AutoTW', { clear = true })
 api.nvim_create_autocmd({ 'BufWinEnter', 'WinEnter' }, {
   callback = fn.narrow_win_nowrap,
   group = aug_tw,

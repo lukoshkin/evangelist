@@ -100,14 +100,15 @@ local function vimspector_continue ()
   if dap_caller['buf'] ~= nil then
     vim.notify(
       ' Vimspector: Several debug instances are not supported!\n' ..
-      ' Close the first instance before opening a new one.')
+      ' Close the first instance before opening a new one.',
+      nil, { title = 'Vimspector' })
     return
   end
 
   local ft = api.nvim_buf_get_option(0, 'filetype')
   if default_config[ft] == nil then
-    vim.notify("No default config for '"
-      .. ft .."' file", vim.log.levels.WARN)
+    vim.notify(" No default config for '"
+      .. ft .."' file", vim.log.levels.WARN, { title = 'Vimspector' })
     return
   end
 
@@ -124,7 +125,7 @@ local function vimspector_continue ()
     local name = fn.input('Path to the executable: ', hint, 'file')
 
     if name == '' then
-      vim.notify(' Vimspector: Aborted!')
+      vim.notify(' Vimspector: Aborted!', nil, { title = 'Vimspector' })
       vimspector_reset()
       return
     end

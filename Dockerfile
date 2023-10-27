@@ -9,7 +9,8 @@ ENV USER=${USER:-evn}
 ## Set SHELL to get rid of errors in Tmux.
 ENV HOME=${HOME:-/home/$USER} SHELL=/bin/bash
 ## Add a user if need be.
-RUN if ! id -u $USER &> /dev/null; then \
+## NOTE: `&>` won't work for sh.
+RUN if ! id -u $USER > /dev/null 2>&1; then \
       useradd -m -s /bin/bash $USER; \
     fi
 ## The first RUN uses 'requirements' files, the second ─ the rest.

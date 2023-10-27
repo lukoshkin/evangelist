@@ -1,30 +1,28 @@
-local packer = require'lib.packer-init'
+local packer = require 'lib.packer-init'
 --- Sections: CORE, APPEARANCE, MISCELLANEA, IDE-LIKE
 
-packer.startup(function (use)
+packer.startup(function(use)
   use 'wbthomason/packer.nvim'
   use {
     'williamboman/mason.nvim',
-    config = function ()
-      require'mason'.setup()
+    config = function()
+      require 'mason'.setup()
     end
   }
 
 
   --- CORE
   use {
-    'simnalamburt/vim-mundo',
-    keys = '<Leader>u',
+    'anuvyklack/hydra.nvim',
     config = function()
-      require'user.plugins.undo'
+      require 'user.plugins.hydra'
     end
   }
-
   use {
     'kyazdani42/nvim-tree.lua',
     requires = 'kyazdani42/nvim-web-devicons',
-    config = function ()
-      require'user.plugins.nvim-tree'
+    config = function()
+      require 'user.plugins.nvim-tree'
     end
   }
 
@@ -38,9 +36,10 @@ packer.startup(function (use)
       { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
       'nvim-telescope/telescope-live-grep-args.nvim',
       'ahmedkhalf/project.nvim',
+      'debugloop/telescope-undo.nvim',
     },
-    config = function ()
-      require'user.plugins.telescope'
+    config = function()
+      require 'user.plugins.telescope'
     end
   }
 
@@ -50,8 +49,8 @@ packer.startup(function (use)
   use 'lukoshkin/unititle.nvim'
   use {
     'EdenEast/nightfox.nvim',
-    config = function ()
-      require'user.plugins.colors'
+    config = function()
+      require 'user.plugins.colors'
     end
   }
 
@@ -59,16 +58,16 @@ packer.startup(function (use)
     'akinsho/bufferline.nvim',
     event = 'BufRead',
     requires = 'kyazdani42/nvim-web-devicons',
-    config = function ()
-      require'user.plugins.bufferline'
+    config = function()
+      require 'user.plugins.bufferline'
     end
   }
 
   use {
     'nvim-lualine/lualine.nvim',
     requires = 'kyazdani42/nvim-web-devicons',
-    config = function ()
-      require'user.plugins.lualine'
+    config = function()
+      require 'user.plugins.lualine'
     end
   }
 
@@ -76,8 +75,8 @@ packer.startup(function (use)
     'lewis6991/gitsigns.nvim',
     event = 'BufRead',
     requires = 'nvim-lua/plenary.nvim',
-    config = function ()
-      require'user.plugins.gitsigns'
+    config = function()
+      require 'user.plugins.gitsigns'
     end
   }
 
@@ -106,21 +105,21 @@ packer.startup(function (use)
 
   use {
     'rcarriga/nvim-notify',
-    config = function ()
-      require'user.plugins.notify'
+    config = function()
+      require 'user.plugins.notify'
     end
   }
 
   use {
     'unblevable/quick-scope',
-    config = function ()
-      require'user.plugins.quick-scope'
+    config = function()
+      require 'user.plugins.quick-scope'
     end
   }
 
   use {
     'mhinz/vim-sayonara',
-    setup = function ()
+    setup = function()
       vim.keymap.set('n', '<Leader>q', ':Sayonara!<CR>')
     end
   }
@@ -128,24 +127,24 @@ packer.startup(function (use)
   use {
     'lervag/vimtex',
     ft = 'tex',
-    setup = function ()
+    setup = function()
       vim.g.vimtex_compiler_progname = 'nvr'
       vim.g.tex_flavor = 'xelatex'
     end
   }
 
   use {
-    { 'tpope/vim-commentary',     keys  = 'gc' },
+    { 'tpope/vim-commentary',     keys = 'gc' },
     { 'farmergreg/vim-lastplace', event = 'BufRead' },
     { 'tpope/vim-repeat',         event = 'BufRead' },
-    { 'dstein64/vim-startuptime', cmd   = 'StartupTime' },
+    { 'dstein64/vim-startuptime', cmd = 'StartupTime' },
     { 'tpope/vim-surround',       event = 'BufRead' },
     --- keys = {'ys', 'cs', 'ds' }}, --> malfunctioning with 'ds'
     {
       'junegunn/vim-easy-align',
       keys = 'ga',
-      config = function ()
-        require'user.plugins.vim-easy-align'
+      config = function()
+        require 'user.plugins.vim-easy-align'
       end
     },
   }
@@ -154,8 +153,8 @@ packer.startup(function (use)
     'iamcco/markdown-preview.nvim',
     ft = 'markdown',
     run = function() vim.fn['mkdp#util#install']() end,
-    config = function ()
-      require'user.plugins.md-preview'
+    config = function()
+      require 'user.plugins.md-preview'
     end
   }
 
@@ -164,10 +163,10 @@ packer.startup(function (use)
     requires = {
       --- is only required if persistent history is enabled.
       -- {'tami5/sqlite.lua', module = 'sqlite'},
-      {'nvim-telescope/telescope.nvim'},
+      { 'nvim-telescope/telescope.nvim' },
     },
     config = function()
-      require'user.plugins.neoclip'
+      require 'user.plugins.neoclip'
     end
   }
 
@@ -181,8 +180,8 @@ packer.startup(function (use)
       'nvim-treesitter/nvim-treesitter-textobjects',
       'JoosepAlviste/nvim-ts-context-commentstring',
     },
-    config = function ()
-      require'user.plugins.treesitter'
+    config = function()
+      require 'user.plugins.treesitter'
     end
   }
 
@@ -194,16 +193,16 @@ packer.startup(function (use)
       'jose-elias-alvarez/null-ls.nvim',
       'SmiteshP/nvim-navic',
     },
-    config = function ()
-      require'user.plugins.lspconfig'
+    config = function()
+      require 'user.plugins.lspconfig'
     end
   }
 
   use {
     'ray-x/lsp_signature.nvim',
     --- Looks better than cmp-nvim-lsp-signature-help.
-    config = function ()
-      require'lsp_signature'.setup()
+    config = function()
+      require 'lsp_signature'.setup()
     end
   }
 
@@ -219,13 +218,13 @@ packer.startup(function (use)
       'jessarcher/cmp-path',
       {
         'tzachar/cmp-tabnine',
-        run='./install.sh'
+        run = './install.sh'
       },
       'hrsh7th/cmp-nvim-lua',
       'onsails/lspkind-nvim',
     },
-    config = function ()
-      require'user.plugins.cmp'
+    config = function()
+      require 'user.plugins.cmp'
     end
   }
 
@@ -243,8 +242,8 @@ packer.startup(function (use)
       'mfussenegger/nvim-dap-python',
       'nvim-telescope/telescope-dap.nvim',
     },
-    config = function ()
-      require'user.plugins.dap'
+    config = function()
+      require 'user.plugins.dap'
     end
   }
 
@@ -252,7 +251,7 @@ packer.startup(function (use)
     'kkoomen/vim-doge',
     run = ':call doge#install()',
     ft = { 'python', 'rust', 'bash', 'lua', 'cpp', 'c' },
-    setup = function ()
+    setup = function()
       vim.g.doge_doc_standard_python = 'numpy'
       vim.g.doge_enable_mappings = false
       vim.keymap.set('n', '<LocalLeader>dg', ':DogeGenerate<CR>')
@@ -262,12 +261,12 @@ packer.startup(function (use)
   use {
     'ahmedkhalf/project.nvim',
     config = function()
-      require'project_nvim'.setup {
+      require 'project_nvim'.setup {
         --- use pattern. If it doesn't find anything, use lsp.
         --- https://github.com/ahmedkhalf/project.nvim/issues/67
         -- detection_methods = { 'pattern', 'lsp' },
 
-        ignore_lsp = {'null-ls'},
+        ignore_lsp = { 'null-ls' },
 
         -- manual_mode = true,
         -- silent_chdir = false, -- for debug
@@ -279,22 +278,24 @@ packer.startup(function (use)
     'rxi/json.lua',
     run = 'mkdir -p lua/json && mv json.lua lua/json/init.lua',
   }
+  use {
+    'lukoshkin/auenv.nvim',
+    requires = 'rxi/json.lua',
+    config = function()
+      if vim.env.CONDA_PREFIX ~= nil then
+        require 'auenv'.setup()
+      end
+    end
+  }
 
   use {
-    'lukoshkin/slime-wrapper.nvim',
-    requires = {
-      'jpalardy/vim-slime',
-      'hanschen/vim-ipython-cell',
-      'lukoshkin/bterm.nvim',
-      'lukoshkin/auenv.nvim',
-    },
-    config = function ()
-      if vim.env.CONDA_PREFIX ~= nil then
-        require'auenv'.setup()
-      end
-
-      require'bottom-term'.setup()
-      require'slime-wrapper'.setup()
+    'lukoshkin/bterm-repl.nvim',
+    requires = 'lukoshkin/bterm.nvim',
+    config = function()
+      require 'bottom-term'.setup()
+      require 'bottom-term-repl'.setup {
+        clipboard_occupation_time = 200
+      }
     end
   }
 end)
