@@ -91,9 +91,9 @@ vim.diagnostic.config {
     focus = false,
     format = function(diagnostic)
       if
-        (diagnostic.user_data ~= nil)
-        and (diagnostic.user_data.lsp ~= nil)
-        and (diagnostic.user_data.lsp.code ~= nil)
+          (diagnostic.user_data ~= nil)
+          and (diagnostic.user_data.lsp ~= nil)
+          and (diagnostic.user_data.lsp.code ~= nil)
       then
         return string.format("%s: %s", diagnostic.user_data.lsp.code, diagnostic.message)
       end
@@ -104,43 +104,37 @@ vim.diagnostic.config {
 
 local function set_lsp_mappings(_, bufnr)
   buf_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
-  buf_keymap(bufnr, "n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>")
-  buf_keymap(bufnr, "n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>")
-  buf_keymap(bufnr, "n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>")
-  buf_keymap(bufnr, "n", "gs", "<cmd>lua vim.lsp.buf.signature_help()<CR>")
-  buf_keymap(bufnr, "n", "<Leader>td", "<cmd>lua vim.lsp.buf.type_definition()<CR>")
-  buf_keymap(bufnr, "n", "<Leader>rn", "<cmd>lua vim.lsp.buf.rename()<CR>")
+  buf_keymap(bufnr, "n", "gD", vim.lsp.buf.declaration)
+  buf_keymap(bufnr, "n", "gd", vim.lsp.buf.definition)
+  buf_keymap(bufnr, "n", "K", vim.lsp.buf.hover)
+  buf_keymap(bufnr, "n", "gs", vim.lsp.buf.signature_help)
+  buf_keymap(bufnr, "n", "<Leader>td", vim.lsp.buf.type_definition)
+  buf_keymap(bufnr, "n", "<Leader>rn", vim.lsp.buf.rename)
   buf_keymap(bufnr, "n", "gr", ":Telescope lsp_references<CR>")
   --- gi and gI are reserved by original Vim command (see :h gi, e.g.).
-  buf_keymap(bufnr, "n", "<Leader>i", "<cmd>lua vim.lsp.buf.implementation()<CR>")
+  buf_keymap(bufnr, "n", "<Leader>i", vim.lsp.buf.implementation)
 
   --- Provided by 'weilbith/nvim-code-action-menu':
   buf_keymap(bufnr, "n", "<Leader>ca", ":CodeActionMenu<CR>")
   buf_keymap(bufnr, "v", "<Leader>ca", ":CodeActionMenu<CR>")
   --- A standard lsp approach would be
-  --- '<cmd>lua vim.lsp.buf.xxx_action()<CR>'
+  --- vim.lsp.buf.xxx_action()
   ---               or
   --- ':Telescope lsp_xxx_actions<CR>'
   --- where 'xxx' is 'code' or 'range_code'.
 
   --- 'ge' like (E)xplain (E)rror.
-  buf_keymap(bufnr, "n", "ge", "<cmd>lua vim.diagnostic.open_float()<CR>")
+  buf_keymap(bufnr, "n", "ge", vim.diagnostic.open_float)
   --- ][d for looping over all diagnostic messages.
-  buf_keymap(bufnr, "n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<CR>")
-  buf_keymap(bufnr, "n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>")
+  buf_keymap(bufnr, "n", "[d", vim.diagnostic.goto_prev)
+  buf_keymap(bufnr, "n", "]d", vim.diagnostic.goto_next)
   --- ][e ─ over just error messages.
-  buf_keymap(
-    bufnr,
-    "n",
-    "[e",
-    "<cmd>lua vim.diagnostic.goto_prev(" .. "{severity = vim.diagnostic.severity.ERROR})<CR>"
-  )
-  buf_keymap(
-    bufnr,
-    "n",
-    "]e",
-    "<cmd>lua vim.diagnostic.goto_next(" .. "{severity = vim.diagnostic.severity.ERROR})<CR>"
-  )
+  buf_keymap(bufnr, "n", "[e", function()
+    vim.diagnostic.goto_prev { severity = vim.diagnostic.severity.ERROR }
+  end)
+  buf_keymap(bufnr, "n", "]e", function()
+    vim.diagnostic.goto_next { severity = vim.diagnostic.severity.ERROR }
+  end)
 
   api.nvim_create_user_command("Format", function(opts)
     if vim.lsp.buf.format then
@@ -159,8 +153,8 @@ local function set_lsp_mappings(_, bufnr)
   end, { range = "%" })
 
   --- Open full diagnostics in location-list + find symbols(primitive data type) using telescope.
-  buf_keymap(bufnr, "n", "<Space>q", "<cmd>lua vim.diagnostic.setloclist()<CR>")
-  buf_keymap(bufnr, "n", "<Leader>fs", [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]])
+  buf_keymap(bufnr, "n", "<Space>q", vim.diagnostic.setloclist)
+  buf_keymap(bufnr, "n", "<Leader>fs", require('telescope.builtin').lsp_document_symbols)
 
   --- NOTE: to format relying only on 'textwidth' use 'gw'.
 end

@@ -1,23 +1,25 @@
 local M = {}
 
-M.keymap = function (mode, lhs, rhs, opts)
-  opts = vim.tbl_extend('keep', opts or {}, {silent=true})
+M.keymap = function(mode, lhs, rhs, opts)
+  opts = vim.tbl_extend('keep', opts or {}, { silent = true })
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
 M.buf_keymap = function(bufnr, mode, lhs, rhs, opts)
-  opts = vim.tbl_extend('keep', opts or {}, {noremap=true, silent=true})
-  vim.api.nvim_buf_set_keymap(bufnr, mode, lhs, rhs, opts)
+  opts = vim.tbl_extend('keep', opts or {}, {
+    buffer = bufnr, noremap = true, silent = true
+  })
+  vim.keymap.set(mode, lhs, rhs, opts)
 end
 
 
-function M.unique (tbl)
+function M.unique(tbl)
   local set = {}
   local hash = {}
 
   for _, v in pairs(tbl) do
     if not (hash[v]) then
-      set[#set+1] = v
+      set[#set + 1] = v
       hash[v] = true
     end
   end

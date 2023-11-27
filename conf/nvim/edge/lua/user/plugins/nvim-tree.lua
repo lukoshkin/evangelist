@@ -48,9 +48,19 @@ require'nvim-tree'.setup {
 keymap('n', '<Leader>nt', ':NvimTreeToggle<CR>')
 keymap('n', '<Leader>nf', ':NvimTreeFindFileToggle<CR>')
 
-vim.cmd[[
-  autocmd BufEnter * ++nested
-  \ if winnr('$') == 1 && bufname() == 'NvimTree_' . tabpagenr()
-  \| quit
-  \| endif
-]]
+local api = vim.api
+local fn = vim.fn
+local aug_ntc = vim.api.nvim_create_augroup('NvimTree-User', { clear = true })
+
+vim.api.nvim_create_autocmd('QuitPre', {
+  callback = function()
+    local force = false
+    local name = api.nvim_buf_get_name(0)
+    local stem = vim.fs.basename(name)
+    local tnr = api.nvim_get_current_tabpage()
+    if fn.winnr('$') == 1 and stem == 'NvimTree_' .. tnr then
+      api.nvim_win_close(0, force)
+    end
+  end,
+  group = aug_ntc
+})

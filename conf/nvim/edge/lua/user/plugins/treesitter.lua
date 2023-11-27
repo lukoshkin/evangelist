@@ -1,3 +1,7 @@
+--- Not sure about this
+require('ts_context_commentstring').setup {}
+vim.g.skip_ts_context_commentstring_module = true
+
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
     'c',
@@ -21,9 +25,6 @@ require'nvim-treesitter.configs'.setup {
     enable = true,
     disable = { 'NvimTree', 'latex' },
     additional_vim_regex_highlighting = true,
-  },
-  context_commentstring = {
-    enable = true,
   },
   textobjects = {
     select = {
