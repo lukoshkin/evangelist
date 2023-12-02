@@ -83,23 +83,20 @@ _conda_autoenv_zsh () {
 mkenv () {
   if [[ -n $1 ]]
   then
-    conda activate $1 || return
+    conda activate $1 || { echo "Create environment $1 first"; return; }
   fi
 
-  if [[ -f environment.yml ]]
-  then
-    local ENV
+  if [[ -f environment.yml ]]; then
     echo "Found 'environment.yml'. Creating env from it.."
-    ENV=$(head -n 1 environment.yml | cut -d ' ' -f2)
-    { rm -rf .autoenv-evn.*; } 2> /dev/null
+    local ENV=$(head -n 1 environment.yml | cut -d ' ' -f2)
+    { command rm -rf .autoenv-evn.*; } 2> /dev/null
     ( (conda env list | grep -q "^$ENV") \
       || conda env create -q -f environment.yml ) \
         && conda activate $ENV \
         && touch .autoenv-evn.$ENV
 
-  elif [[ $CONDA_DEFAULT_ENV != base ]]
-  then
-    { rm -rf .autoenv-evn.*; } 2> /dev/null
+  elif [[ $CONDA_DEFAULT_ENV != base ]]; then
+    { command rm -rf .autoenv-evn.'*'; } 2> /dev/null
     touch .autoenv-evn.$CONDA_DEFAULT_ENV
   fi
 }

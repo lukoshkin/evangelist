@@ -30,13 +30,16 @@ require("lazy").setup {
   },
   {
     "nvim-tree/nvim-tree.lua",
-    keys = { "<Leader>nt", "<Leader>nf" },
+    -- Disable netrw at the very start of your init.lua
+    init = function()
+      vim.g.loaded_netrw = 1
+      vim.g.loaded_netrwPlugin = 1
+    end,
     dependencies = "nvim-tree/nvim-web-devicons",
     config = function()
       require "user.plugins.nvim-tree"
     end,
   },
-
   {
     "nvim-telescope/telescope.nvim",
     dependencies = {
@@ -64,11 +67,11 @@ require("lazy").setup {
   "lukoshkin/unititle.nvim",
   {
     "EdenEast/nightfox.nvim",
+    priority = 1000,
     config = function()
       require "user.plugins.colors"
     end,
   },
-
   {
     "akinsho/bufferline.nvim",
     event = "BufRead",
@@ -77,7 +80,6 @@ require("lazy").setup {
       require "user.plugins.bufferline"
     end,
   },
-
   {
     "nvim-lualine/lualine.nvim",
     dependencies = "nvim-tree/nvim-web-devicons",
@@ -85,7 +87,6 @@ require("lazy").setup {
       require "user.plugins.lualine"
     end,
   },
-
   {
     "lewis6991/gitsigns.nvim",
     event = "BufRead",
@@ -114,28 +115,31 @@ require("lazy").setup {
   --   end
   -- },
   "tpope/vim-sleuth",
-  "tpope/vim-eunuch",
-  "jessarcher/vim-heritage",
-
+  { "tpope/vim-eunuch", event = "CmdlineEnter" },
+  {
+    --- Go to file (but first, create if doesn't exist).
+    "jessarcher/vim-heritage",
+    keys = { { "gf", ":edit <cfile><CR>", mode = "" } },
+    -- cmd = { "edit", "write" }, -- will not work
+    event = "CmdlineEnter",
+  },
   {
     "rcarriga/nvim-notify",
     config = function()
       require "user.plugins.notify"
     end,
   },
-
   {
     "unblevable/quick-scope",
+    keys = { "f", "F", "t", "T" },
     init = function()
       require "user.plugins.quick-scope"
     end,
   },
-
   {
     "mhinz/vim-sayonara",
     keys = { { "<Leader>q", ":Sayonara!<CR>" } },
   },
-
   {
     "lervag/vimtex",
     ft = "tex",
@@ -144,7 +148,6 @@ require("lazy").setup {
       vim.g.tex_flavor = "xelatex"
     end,
   },
-
   {
     { "farmergreg/vim-lastplace", event = "BufRead" },
     { "tpope/vim-repeat", event = "BufRead" },
@@ -161,13 +164,11 @@ require("lazy").setup {
       end,
     },
   },
-
   {
     "numToStr/Comment.nvim",
     keys = { { "gc", mode = "" } },
     config = true,
   },
-
   {
     "iamcco/markdown-preview.nvim",
     ft = "markdown",
@@ -178,7 +179,6 @@ require("lazy").setup {
       require "user.plugins.md-preview"
     end,
   },
-
   {
     "AckslD/nvim-neoclip.lua",
     keys = "<Leader>fy",
@@ -192,8 +192,8 @@ require("lazy").setup {
 
   --- IDE-LIKE
   {
-    "github/copilot.vim",
-    event = "InsertEnter",
+    "github/copilot.vim", -- Do not load on InsertEnter (low UX)
+    ft = { "python", "cpp", "c", "rust", "lua" },
     config = function()
       require "user.plugins.copilot"
     end,
@@ -210,7 +210,6 @@ require("lazy").setup {
       require "user.plugins.treesitter"
     end,
   },
-
   {
     "neovim/nvim-lspconfig",
     dependencies = {
@@ -223,24 +222,23 @@ require("lazy").setup {
       require "user.plugins.lspconfig"
     end,
   },
-
   {
     "ray-x/lsp_signature.nvim",
-    event = "InsertEnter",
+    event = "VeryLazy",
     config = true,
   },
-
   {
     "hrsh7th/nvim-cmp",
-    event = "InsertEnter",
+    event = { "InsertEnter", "CmdlineEnter" },
     dependencies = {
       "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "hrsh7th/cmp-cmdline",
       "dmitmel/cmp-digraphs",
       "saadparwaiz1/cmp_luasnip",
       "rafamadriz/friendly-snippets",
       "L3MON4D3/LuaSnip",
-      "jessarcher/cmp-path",
       {
         "tzachar/cmp-tabnine",
         build = "./install.sh",
@@ -272,7 +270,6 @@ require("lazy").setup {
       require "user.plugins.dap"
     end,
   },
-
   {
     "kkoomen/vim-doge",
     build = ":call doge#install()",
@@ -283,7 +280,6 @@ require("lazy").setup {
       vim.g.doge_enable_mappings = false
     end,
   },
-
   {
     "ahmedkhalf/project.nvim",
     config = function()
@@ -299,13 +295,13 @@ require("lazy").setup {
       }
     end,
   },
-
   {
     "rxi/json.lua",
     build = "mkdir -p lua/json && mv json.lua lua/json/init.lua",
   },
   {
     "lukoshkin/auenv.nvim",
+    ft = "python",
     dependencies = "rxi/json.lua",
     config = function()
       if vim.env.CONDA_PREFIX ~= nil then
@@ -313,8 +309,8 @@ require("lazy").setup {
       end
     end,
   },
-
   {
+    --- NOTE: Loading can be optimized with 'lazy'.
     "lukoshkin/bterm-repl.nvim",
     dependencies = "lukoshkin/bterm.nvim",
     config = function()
