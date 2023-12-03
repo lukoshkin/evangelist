@@ -29,6 +29,28 @@ require("lazy").setup {
     end,
   },
   {
+    "monaqa/dial.nvim",
+    config = function()
+      require "user.plugins.dial"
+    end,
+    keys = {
+      {
+        "<C-a>",
+        function()
+          require("dial.map").manipulate("increment", "normal")
+        end,
+        mode = "",
+      },
+      {
+        "<C-x>",
+        function()
+          require("dial.map").manipulate("decrement", "normal")
+        end,
+        mode = "",
+      },
+    },
+  },
+  {
     "nvim-tree/nvim-tree.lua",
     -- Disable netrw at the very start of your init.lua
     init = function()
@@ -97,23 +119,15 @@ require("lazy").setup {
   },
 
   --- MISCELLANEA
-  "sickill/vim-pasta",
-  -- {
-  --   'sickill/vim-pasta',
-  --   init = function ()
-  --     vim.g.pasta_disabled_filetypes = {
-  --       'python',
-  --       'yaml',
-  --       'coffee',
-  --       'markdown',
-  --       'slim',
-  --       'nerdtree',
-  --       'netrw',
-  --       'startify',
-  --       'ctrlp'
-  --       }
-  --   end
-  -- },
+  {
+    'ku1ik/vim-pasta',
+    init = function()
+      vim.g.pasta_disabled_filetypes = {
+        'yaml',
+        'markdown',
+      }
+    end
+  },
   "tpope/vim-sleuth",
   { "tpope/vim-eunuch", event = "CmdlineEnter" },
   {
@@ -150,7 +164,7 @@ require("lazy").setup {
   },
   {
     { "farmergreg/vim-lastplace", event = "BufRead" },
-    { "tpope/vim-repeat", event = "BufRead" },
+    { "tpope/vim-repeat",         event = "BufRead" },
     { "dstein64/vim-startuptime", cmd = "StartupTime" },
     {
       "tpope/vim-surround",

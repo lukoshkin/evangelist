@@ -111,7 +111,7 @@ cmp.setup {
     --- Order matters.
     {
       name = "buffer",
-      max_item_count = 2
+      max_item_count = 2,
     },
     {
       name = "nvim_lsp",
@@ -134,22 +134,28 @@ cmp.setup {
     -- { name = 'digraphs' },
   },
 }
-cmp.setup.cmdline('/', {
-  mapping = cmp.mapping.preset.cmdline(),
+cmp.setup.cmdline("/", {
+  mapping = {
+    ["<Tab>"] = cmp.mapping.select_next_item(),
+    ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+  },
   sources = {
-    { name = 'buffer' }
-  }
+    { name = "buffer" },
+  },
 })
-cmp.setup.cmdline(':', {
-  mapping = cmp.mapping.preset.cmdline(),
+cmp.setup.cmdline(":", {
+  mapping = {
+    ["<Tab>"] = cmp.mapping.select_next_item(),
+    ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+  },
   sources = cmp.config.sources({
-    { name = 'path' }
+    { name = "path" },
   }, {
     {
-      name = 'cmdline',
+      name = "cmdline",
       option = {
-        ignore_cmds = { 'Man', '!' }
-      }
-    }
-  })
+        ignore_cmds = { "Man", "!" },
+      },
+    },
+  }),
 })

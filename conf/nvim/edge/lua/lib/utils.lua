@@ -7,7 +7,7 @@ end
 
 M.buf_keymap = function(bufnr, mode, lhs, rhs, opts)
   opts = vim.tbl_extend('keep', opts or {}, {
-    buffer = bufnr, noremap = true, silent = true
+    buffer = bufnr, remap = false, silent = true
   })
   vim.keymap.set(mode, lhs, rhs, opts)
 end
