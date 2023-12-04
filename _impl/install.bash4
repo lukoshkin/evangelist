@@ -127,16 +127,11 @@ install::vim_settings () {
 
       ## TODO: Let user decide what to remove.
 
-      ## Remove files installed by Packer or vim-plug.
-      # rm -rf "$XDG_DATA_HOME/nvim/site/pack/packer"
-      # rm -rf "$XDG_DATA_HOME/nvim/plugged"
-
-      ## Remove some of the plugins of Neovim-Lua setup
-      ## that leave trace after removing Packer.
-      rm -rf "$XDG_DATA_HOME/nvim/site/pack/packer/start/dashboard-nvim"
-      rm -rf "$XDG_DATA_HOME/nvim/site/pack/packer/start/dashboard-nvim"
-      rm -rf "$XDG_DATA_HOME/nvim/site/pack/packer/start/quick-scope"
-      rm -f "$XDG_CONFIG_HOME/nvim/plugin/packer_compiled.lua"
+      ## Remove trace of the former plugin managers.
+      ## NOTE: maybe it is worth to ask user before removal.
+      rm -rf "$XDG_DATA_HOME/nvim/lazy"
+      rm -rf "$XDG_DATA_HOME/nvim/site/pack/packer"
+      rm -rf "$XDG_DATA_HOME/nvim/plugged"
 
       ## Copy new configs.
       cp -R conf/nvim "$XDG_CONFIG_HOME"
@@ -154,10 +149,6 @@ install::vim_settings () {
       $ok && cd - > /dev/null \
         && echo '- [OK] Neovim-Lua setup!' \
         || echo Impl.error: broken dir hierarchy.
-
-      packman="$XDG_DATA_HOME/nvim/site/pack/packer/start/packer.nvim"
-      install_packman="git clone \
-        --depth 1 https://github.com/wbthomason/packer.nvim $packman"
       ;;&
 
     ?00)
@@ -185,10 +176,8 @@ install::vim_settings () {
   ## Possible assembly options: minimal, extended, neovim-lua.
   install::vim_settings::set_assembly
 
-  echo Installing plugings.. It may take a while.
-  if [[ $_CODE = ??1 ]]; then
-    install::vim_settings::packer_plugins
-  else
+  if [[ $_CODE = ??0 ]]; then
+    echo Installing plugings.. It may take a while.
     install::vim_settings::vim_plug_plugins
   fi
 
@@ -423,36 +412,6 @@ END
       echo -e "\n$msg\n"
       ;;
   esac
-}
-
-
-install::vim_settings::packer_plugins () {
-  ## Just in case these variables are already defined
-  ## in the shellrc file and have different values.
-  export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.lua"
-  export VIMINIT=":source $MYVIMRC"
-
-  ## TODO: add a flag to log to stdout.
-  local logfile=/tmp/_neovim_lua_setup_packer_installation.log
-  nvim --headless -c 'autocmd User PackerComplete quitall' \
-    -c 'PackerSync' 2> $logfile
-
-  declare -a lsp_servers=(
-    bash-language-server shellcheck shfmt
-    pyright flake8 pylint black
-    cpplint clangd
-    rust-analyzer rustfmt
-    lua-language-server stylua
-    dockerfile-language-server
-    cmake-language-server
-    markdownlint
-  )
-
-  echo Installing lsp servers.. It may take a while.
-  nvim --headless -c "MasonInstall ${lsp_servers[*]}" +qa 2>> $logfile
-
-  echo Saved logs to $logfile
-  echo Try :PackerSync in Neovim to ensure everything is intalled.
 }
 
 

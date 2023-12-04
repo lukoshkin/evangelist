@@ -1,18 +1,18 @@
 #!/bin/bash
 set -e
 
-ask_user () {
+ask_user() {
   local yes_or_no_question=$1
 
   REPLY='y'
   if [[ $_MODE != as_root ]]; then
     read -rn1 -p "$yes_or_no_question [Yn] "
-    [[ -z $REPLY ]] && REPLY='y'
+    [[ $REPLY =~ [yYnN] ]] || REPLY='y'
   fi
   echo
 }
 
-install () {
+install() {
   local sudo_env _sudo=sudo pip_opts=-U
   local _MODE=$1 _HOME=${2:-~}
 
@@ -28,8 +28,8 @@ install () {
   ## Returns exit status 1
 
   declare -a tmp_array
-  apt_packages=$(awk '{$1=$1};1' <<< "$apt_packages")
-  mapfile -t < <(awk '{$1=$1};1' <<< "$apt_packages") tmp_array
+  apt_packages=$(awk '{$1=$1};1' <<<"$apt_packages")
+  mapfile -t tmp_array < <(awk '{$1=$1};1' <<<"$apt_packages")
   apt_packages="${tmp_array[*]}"
 
   echo 'The root privileges are required to install the following packages:'
@@ -39,6 +39,12 @@ install () {
   if [[ $REPLY =~ [yY] ]]; then
     $_sudo apt-get -qq update
     eval "$sudo_env $_sudo apt-get install -y $apt_packages"
+  fi
+
+  ask_user 'Install zsh (a more user friendly shell)?'
+  if [[ $REPLY =~ [yY] ]]; then
+    $_sudo apt-get -qq update ## In case, it wasn't updated previously
+    eval "$sudo_env $_sudo apt-get install -y zsh"
   fi
 
   ask_user "Install Neovim's AppImage?"
@@ -54,17 +60,46 @@ install () {
     if [[ $REPLY =~ [yY] ]]; then
       ## NOTE: `pkg-config automake libtool-bin gettext`
       ## might be removed after the installation.
-      git clone https://github.com/neovim/neovim \
-        && cd neovim && git checkout stable \
-        && make CMAKE_BUILD_TYPE=Release \
-        && make install \
-        && cd .. && rm -rf neovim
+      git clone https://github.com/neovim/neovim &&
+        cd neovim && git checkout stable &&
+        make CMAKE_BUILD_TYPE=Release &&
+        make install &&
+        cd .. && rm -rf neovim
     fi
   fi
 
-  ask_user 'Install the latest Node.js version?'
+  # ask_user "Install nerd fonts?"
+  # if [[ $REPLY =~ [yY] ]]; then
+  #   local default=FiraCode
+  #   if [[ $_MODE != as_root ]]; then
+  #     read -rp "Input fonts name [$default]:" FONTS
+  #   fi
+  #   wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/$FONTS.zip
+  #   unzip $FONTS.zip -d ~/.fonts
+  #   fc-cache -fv
+  # fi
+
+  ask_user 'Install Node.js?'
   if [[ $REPLY =~ [yY] ]]; then
-    curl -fsSL https://deb.nodesource.com/setup_current.x | $_sudo bash -
+    $_sudo apt-get -qq update ## In case, it wasn't updated previously
+    eval "$sudo_env $_sudo apt-get install -y ca-certificates curl gnupg"
+    $_sudo mkdir -p /etc/apt/keyrings
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key |
+      $_sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+    local default=21
+    if [[ $_MODE != as_root ]]; then
+      read -rp "Input node version [$default]:" NODE_MAJOR
+    fi
+    echo "NOTE this script may be too old to rely on its default major value"
+    echo "Check the latest version major on the internet"
+    echo "(Just in case, check the latest major version on the internet)"
+    local source=https://deb.nodesource.com/node_${NODE_MAJOR:-$default}.x
+    if ! grep -q "$source" /etc/apt/sources.list.d/nodesource.list; then
+      echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] $source nodistro main" |
+        sudo tee /etc/apt/sources.list.d/nodesource.list
+    fi
+    $_sudo apt-get -qq update ## required
     $_sudo apt-get install -yq nodejs
   fi
 

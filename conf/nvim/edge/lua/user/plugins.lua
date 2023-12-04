@@ -17,6 +17,45 @@ require("lazy").setup {
     "williamboman/mason.nvim",
     config = true,
   },
+  {
+    "williamboman/mason-lspconfig.nvim",
+    opts = {
+      automatic_installation = true,
+      ensure_installed = {
+        "bashls",
+        "pyright",
+        "clangd",
+        "lua_ls",
+        "dockerls",
+        "docker_compose_language_service",
+      },
+    },
+    dependencies = "williamboman/mason.nvim",
+  },
+  {
+    "jay-babu/mason-null-ls.nvim",
+    dependencies = {
+      "williamboman/mason.nvim",
+      "nvimtools/none-ls.nvim",
+    },
+    opts = {
+      automatic_installation = true,
+      ensure_installed = {
+        "shellcheck",
+        "shfmt",
+        "flake8",
+        "pylint",
+        "black",
+        "cpplint",
+        "rust-analyzer",
+        -- "rustfmt", -- should be installed with rustup
+        "stylua",
+        "dockerfile-language-server",
+        "cmake-language-server",
+        "markdownlint",
+      },
+    },
+  },
 
   --- CORE
   {
@@ -120,13 +159,13 @@ require("lazy").setup {
 
   --- MISCELLANEA
   {
-    'ku1ik/vim-pasta',
+    "ku1ik/vim-pasta",
     init = function()
       vim.g.pasta_disabled_filetypes = {
-        'yaml',
-        'markdown',
+        "yaml",
+        "markdown",
       }
-    end
+    end,
   },
   "tpope/vim-sleuth",
   { "tpope/vim-eunuch", event = "CmdlineEnter" },
@@ -164,7 +203,7 @@ require("lazy").setup {
   },
   {
     { "farmergreg/vim-lastplace", event = "BufRead" },
-    { "tpope/vim-repeat",         event = "BufRead" },
+    { "tpope/vim-repeat", event = "BufRead" },
     { "dstein64/vim-startuptime", cmd = "StartupTime" },
     {
       "tpope/vim-surround",
@@ -229,7 +268,7 @@ require("lazy").setup {
     dependencies = {
       "folke/lsp-colors.nvim",
       "weilbith/nvim-code-action-menu",
-      "jose-elias-alvarez/null-ls.nvim",
+      "nvimtools/none-ls.nvim",
       "SmiteshP/nvim-navic",
     },
     config = function()

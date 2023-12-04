@@ -134,20 +134,23 @@ cmp.setup {
     -- { name = 'digraphs' },
   },
 }
-cmp.setup.cmdline("/", {
-  mapping = {
-    ["<Tab>"] = cmp.mapping.select_next_item(),
-    ["<S-Tab>"] = cmp.mapping.select_prev_item(),
-  },
-  sources = {
-    { name = "buffer" },
-  },
-})
+
+local cmdline_mapping = {
+  ["<Tab>"] = cmp.mapping(function(fallback)
+    if cmp.visible() then
+      cmp.select_next_item { behavior = cmp.SelectBehavior.Insert }
+    else
+      fallback()
+    end
+  end, { "c" }),
+  ["<S-Tab>"] = cmp.mapping(function()
+    if cmp.visible() then
+      cmp.select_prev_item()
+    end
+  end, { "c" }),
+}
 cmp.setup.cmdline(":", {
-  mapping = {
-    ["<Tab>"] = cmp.mapping.select_next_item(),
-    ["<S-Tab>"] = cmp.mapping.select_prev_item(),
-  },
+  mapping = cmdline_mapping,
   sources = cmp.config.sources({
     { name = "path" },
   }, {
@@ -158,4 +161,10 @@ cmp.setup.cmdline(":", {
       },
     },
   }),
+})
+cmp.setup.cmdline({ "/", "?" }, {
+  mapping = cmdline_mapping,
+  sources = {
+    { name = "buffer" },
+  },
 })
