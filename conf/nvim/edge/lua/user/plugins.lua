@@ -58,6 +58,7 @@ require("lazy").setup {
   },
 
   --- CORE
+  "LunarVim/bigfile.nvim",
   {
     "anuvyklack/hydra.nvim",
     config = function()
@@ -120,6 +121,11 @@ require("lazy").setup {
 
   --- APPEARANCE
   "lukoshkin/highlight-whitespace",
+  {
+    "lukoshkin/tidy.nvim",
+    dependencies = "neovim/nvim-lspconfig",
+    config = true,
+  },
   {
     "lukas-reineke/indent-blankline.nvim",
     config = true,
