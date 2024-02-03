@@ -48,9 +48,25 @@ alias gl='git log'
 alias gd='git diff'
 alias gds='git diff --staged'
 alias gs='git switch'
-alias gsm='git switch master'
-alias gsd='git switch develop'
 alias glpr='git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset"'
+
+gsm () {
+  if git show-ref --quiet refs/head/master; then
+    git switch master
+    return
+  fi
+
+  git switch main
+}
+
+gsd () {
+  if git show-ref --quiet refs/head/develop; then
+    git switch develop
+    return
+  fi
+
+  git switch dev
+}
 
 ## Open the last file closed:
 # alias v="vim +'e #<1'"
@@ -172,7 +188,7 @@ mv () {
   else
     local no copy_no parent
     local loop_cnt=0 max_loop_cnt=100
-    local name=$1 landing=/tmp
+    local name=${1##*/} landing=/tmp
     parent=$(realpath "$(dirname "$name")")
 
     if [[ $parent = "/tmp" ]]; then

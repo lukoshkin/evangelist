@@ -106,13 +106,18 @@ keymap("n", "]c", "]czz")
 --- When it is not needed anymore, one can close it with ZZ or ZQ.
 keymap("n", "<Space>t", ":tabnew %<CR>")
 
---- Wrap Python's <symbol> with print(f"{<symbol>=}")
+--- Wrap Python's <symbol> with print(f"""{<symbol>=}""")
+--- 1. symbol under the cursor
+--- 2. the whole line
+--- 3. the visually selected text
 keymap("n", "<Space>p", function()
-  fn.left_right_paste('viw<Esc>a=}")<Esc>', 'F=hbiprint(f"{<Esc>')
+  fn.left_right_paste('yiwO<Esc>p$a=}""")<Esc>', '^iprint(f"""{<Esc>')
 end)
-
 keymap("n", "<Space>P", function()
-  fn.left_right_paste('viW<Esc>a=}")<Esc>', 'F=hBiprint(f"{<Esc>')
+  fn.left_right_paste('$a=}""")<Esc>', '^iprint(f"""{<Esc>')
+end)
+keymap("v", "<Space>p", function()
+  fn.left_right_paste('yO<Esc>p$a=}""")<Esc>', '^iprint(f"""{<Esc>')
 end)
 
 --- Start gutui in FloatingTerm instance of the 'bterm' plugin.

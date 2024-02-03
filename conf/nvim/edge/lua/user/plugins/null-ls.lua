@@ -1,22 +1,22 @@
 local M = {}
 
-local nls = require'null-ls'
-local nls_utils = require'null-ls.utils'
-local nls_sources = require'null-ls.sources'
+local nls = require 'null-ls'
+local nls_utils = require 'null-ls.utils'
+local nls_sources = require 'null-ls.sources'
 local bins = nls.builtins
 
-local notify = require'notify'
-local fn = require'lib.function'
+local notify = require 'notify'
+local fn = require 'lib.function'
 
-local with_diagnostics_code = function (builtin)
+local with_diagnostics_code = function(builtin)
   return builtin.with {
     diagnostics_format = "#{m} [#{c}]",
   }
 end
 
-local with_root_file = function (builtin, file)
+local with_root_file = function(builtin, file)
   return builtin.with {
-    condition = function (utils)
+    condition = function(utils)
       return utils.root_has_file(file)
     end,
   }
@@ -40,8 +40,8 @@ local sources = {
   with_root_file(bins.formatting.stylua, "stylua.toml"),
 
   bins.diagnostics.write_good,
-  bins.diagnostics.cspell,  -- grammar
-  bins.formatting.codespell,  -- grammar
+  bins.diagnostics.cspell,   -- grammar
+  bins.formatting.codespell, -- grammar
   bins.diagnostics.flake8.with {
     extra_args = {
       --- Ignore flake8's complaints about:
@@ -52,7 +52,7 @@ local sources = {
     }
   },
   bins.diagnostics.pylint,
-  with_root_file(bins.diagnostics.selene, "selene.toml"),  -- Lua
+  with_root_file(bins.diagnostics.selene, "selene.toml"), -- Lua
   with_diagnostics_code(bins.diagnostics.shellcheck),
 
   bins.code_actions.gitsigns,
@@ -67,23 +67,23 @@ local format_text = {
   method = nls.methods.CODE_ACTION,
   filetypes = {},
   generator = {
-    fn = function (_)
-      return {{
+    fn = function(_)
+      return { {
         title = 'Format code',
-        action = function ()
+        action = function()
           if vim.lsp.buf.format then
             vim.lsp.buf.format { async = true }
             return
           end
           vim.lsp.buf.formatting()
         end
-      }}
+      } }
     end
   }
 }
 
 
-local function in_compare_mode (normal_windows)
+local function in_compare_mode(normal_windows)
   if vim.t.ca_cmp_bufs == nil then
     return false
   end
@@ -102,7 +102,7 @@ local function in_compare_mode (normal_windows)
 end
 
 
-local function cmp_two_bufs ()
+local function cmp_two_bufs()
   vim.t.ca_cmp_bufs = fn.only_normal_windows()
 
   --- winnr() checks the number of wins IN A TAB.
@@ -122,7 +122,7 @@ local function cmp_two_bufs ()
   --- Remove notifications wins.
   if notify ~= nil then
     --- Don't try to remove them before you have drawn them.
-    vim.defer_fn(function () notify.dismiss() end, 100)
+    vim.defer_fn(function() notify.dismiss() end, 100)
   end
   --- After switching between wins, notifications about changing the root
   --- directory might appear (if the project.nvim option 'silent_chdir' is
@@ -131,7 +131,7 @@ local function cmp_two_bufs ()
 end
 
 
-local function stop_cmp_bufs ()
+local function stop_cmp_bufs()
   local back_to_wid = vim.fn.win_getid()
 
   vim.cmd 'windo :diffoff'
@@ -140,7 +140,7 @@ local function stop_cmp_bufs ()
   vim.fn.win_gotoid(back_to_wid)
 
   if notify ~= nil then
-    vim.defer_fn(function () notify.dismiss() end, 100)
+    vim.defer_fn(function() notify.dismiss() end, 100)
   end
 end
 
@@ -149,7 +149,7 @@ local compare_buffers = {
   method = nls.methods.CODE_ACTION,
   filetypes = {},
   generator = {
-    fn = function (_)
+    fn = function(_)
       local normal_windows = fn.only_normal_windows()
 
       if #normal_windows ~= 2 then
@@ -160,10 +160,10 @@ local compare_buffers = {
         return
       end
 
-      return {{
+      return { {
         title = 'Compare buffers',
         action = cmp_two_bufs
-      }}
+      } }
     end
   }
 }
@@ -172,21 +172,21 @@ local stop_comparing_buffers = {
   method = nls.methods.CODE_ACTION,
   filetypes = {},
   generator = {
-    fn = function (_)
+    fn = function(_)
       if not in_compare_mode(fn.only_normal_windows()) then
         return
       end
 
-      return {{
+      return { {
         title = 'Stop comparing',
         action = stop_cmp_bufs
-      }}
+      } }
     end
   }
 }
 
 
-function M.list_registered (ft, method_string)
+function M.list_registered(ft, method_string)
   local registered = {}
   for _, src in pairs(nls_sources.get_available(ft)) do
     for method in pairs(src.methods) do
@@ -200,18 +200,16 @@ function M.list_registered (ft, method_string)
   return registered[method] or {}
 end
 
-
 --- I guess `list_supported` lists all sources null-ls supports
 --- (for current buffer filetype), while `list_registered` shows
 --- only installed sources from those listed in the local var `sources`.
-function M.list_supported (ft, method)
+function M.list_supported(ft, method)
   local sup = nls_sources.get_supported(ft, method)
   table.sort(sup)
   return sup
 end
 
-
-local function has_formatter (ft)
+local function has_formatter(ft)
   local method = nls.methods.FORMATTING
   local available = nls_sources.get_available(ft, method)
   return #available > 0
@@ -219,7 +217,7 @@ end
 
 
 --- Not sure it this helps in any way.
-function M.setup_formatters (client, bufnr)
+function M.setup_formatters(client, bufnr)
   local ft = vim.api.nvim_buf_get_option(bufnr, "filetype")
 
   local enable = false
@@ -233,7 +231,7 @@ function M.setup_formatters (client, bufnr)
 end
 
 
-function M.setup (on_attach)
+function M.setup(on_attach)
   nls.register(format_text)
   nls.register(compare_buffers)
   nls.register(stop_comparing_buffers)
@@ -246,6 +244,5 @@ function M.setup (on_attach)
     root_dir = nls_utils.root_pattern ".git",
   }
 end
-
 
 return M

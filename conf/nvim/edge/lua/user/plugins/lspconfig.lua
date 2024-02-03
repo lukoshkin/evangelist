@@ -17,9 +17,6 @@ local function set_lsp_mappings(_, bufnr)
   --- gi and gI are reserved by original Vim command (see :h gi, e.g.).
   buf_keymap(bufnr, "n", "<Leader>i", vim.lsp.buf.implementation)
 
-  --- Provided by 'weilbith/nvim-code-action-menu':
-  buf_keymap(bufnr, "n", "<Leader>ca", ":CodeActionMenu<CR>")
-  buf_keymap(bufnr, "v", "<Leader>ca", ":CodeActionMenu<CR>")
   --- A standard lsp approach would be
   --- vim.lsp.buf.xxx_action()
   ---               or

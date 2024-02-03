@@ -42,7 +42,9 @@ _unpack () {
     return
   fi
 
-  tar xf "$bakdir/$name.tar.gz" --keep-newer-files -C "$prefix" \
+  ## --keep-newer-files may be not a good option.
+  ## It is better to ask before unpacking.
+  tar xf "$bakdir/$name.tar.gz" --confirmation -C "$prefix" \
     && echo "$file untar-ed successfully"
 }
 

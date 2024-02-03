@@ -41,6 +41,8 @@ require("nvim-tree").setup {
   },
   renderer = {
     highlight_opened_files = "icon",
+    highlight_diagnostics = true,
+    highlight_git = true,
     group_empty = true,
   },
 }

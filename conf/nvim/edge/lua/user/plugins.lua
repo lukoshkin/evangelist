@@ -120,11 +120,38 @@ require("lazy").setup {
   },
 
   --- APPEARANCE
-  "lukoshkin/highlight-whitespace",
   {
-    "lukoshkin/tidy.nvim",
-    dependencies = "neovim/nvim-lspconfig",
+    "lukoshkin/highlight-whitespace",
     config = true,
+  },
+  -- {
+  --   "lukoshkin/tidy.nvim",
+  --   dependencies = "neovim/nvim-lspconfig",
+  --   config = true,
+  -- },
+  {
+    "aznhe21/actions-preview.nvim",
+    keys = {
+      {
+        "<Leader>ca",
+        function()
+          require("actions-preview").code_actions()
+        end,
+        mode = "",
+      },
+    },
+    config = function()
+      require("actions-preview").setup {
+        telescope = {
+          sorting_strategy = "ascending",
+          previewer = false,
+          layout_config = {
+            width = 0.5,
+            height = 0.3,
+          },
+        },
+      }
+    end,
   },
   {
     "lukas-reineke/indent-blankline.nvim",
@@ -217,7 +244,7 @@ require("lazy").setup {
     },
     {
       "junegunn/vim-easy-align",
-      keys = "ga",
+      keys = { { "ga", mode = "" } },
       config = function()
         require "user.plugins.vim-easy-align"
       end,
@@ -226,7 +253,7 @@ require("lazy").setup {
   {
     "numToStr/Comment.nvim",
     keys = { { "gc", mode = "" } },
-    config = true,
+    opts = { ignore = "^$" },
   },
   {
     "iamcco/markdown-preview.nvim",
@@ -273,7 +300,6 @@ require("lazy").setup {
     "neovim/nvim-lspconfig",
     dependencies = {
       "folke/lsp-colors.nvim",
-      "weilbith/nvim-code-action-menu",
       "nvimtools/none-ls.nvim",
       "SmiteshP/nvim-navic",
     },
