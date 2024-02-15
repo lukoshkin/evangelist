@@ -1,0 +1,17 @@
+# >>> Added by EVN >>>
+## evn-specific
+next_commit
+.autoenv-evn.*
+
+## Sensitive
+*.env
+
+## Generated
+__pycache__
+*.pyc
+*.o
+
+## User-specific
+*.log
+*.db
+# <<< Added by EVN >>>

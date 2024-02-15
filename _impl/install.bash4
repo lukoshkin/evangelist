@@ -117,7 +117,10 @@ install::vim_settings () {
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'"
 
       utils::back_up_original_configs $_VIM d:"$XDG_CONFIG_HOME/nvim"
-      grep -q '^vim' .update-list && sed -i '/^vim/d' .update-list
+      if grep -q '^vim' .update-list; then
+        _SHELL_RESET=true
+        sed -i '/^vim/d' .update-list
+      fi
       ;;&
 
     *)
@@ -304,6 +307,38 @@ install::bash_settings () {
 }
 
 
+install::git_settings () {
+  ECHO Installing Git configuration..
+
+  utils::back_up_original_configs git \
+    f:~/.gitconfig d:~/.config/git d:~/.config/gitui
+
+  ## Copy new configs.
+  mkdir -p ~/.config/git ~/.config/gitui
+  cp conf/git/key_bindings.ron ~/.config/gitui/
+  ! [[ -f ~/.config/git/ignore ]] && cp conf/git/ignore ~/.config/git/
+  if ! grep -q "Added by EVN" ~/.config/git/ignore; then
+    cat conf/git/ignore >> ~/.config/git/ignore
+  fi
+
+  git config --global core.pager 'delta'
+  git config --global interactive.diffFilter 'delta --color-only'
+
+  local line GITIGNORE
+  line=$(git config -l | grep 'core.excludesfile')
+
+  if [[ -n $line ]]; then
+    GITIGNORE=$(cut -d '=' -f2 <<< $line)
+  else
+    GITIGNORE="$XDG_CONFIG_HOME/git/ignore"
+    mkdir -p "${GITIGNORE%/*}" && touch "$GITIGNORE"
+    git config --global core.excludesfile "$GITIGNORE"
+  fi
+
+  ECHO Successfully installed: Git configuration.
+}
+
+
 install::zsh_settings () {
   ECHO Installing ZSH configuration..
 
@@ -467,9 +502,10 @@ install::vim_settings::set_assembly () {
       ## CoC is chosen to be a default code-completion engine ("old" Vim),
       ## YCM is commented out, therefore.
 
-      if ! utils::v1_ge_v2 "$(node --version)" 12.12
+      if ! HAS node || ! utils::v1_ge_v2 "$(node --version)" 12.12
       then
         ## `&` in the following line means "use the whole text matched".
+        ## (That is, we change lines to commented out lines.)
         sed -i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
       fi
       set_assembly=extended

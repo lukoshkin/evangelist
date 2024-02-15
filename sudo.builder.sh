@@ -52,7 +52,7 @@ install() {
     curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
     mkdir -p "$_HOME/.local/bin" && chmod +x nvim.appimage
     mv nvim.appimage "$_HOME/.local/bin"
-    $_sudo ln -s "$_HOME/.local/bin/nvim.appimage" /usr/bin/nvim
+    $_sudo ln -sf "$_HOME/.local/bin/nvim.appimage" /usr/bin/nvim
   fi
 
   if [[ $_MODE = as_root || $REPLY =~ [nN] ]]; then
@@ -81,26 +81,45 @@ install() {
 
   ask_user 'Install Node.js?'
   if [[ $REPLY =~ [yY] ]]; then
-    $_sudo apt-get -qq update ## In case, it wasn't updated previously
-    eval "$sudo_env $_sudo apt-get install -y ca-certificates curl gnupg"
-    $_sudo mkdir -p /etc/apt/keyrings
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key |
-      $_sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    wget -O node-tmp.tar.gz -r -nd -A gz --accept-regex='node-.*-linux-x64\.tar\.gz' https://nodejs.org/download/release/latest/
+    mkdir /tmp/node-tmp && tar xf node-tmp.tar.gz -C /tmp/node-tmp --strip-components=1
+    mv /tmp/node-tmp/bin/node "$_HOME/.local/bin"
 
-    local default=21
-    if [[ $_MODE != as_root ]]; then
-      read -rp "Input node version [$default]:" NODE_MAJOR
-    fi
-    echo "NOTE this script may be too old to rely on its default major value"
-    echo "Check the latest version major on the internet"
-    echo "(Just in case, check the latest major version on the internet)"
-    local source=https://deb.nodesource.com/node_${NODE_MAJOR:-$default}.x
-    if ! grep -q "$source" /etc/apt/sources.list.d/nodesource.list; then
-      echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] $source nodistro main" |
-        sudo tee /etc/apt/sources.list.d/nodesource.list
-    fi
-    $_sudo apt-get -qq update ## required
-    $_sudo apt-get install -yq nodejs
+    # $_sudo apt-get -qq update ## In case, it wasn't updated previously
+    # eval "$sudo_env $_sudo apt-get install -y ca-certificates curl gnupg"
+    # $_sudo mkdir -p /etc/apt/keyrings
+    # curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key |
+    #   $_sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+    # local default=21
+    # if [[ $_MODE != as_root ]]; then
+    #   read -rp "Input node version [$default]:" NODE_MAJOR
+    # fi
+    # echo "NOTE this script may be too old to rely on its default major value"
+    # echo "Check the latest version major on the internet"
+    # echo "(Just in case, check the latest major version on the internet)"
+    # local source=https://deb.nodesource.com/node_${NODE_MAJOR:-$default}.x
+    # if ! grep -q "$source" /etc/apt/sources.list.d/nodesource.list; then
+    #   echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] $source nodistro main" |
+    #     sudo tee /etc/apt/sources.list.d/nodesource.list
+    # fi
+    # $_sudo apt-get -qq update ## required
+    # $_sudo apt-get install -yq nodejs
+  fi
+
+  ask_user 'Set up gutui (fancy git add-ons: UI for git in CLI)?'
+  if [[ $REPLY =~ [yY] ]]; then
+    curl -LO https://github.com/extrawurst/gitui/releases/latest/download/gitui-linux-musl.tar.gz
+    tar xf gitui-linux-musl.tar.gz -C "$_HOME/.local/bin/gitui"
+    mkdir -p "$_HOME/.config/gitui"
+    cp conf/git/key_bindings.ron "$_HOME/.config/gitui"
+  fi
+
+  ask_user 'Set up gutui (fancy git add-ons: UI for git in CLI)?'
+  if [[ $REPLY =~ [yY] ]]; then
+    curl -LO https://github.com/dandavison/delta/releases/download/0.16.5/delta-0.16.5-x86_64-unknown-linux-musl.tar.gz
+    cp delta-0.16.5-x86_64-unknown-linux-musl/delta "$_HOME/.local/bin"
+    rm -rf delta-0.16.5-x86_64-unknown-linux-musl/delta
   fi
 
   ask_user 'Install Python dependencies?'

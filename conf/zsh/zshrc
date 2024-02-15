@@ -38,6 +38,9 @@ then
   fi
 fi
 
+## Allow using ~/.local/bin instead of /usr/local/bin
+export PATH="$PATH:$HOME/.local/bin"
+
 ## Static imports.
 ## We import aliases & functions first to use `join_by` in 'extra.zsh'.
 source "$EVANGELIST/conf/bash/aliases-functions.sh"

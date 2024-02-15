@@ -102,6 +102,7 @@ control::checkhealth () {
     ## 'ninja' to build Lua LSP, xelatex ─ for 'markdown-preview.nvim' plugin.
   write::modulecheck JUPYTER r:'pip pip3':pip3 r:git
   write::modulecheck TMUX r:tmux
+  write::modulecheck GIT r:git o:delta
 
   HAS conda || write::how_to_install_conda
 }
@@ -158,8 +159,8 @@ control::install () {
 
   ## Ensure shell settings are installed first
   declare -a params=( "$@" )
-  [[ $* = *bash+* ]] && params=( bash vim tmux "${params[@]/bash+}" )
-  [[ $* = *zsh+* ]] && params=( zsh vim tmux "${params[@]/zsh+}" )
+  [[ $* = *bash+* ]] && params=( bash git vim tmux "${params[@]/bash+}" )
+  [[ $* = *zsh+* ]] && params=( zsh git vim tmux "${params[@]/zsh+}" )
   [[ $* =~ bash ]] && params=( bash "${params[@]/bash}" )
   [[ $* =~ zsh ]] && params=( zsh "${params[@]/zsh}" )
 
@@ -179,6 +180,7 @@ control::install () {
       jupyter)     install::jupyter_settings ;;
       bash)        install::bash_settings ;;
       zsh)         install::zsh_settings ;;
+      git)         install::git_settings ;;
       *)
         echo Impl.error: "<$_ARG>" should have thrown an error earlier.
         exit ;;
@@ -193,6 +195,7 @@ control::install () {
   ## Don't print "further instructions" if installing non-interactively
   ## (e.g., when installing in a docker container).
   if [[ $TERM != dumb ]]; then
+    ${_SHELL_RESET:-false} && shell=
     write::instructions_after_install $shell
   fi
 }
@@ -333,10 +336,8 @@ control::uninstall () {
 
   rm -f ~/.condarc
   rm -f ~/.tmux.conf
-  if [[ -n "$XDG_CONFIG_HOME" ]]; then
-    rm -rf "$XDG_CONFIG_HOME/nvim"
-    rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
-  fi
+  rm -rf "$XDG_CONFIG_HOME/nvim"
+  rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
 
   if grep -q '^jupyter' .update-list
   then
@@ -348,7 +349,7 @@ control::uninstall () {
   setopt nonomatch 2> /dev/null
   for OBJ in .bak/{*,.*}; do
     case ${OBJ##*/} in
-      .bashrc | .inputrc | .condarc | .zshenv | .zshrc | .tmux.conf)
+      .bashrc | .inputrc | .condarc | .zshenv | .zshrc | .gitconfig | .tmux.conf)
         cp $OBJ ~
         ;;
 
@@ -359,6 +360,10 @@ control::uninstall () {
 
       zdotdir)
         cp -R $OBJ/. "$ZDOTDIR"
+        ;;
+
+      git*)
+        cp -R $OBJ ~/config
         ;;
 
       nvim)

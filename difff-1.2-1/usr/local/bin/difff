@@ -12,22 +12,36 @@ help_msg () {
   printf '    diff [<options>] -D1 <project> -D2 <counter>\n'
   printf 'From a <project> directory:\n'
   printf '    difff [<options>] <prefix>\n'
-  printf '<prefix> is the path to a <counter> directory\n\n'
+  printf 'Here <prefix> is the path to a <counter> directory\n\n'
 
   printf 'Allowed <options>:\n'
-  printf '%-20s %s\n' '-s|--staged' 'use --staged flag in `git diff`.'
-  printf '%-20s %s\n' '-n|--dry-run' 'show how it would be w/o doing anything.'
-  printf '%-20s %s\n' '-a|--add-new' 'add-new files from the counterpart directory.'
+  printf '%-40s %s\n' '-s|--staged' 'Use --staged flag in `git diff`.'
+  printf '%-40s %s\n' '-n|--dry-run' 'Show how it would be w/o doing anything.'
+  printf '%-40s %s\n' '-a|--add-new' 'Add new files from the counterpart directory.'
 
-  printf '%-20s %s\n' '-m|--mode=<mode>' '<mode> can be git or folder.'
-  printf '%-20s %s\n' '-d|--folder=<dir>' 'parent folder of the target directory limiting #files to be compared.'
-  printf '%-20s %s\n' '-t|--trim-cnt=<N>' 'trim <N> leading dirs from the target directory path.'
+  printf '%-40s %s\n' '-m|--mode=<mode>' '<mode> can be git or folder.'
+  printf '%-40s %s\n' '-d|--folder=<dir>' 'Parent folder of the target directory limiting #files to be compared.'
+  printf '%-40s %s\n' '-t|--trim-cnt=<N>' 'Trim <N> leading dirs from the target directory path.'
+  printf '%-40s %s\n' '-i|--ignore=<folder/pattern>' 'Ignore directories or file patterns. The option can be repeated. '
+  printf '%-40s %s\n' ' ' 'Leave trailing "/" to treat as a directory.'
+}
+
+
+function matches_path () {
+  local target=$1
+  shift
+
+  for path in "$@"; do
+    [[ -n "$path" ]] && [[ "$target" =~ $path ]] && return 0
+  done
+
+  return 1
 }
 
 
 function difff () {
-  local long_opts='trim-cnt:,folder:,mode:,staged,dry-run,add-new,D1:,D2:,help'
-  local short_opts='t:,d:,m:,s,n,a,h'
+  local long_opts='ignore:,trim-cnt:,folder:,mode:,staged,dry-run,add-new,D1:,D2:,help'
+  local short_opts='i:t:,d:,m:,s,n,a,h'
   local params
 
   params=$(getopt -o $short_opts -l $long_opts --name "$0" -- "$@") \
@@ -39,10 +53,11 @@ function difff () {
   while [[ $1 != -- ]]; do
     case $1 in
       -h|--help)        help_msg; return ;;
-      -s|--staged)      staged=--staged; shift 1 ;;
-      -n|--dry-run)     dry_run=yes; shift 1 ;;
-      -a|--add-new)     add_new=yes; shift 1 ;;
+      -s|--staged)      staged=--staged; shift ;;
+      -n|--dry-run)     dry_run=yes; shift ;;
+      -a|--add-new)     add_new=yes; shift ;;
       -m|--mode)        mode=$2; shift 2;;
+      -i|--ignore)      ignore+=( "$2" ); shift 2 ;;
       --D2)             prefix=$2; shift 2 ;;
       -d|--D1|--folder) folder=$2; shift 2 ;;
       -t|--trim-cnt)    trim_cnt=$2; shift 2 ;;
@@ -51,19 +66,20 @@ function difff () {
     esac
   done
 
-  shift 1
-  if [[ -n $prefix ]]; then
-    if [[ -n $1 ]]; then
-      echo Unexpected pos. arg.
-      return $PRINT_ES;
-    fi
-  else
+  shift
+  if [[ -z $prefix ]]; then
     if [[ -z $1 ]]; then
       echo Prefix not set
       return $PRINT_ES;
     else
       prefix=$1
+      shift
     fi
+  fi
+
+  if [[ -n $1 ]]; then
+    echo "Unexpected pos. arg: $1"
+    return $PRINT_ES;
   fi
 
   ! [[ -d $prefix ]] && { echo Prefix $prefix not found; return 1; }
@@ -96,6 +112,8 @@ function difff () {
   declare -a exclude
   if [[ -n $add_new ]]; then
     for counter in "${prefix%/}"/**/*; do
+       matches_path "$counter" "${ignore[@]}" && continue
+
       file=${folder%/}/${counter/$prefix/}
       if [[ -n ${exclude[*]} ]]; then
         [[ $file =~ ($(IFS=\|; echo "${exclude[*]}")) ]] && continue

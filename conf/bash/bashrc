@@ -45,6 +45,8 @@ fi
 export VISUAL
 export EDITOR=$VISUAL
 
+## Allow using ~/.local/bin instead of /usr/local/bin
+export PATH="$PATH:$HOME/.local/bin"
 
 ## Standard bash settings
 ### No need to export these variables, since

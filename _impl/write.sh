@@ -77,17 +77,6 @@ write::dynamic_imports () {
 
   if conda &> /dev/null
   then
-    local line GITIGNORE
-    line=$(git config -l | grep 'core.excludesfile')
-
-    if [[ -n $line ]]; then
-      GITIGNORE=$(cut -d '=' -f2 <<< $line)
-    else
-      GITIGNORE="$XDG_CONFIG_HOME/git/ignore"
-      mkdir -p "${GITIGNORE%/*}" && touch "$GITIGNORE"
-      git config --global core.excludesfile "$GITIGNORE"
-    fi
-
     grep '.autoenv-evn' "$GITIGNORE" &> /dev/null \
       || echo '.autoenv-evn.*' >> "$GITIGNORE"
     grep -q 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' $1 \
@@ -155,6 +144,7 @@ write::instructions_after_install () {
     else
       printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.'
       printf "\n\n\t${BOLD}${WHITE}exec ${SHELL##*/}$RESET\n\n"
+      printf "IF STILL DOESN'T WORK ─ RELOGIN"
     fi
   fi
 }
