@@ -24,8 +24,9 @@ require("lazy").setup {
       ensure_installed = {
         "bashls",
         "pyright",
-        "clangd",
         "lua_ls",
+        "marksman",
+        "clangd",
         "dockerls",
         "docker_compose_language_service",
       },
@@ -33,26 +34,43 @@ require("lazy").setup {
     dependencies = "williamboman/mason.nvim",
   },
   {
-    "jay-babu/mason-null-ls.nvim",
+    "rshkarin/mason-nvim-lint",
     dependencies = {
       "williamboman/mason.nvim",
-      "nvimtools/none-ls.nvim",
+      "mfussenegger/nvim-lint",
     },
     opts = {
       automatic_installation = true,
       ensure_installed = {
         "shellcheck",
-        "shfmt",
         "flake8",
         "pylint",
-        "black",
         "cpplint",
-        "rust-analyzer",
-        -- "rustfmt", -- should be installed with rustup
-        "stylua",
-        "dockerfile-language-server",
-        "cmake-language-server",
+        "hadolint",
         "markdownlint",
+      },
+    },
+  },
+  {
+    "zapling/mason-conform.nvim",
+    dependencies = {
+      "williamboman/mason.nvim",
+      "stevearc/conform.nvim",
+    },
+    opts = {
+      automatic_installation = true,
+      ensure_installed = {
+        "isort",
+        "black",
+        "codespell",
+        "stylua",
+        "rustfmt",
+        "shfmt",
+        "prettier",
+        "prettierd",
+        "markdownlint",
+        "fixjson",
+        "clang-format",
       },
     },
   },
@@ -144,10 +162,15 @@ require("lazy").setup {
       require("actions-preview").setup {
         telescope = {
           sorting_strategy = "ascending",
-          previewer = false,
+          layout_strategy = "vertical",
           layout_config = {
-            width = 0.5,
-            height = 0.3,
+            width = 0.8,
+            height = 0.9,
+            prompt_position = "top",
+            preview_cutoff = 20,
+            preview_height = function(_, _, max_lines)
+              return max_lines - 15
+            end,
           },
         },
       }
@@ -297,10 +320,29 @@ require("lazy").setup {
     end,
   },
   {
+    "mfussenegger/nvim-lint",
+    event = {
+      "BufReadPre",
+      "BufNewFile",
+    },
+    config = function()
+      require "user.plugins.lint"
+    end,
+  },
+  {
+    "stevearc/conform.nvim",
+    event = {
+      "BufReadPre",
+      "BufNewFile",
+    },
+    config = function()
+      require "user.plugins.conform"
+    end,
+  },
+  {
     "neovim/nvim-lspconfig",
     dependencies = {
       "folke/lsp-colors.nvim",
-      "nvimtools/none-ls.nvim",
       "SmiteshP/nvim-navic",
     },
     config = function()
@@ -372,8 +414,6 @@ require("lazy").setup {
         --- use pattern. If it doesn't find anything, use lsp.
         --- https://github.com/ahmedkhalf/project.nvim/issues/67
         -- detection_methods = { 'pattern', 'lsp' },
-
-        ignore_lsp = { "null-ls" },
 
         -- manual_mode = true,
         -- silent_chdir = false, -- for debug

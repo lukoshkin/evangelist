@@ -336,8 +336,11 @@ control::uninstall () {
 
   rm -f ~/.condarc
   rm -f ~/.tmux.conf
-  rm -rf "$XDG_CONFIG_HOME/nvim"
-  rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
+  if [[ -n "$XDG_CONFIG_HOME" ]]; then
+    ## Unlikely there will be /nvim and /tmux dirs, nevertheless..
+    rm -rf "$XDG_CONFIG_HOME/nvim"
+    rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
+  fi
 
   if grep -q '^jupyter' .update-list
   then

@@ -48,13 +48,17 @@ function M.toggle_diags()
   end
 end
 
-function M.toggle_numbers_signs_diags()
+function M.toggle_all_ancillary_elements()
   if vim.opt.number:get() ~= vim.opt.relativenumber:get() then
     vim.opt.number = vim.opt.relativenumber:get()
   end
 
   vim.opt.number = not vim.opt.number:get()
   vim.opt.relativenumber = not vim.opt.relativenumber:get()
+
+  if pcall(require, "ibl") then
+    vim.cmd "IBLToggle"
+  end
 
   if vim.opt.signcolumn:get() == "no" then
     vim.opt.signcolumn = "yes"
@@ -75,9 +79,16 @@ function M.trim(opts)
   --- 'b' - search in the backward direction.
   --- Third arg is 'endline'. If the end line is given, the search
   --- starts from the line where the cursor is currently located.
-  if fn.search("\\s\\+$", "n", opts.line2) <= 0 and fn.search("\\s\\+$", "bn", opts.line1) <= 0 then
+  if
+    fn.search("\\s\\+$", "n", opts.line2) <= 0
+    and fn.search("\\s\\+$", "bn", opts.line1) <= 0
+  then
     vim.notify(
-      " Nothing to trim!\n (Search range: " .. opts.line1 .. "-" .. opts.line2 .. " lines)",
+      " Nothing to trim!\n (Search range: "
+        .. opts.line1
+        .. "-"
+        .. opts.line2
+        .. " lines)",
       vim.log.levels.INFO,
       { title = "evn-settings" }
     )
@@ -85,7 +96,11 @@ function M.trim(opts)
   end
 
   local pos = api.nvim_win_get_cursor(0)
-  local cmd = opts.line1 .. "," .. opts.line2 .. "s/\\s\\+$//e" .. "| nohlsearch"
+  local cmd = opts.line1
+    .. ","
+    .. opts.line2
+    .. "s/\\s\\+$//e"
+    .. "| nohlsearch"
   vim.cmd(cmd)
 
   api.nvim_win_set_cursor(0, pos)

@@ -1,6 +1,7 @@
 local keymap = require("lib.utils").keymap
 local open = require("lib.utils")._opener
 local fn = require "lib.function"
+local misc = require "user.misc"
 local api = vim.api
 
 local aug_jj = api.nvim_create_augroup("EasierJJ", { clear = true })
@@ -62,7 +63,7 @@ keymap("n", "<Space><Space>", fn.dismiss_distractive)
 keymap("", "<Leader>en", ":setlocal spell! spelllang=en_us<CR>")
 
 --- Toggle line numbering and signcolumn.
-keymap("n", "<Leader>nu", fn.toggle_numbers_signs_diags)
+keymap("n", "<Leader>nu", fn.toggle_all_ancillary_elements)
 keymap("n", "<Leader>nU", fn.toggle_numbers_signs)
 
 --- Put a timestamp (Russian format).
@@ -122,6 +123,9 @@ end)
 
 --- Start gutui in FloatingTerm instance of the 'bterm' plugin.
 keymap("n", "<Leader>g", fn.gitui)
+
+--- Toggle the diff mode for two aligned buffers.
+keymap("n", "<Leader>cv", misc.cmp_buffs_toggle)
 
 --- Trim trailing whitespaces.
 api.nvim_create_user_command("Trim", fn.trim, { range = "%" })

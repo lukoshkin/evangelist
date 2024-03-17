@@ -80,12 +80,11 @@ v () {
   if [[ -f "$XDG_CONFIG_HOME/init.vim" ]]; then
     vim +'execute "normal \<C-P>\<Enter>"'
   else
-    vim +'normal \fo'
+    vim +"normal ${V_CMD:-\ff}"
   fi
 }
 
-alias vf='vim +"normal \ff"'
-
+alias vv='V_CMD=\\fo v'
 alias _vimrc="vim $XDG_CONFIG_HOME/nvim/init.*"
 alias vimrc="vim $EVANGELIST/custom/custom.vim"
 
@@ -122,7 +121,10 @@ tmp () {
 
 
 tarz () {
-  tar czf "$1.tar.gz" "$@"
+  [[ -z $1 ]] && { echo Path must be provided!; exit 1; }
+
+  local name=${1##*/}
+  tar czf "$name.tar.gz" "$@"
 }
 
 
@@ -275,7 +277,7 @@ swap () {
   local bak="/tmp/${1##*/}.bak"
 
   cp -R "$1" "$bak" \
-    && rm -rf "$1" \
+    && command rm -rf "$1" \
     && mv "$2" "$1" \
     && mv "$bak" "$2"
 }

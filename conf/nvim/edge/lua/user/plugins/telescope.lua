@@ -19,11 +19,6 @@ telescope.setup {
     path_display = { truncate = 1 },
     --- if doesn't fit, truncate path keeping the gap
     --- between edge and text at specified size.
-    layout_config = {
-      prompt_position = "top",
-      preview_width = 80,
-    },
-    sorting_strategy = "ascending",
     mappings = {
       i = {
         ["<C-j>"] = actions.move_selection_next,
@@ -43,6 +38,8 @@ telescope.setup {
         ["<C-h>"] = "which_key",
         ["<C-j>"] = actions.move_selection_next,
         ["<C-k>"] = actions.move_selection_previous,
+        ["<C-n>"] = actions.cycle_history_next,
+        ["<C-p>"] = actions.cycle_history_prev,
       },
     },
     file_ignore_patterns = {
@@ -99,44 +96,63 @@ require("telescope").load_extension "undo"
 --- Just a couple of shorthands.
 local builtin = require "telescope.builtin"
 local ext = telescope.extensions
+local layout_opts = {
+  layout_config = {
+    prompt_position = "top",
+    preview_width = 80,
+  },
+  sorting_strategy = "ascending",
+}
+
+local function _with_opts(fn, another_opts)
+  return function()
+    fn(vim.tbl_extend("force", layout_opts, another_opts or {}))
+  end
+end
 
 --- Find files in the current directory (except hidden ones).
-keymap("n", "<Leader>ff", builtin.find_files)
+keymap("n", "<Leader>ff", _with_opts(builtin.find_files))
 
 --- Find files exactly how the names are spelled.
-keymap("n", "<Leader>fe", function()
-  builtin.find_files { fuzzy = false }
-end)
+keymap("n", "<Leader>fe", _with_opts(builtin.find_files, { fuzzy = false }))
 
 --- All files not matched by `file_ignore_patterns`.
-keymap("n", "<Leader>fa", function()
-  builtin.find_files { no_ignore = true, prompt_title = "All Files" }
-end)
+keymap(
+  "n",
+  "<Leader>fa",
+  _with_opts(
+    builtin.find_files,
+    { no_ignore = true, prompt_title = "All Files" }
+  )
+)
 
 --- Vim buffers ('bufferline' lists active buffers in the barline above).
-keymap("n", "<Leader>b", builtin.buffers)
+keymap("n", "<Leader>b", _with_opts(builtin.buffers))
 
 --- Find word. `live_grep_args` adds to `live_grep` allows to use regex
 --- and pass CLI flags right from Telescope prompt.
-keymap("n", "<Leader>fg", ext.live_grep_args.live_grep_args)
+keymap("n", "<Leader>fg", _with_opts(ext.live_grep_args.live_grep_args))
 
 -- Find MRU files.
-keymap("n", "<Leader>fo", builtin.oldfiles)
+keymap("n", "<Leader>fo", _with_opts(builtin.oldfiles))
 
 --- Find a project
-keymap("n", "<Leader>fp", ext.projects.projects)
+keymap("n", "<Leader>fp", _with_opts(ext.projects.projects))
 
 --- Request help using fuzzy search and preview.
-keymap("n", "<Leader>fh", [[<cmd>Telescope help_tags<CR>]])
+keymap("n", "<Leader>fh", _with_opts(builtin.help_tags))
 
 --- Find a key mapping.
-keymap("n", "<Leader>fk", [[<cmd>Telescope keymaps<CR>]])
+keymap("n", "<Leader>fk", _with_opts(builtin.keymaps))
 
 --- Find a key mapping.
 keymap("n", "<Leader>fn", [[<cmd>Telescope notify<CR>]])
 
 --- Find yanks made during the current session.
-keymap("n", "<Leader>fy", ext.neoclip.neoclip)
+keymap("n", "<Leader>fy", _with_opts(ext.neoclip.neoclip))
 
 --- Explore Vim's undo tree in a telescope window.
-keymap("n", "<Leader>fu", ext.undo.undo)
+keymap("n", "<Leader>fu", _with_opts(ext.undo.undo))
+
+--- Repeat regex search across the project.
+keymap("n", "<Leader>fr", builtin.resume)
