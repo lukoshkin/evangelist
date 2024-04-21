@@ -60,7 +60,13 @@ keymap("", "<A-->", ":silent !transset -a --dec .02<CR>")
 keymap("n", "<Space><Space>", fn.dismiss_distractive)
 
 --- Toggle spellchecker.
-keymap("", "<Leader>en", ":setlocal spell! spelllang=en_us<CR>")
+keymap("", "<Leader>en", function()
+  vim.cmd "setlocal spell! spelllang=en_us"
+  local spell_path = vim.fn.stdpath "data" .. "/site/spell/ru.utf-8.spl"
+  if vim.fn.filereadable(spell_path) == 1 then
+    vim.cmd("setlocal spell spelllang=ru_ru")
+  end
+end)
 
 --- Toggle line numbering and signcolumn.
 keymap("n", "<Leader>nu", fn.toggle_all_ancillary_elements)
@@ -132,7 +138,8 @@ api.nvim_create_user_command("Trim", fn.trim, { range = "%" })
 
 --- Remove swap files of the file opened.
 api.nvim_create_user_command(
-  "Rmswp", [[silent !rm "$XDG_STATE_HOME/nvim/swap/"*'%:t'*]],
+  "Rmswp",
+  [[silent !rm "$XDG_STATE_HOME/nvim/swap/"*'%:t'*]],
   {}
 )
 

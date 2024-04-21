@@ -1,4 +1,5 @@
 local conform = require "conform"
+local config_path = vim.fn.stdpath "config" .. "/stylua.toml"
 
 conform.setup {
   formatters = {
@@ -11,7 +12,7 @@ conform.setup {
     },
     stylua = {
       prepend_args = {
-        "--config-path=stylua.toml",
+        "--config-path=" .. config_path,
         "--column-width=80",
       },
     },
@@ -22,9 +23,9 @@ conform.setup {
     python = { "isort", "black" },
     rust = { "rustfmt" },
     sh = { "shfmt" },
-    yaml = { "prettierd", "prettier" },
-    json = { "prettierd", "prettier", "fixjson" },
-    markdown = { "prettierd", "prettier", "markdownlint" },
+    yaml = { { "prettierd", "prettier" } },
+    json = { { "prettierd", "prettier" }, "fixjson" },
+    markdown = { { "prettierd", "prettier" }, "markdownlint" },
     cpp = { "clang-format" },
     c = { "clang-format" },
   },

@@ -65,8 +65,6 @@ end
 
 function M.cmp_buffs_toggle()
   local normal_windows = fn.only_normal_windows()
-  print(vim.inspect(normal_windows))
-
   if #normal_windows ~= 2 then
     return {}
   end

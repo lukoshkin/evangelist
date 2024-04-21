@@ -86,6 +86,14 @@ zle -N change-prefix
 bindkey -M viins '^a' change-prefix
 bindkey -M vicmd '^a' change-prefix
 
+function resume_proc {
+  fg
+}
+
+zle -N resume_proc
+bindkey -M vicmd '^z' resume_proc
+bindkey -M viins '^z' resume_proc
+
 
 ## Export standard ls colors (grep selects everything between '')
 type dircolors &> /dev/null && eval "$(dircolors -b)"

@@ -51,7 +51,7 @@ alias gs='git switch'
 alias glpr='git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset"'
 
 gsm () {
-  if git show-ref --quiet refs/head/master; then
+  if git show-ref --quiet refs/heads/master; then
     git switch master
     return
   fi
@@ -60,7 +60,7 @@ gsm () {
 }
 
 gsd () {
-  if git show-ref --quiet refs/head/develop; then
+  if git show-ref --quiet refs/heads/develop; then
     git switch develop
     return
   fi
@@ -85,6 +85,7 @@ v () {
 }
 
 alias vv='V_CMD=\\fo v'
+alias vg='V_CMD=\\fg v'
 alias _vimrc="vim $XDG_CONFIG_HOME/nvim/init.*"
 alias vimrc="vim $EVANGELIST/custom/custom.vim"
 

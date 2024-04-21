@@ -107,6 +107,13 @@ install() {
     # $_sudo apt-get install -yq nodejs
   fi
 
+  ask_user "Download ru-dictionary for Neovim's spellchecker?"
+  if [[ $REPLY =~ [yY] ]]; then
+    local folder="${XDG_DATA_HOME:-~/.local/share}/nvim/site/spell"
+    curl -LO http://ftp.vim.org/vim/runtime/spell/ru.utf-8.spl &&
+      mkdir -p $folder && mv ru.utf-8.spl $folder
+  fi
+
   ask_user 'Set up gutui (fancy git add-ons: UI for git in CLI)?'
   if [[ $REPLY =~ [yY] ]]; then
     curl -LO https://github.com/extrawurst/gitui/releases/latest/download/gitui-linux-musl.tar.gz
@@ -115,7 +122,7 @@ install() {
     cp conf/git/key_bindings.ron "$_HOME/.config/gitui"
   fi
 
-  ask_user 'Set up gutui (fancy git add-ons: UI for git in CLI)?'
+  ask_user 'Set up delta for prettier git diff?'
   if [[ $REPLY =~ [yY] ]]; then
     curl -LO https://github.com/dandavison/delta/releases/download/0.16.5/delta-0.16.5-x86_64-unknown-linux-musl.tar.gz
     cp delta-0.16.5-x86_64-unknown-linux-musl/delta "$_HOME/.local/bin"
