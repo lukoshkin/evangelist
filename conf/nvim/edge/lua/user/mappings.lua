@@ -59,14 +59,9 @@ keymap("", "<A-->", ":silent !transset -a --dec .02<CR>")
 --- Turn off highlighting and dismiss messages below the status bar.
 keymap("n", "<Space><Space>", fn.dismiss_distractive)
 
---- Toggle spellchecker.
-keymap("", "<Leader>en", function()
-  vim.cmd "setlocal spell! spelllang=en_us"
-  local spell_path = vim.fn.stdpath "data" .. "/site/spell/ru.utf-8.spl"
-  if vim.fn.filereadable(spell_path) == 1 then
-    vim.cmd("setlocal spell spelllang=ru_ru")
-  end
-end)
+--- Toggle spellcheckers.
+keymap("", "<Leader>en", ":setlocal spell! spelllang=en_us<CR>") -- "!" - acts as a toggle.
+keymap("", "<Leader>ru", ":setlocal spell! spelllang=ru_ru<CR>") -- "!" - acts as a toggle.
 
 --- Toggle line numbering and signcolumn.
 keymap("n", "<Leader>nu", fn.toggle_all_ancillary_elements)

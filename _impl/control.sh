@@ -32,10 +32,13 @@ control::help () {
   echo -e '\nCommands:\n'
   printf '  %-18s Show the installation status or readiness to install.\n' 'checkhealth'
   printf '  %-18s Install one or all of the specified setups: bash zsh vim tmux jupyter.\n' 'install'
-  printf '  %-18s Install with extensions if they are provided (beta). \n' 'install+'
+  printf '  %-18s Install with extensions if they are provided (beta).\n' 'install+'
   printf '  %-18s Update the repository and installed configs (beta).\n' 'update'
   printf '  %-18s Force update of the repository in case of merge conflicts.\n' 'reinstall'
-  printf '  %-18s Roll back to the original settings.\n' 'uninstall'
+  printf '  %-18s Roll back to the original settings.\n\n' 'uninstall'
+
+  printf '  %-18s Save files specified in .xport-list before moving over (beta).\n' 'save'
+  printf '  %-18s Unpack what you brought using `save` command (beta).\n' 'load'
   echo
 }
 

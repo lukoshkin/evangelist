@@ -87,7 +87,7 @@ bindkey -M viins '^a' change-prefix
 bindkey -M vicmd '^a' change-prefix
 
 function resume_proc {
-  fg
+  fg "%$(jobs | wc -l)"
 }
 
 zle -N resume_proc

@@ -81,9 +81,11 @@ install() {
 
   ask_user 'Install Node.js?'
   if [[ $REPLY =~ [yY] ]]; then
-    wget -O node-tmp.tar.gz -r -nd -A gz --accept-regex='node-.*-linux-x64\.tar\.gz' https://nodejs.org/download/release/latest/
-    mkdir /tmp/node-tmp && tar xf node-tmp.tar.gz -C /tmp/node-tmp --strip-components=1
-    mv /tmp/node-tmp/bin/node "$_HOME/.local/bin"
+    local tmp_dir
+    tmp_dir=/tmp/$(uuidgen)
+    mkdir -p "$tmp_dir" && cd "$tmp_dir" &&
+    wget -r -nd -A gz --accept-regex='node-.*-linux-x64\.tar\.gz' https://nodejs.org/download/release/latest/ &&
+    tar xf node* && mv node*/bin/node "$_HOME/.local/bin"
 
     # $_sudo apt-get -qq update ## In case, it wasn't updated previously
     # eval "$sudo_env $_sudo apt-get install -y ca-certificates curl gnupg"

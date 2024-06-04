@@ -39,7 +39,7 @@ then
 fi
 
 ## Allow using ~/.local/bin instead of /usr/local/bin
-export PATH="$PATH:$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
 
 ## Static imports.
 ## We import aliases & functions first to use `join_by` in 'extra.zsh'.
