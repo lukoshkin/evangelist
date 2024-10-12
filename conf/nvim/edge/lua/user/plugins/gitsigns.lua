@@ -17,7 +17,7 @@ local function focused_move(move)
 end
 
 require("gitsigns").setup {
-  on_attach = function(bufnr)
+  on_attach = function(_bufnr)
     local gs = package.loaded.gitsigns
     keymap("n", "]g", function()
       if vim.wo.diff then
@@ -38,6 +38,7 @@ require("gitsigns").setup {
     keymap("n", "<leader>hs", gs.stage_hunk)
     keymap("n", "<leader>hr", gs.reset_hunk)
     keymap("n", "<leader>hS", gs.stage_buffer)
+    keymap('n', '<leader>hR', gs.reset_buffer)
     keymap("n", "<leader>hh", gs.preview_hunk)
 
     keymap("v", "<leader>hs", function()

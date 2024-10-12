@@ -1,6 +1,23 @@
 local conform = require "conform"
 local config_path = vim.fn.stdpath "config" .. "/stylua.toml"
 
+---@param bufnr integer | nil
+---@param ... string
+---@return string | table
+local function first(bufnr, ...)
+  if bufnr == nil then
+    return { ... }
+  end
+
+  for i = 1, select("#", ...) do
+    local formatter = select(i, ...)
+    if conform.get_formatter_info(formatter, bufnr).available then
+      return formatter
+    end
+  end
+  return select(1, ...)
+end
+
 conform.setup {
   formatters = {
     black = {
@@ -23,9 +40,16 @@ conform.setup {
     python = { "isort", "black" },
     rust = { "rustfmt" },
     sh = { "shfmt" },
-    yaml = { { "prettierd", "prettier" } },
-    json = { { "prettierd", "prettier" }, "fixjson" },
-    markdown = { { "prettierd", "prettier" }, "markdownlint" },
+    javascript = { "prettierd", "prettier", stop_after_first = true },
+    yaml = function(bufnr)
+      return { first(bufnr, "prettierd", "prettier"), "yamlfix"}
+    end,
+    json = function(bufnr)
+      return { first(bufnr, "prettierd", "prettier"), "fixjson" }
+    end,
+    markdown = function(bufnr)
+      return { first(bufnr, "prettierd", "prettier"), "markdownlint" }
+    end,
     cpp = { "clang-format" },
     c = { "clang-format" },
   },

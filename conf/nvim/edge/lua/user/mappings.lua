@@ -51,6 +51,18 @@ end)
 keymap("x", "<Leader>y", '"+y')
 keymap("n", "<Leader>y", ":%y+<CR>")
 
+--- Copying non-adjacent lines to a pre-defined register.
+keymap("n", "<Space>yc", fn.clear_regL)
+keymap("n", "<Space>yy", fn.copy_line_to_regL)
+keymap("n", "<Space>y<Space>", fn.add_newline_to_regL)
+keymap("n", "<Space>y8", fn.move_regL_content_to_clipboard)
+keymap("n", "<Space>yp", function()
+  fn.paste_regL_content(false)
+end)
+keymap("n", "<Space>yP", function()
+  fn.paste_regL_content(true)
+end)
+
 --- Change the terminal bg's transparency from within Vim
 --- (valid only for Linux systems; maybe, just Ubuntu).
 keymap("", "<A-+>", ":silent !transset -a --inc .02<CR>")
@@ -128,6 +140,12 @@ keymap("n", "<Leader>g", fn.gitui)
 --- Toggle the diff mode for two aligned buffers.
 keymap("n", "<Leader>cv", misc.cmp_buffs_toggle)
 
+--- Disable Copilot (when offline, e.g.)
+keymap("n", "<Space>cd", ":Copilot disable<CR>")
+
+--- Enable Copilot (when it is not loaded on the plugin ft.)
+keymap("n", "<Space>ce", ":Lazy load copilot.vim | Copilot restart<CR>")
+
 --- Trim trailing whitespaces.
 api.nvim_create_user_command("Trim", fn.trim, { range = "%" })
 
@@ -157,3 +175,9 @@ api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
   callback = fn.narrow_win_nowrap,
   group = aug_tw,
 })
+
+api.nvim_create_user_command("PyMove", function(opts)
+  local old_name = opts.fargs[1]
+  local new_name = opts.fargs[2]
+  require("user.pymove").move_module_or_package(old_name, new_name)
+end, { nargs = "+" })

@@ -1,6 +1,5 @@
 local cmp = require "cmp"
 local luasnip = require "luasnip"
-local lspkind = require "lspkind"
 
 --- Load snippets from 'rafamadriz/friendly-snippets'.
 require("luasnip.loaders.from_vscode").lazy_load()
@@ -21,7 +20,7 @@ cmp.setup {
   preselect = cmp.PreselectMode.None,
   formatting = {
     --- How completion menu looks.
-    format = lspkind.cmp_format {
+    format = require("lspkind").cmp_format {
       with_text = false,
       --- Don't write the type of completion, just show the icon.
       --- [function ()~  (LSP)] instead of [function ()~  Snippet (LSP)].
@@ -100,8 +99,10 @@ cmp.setup {
         if vim.fn.col "." ~= 1 and not is_completable() then
           --- not is_completable --> col '.' == 1 or prev_char == ' '
           vim.api.nvim_feedkeys(
-            vim.api.nvim_replace_termcodes(
-              "<BS>", true, true, true), "i", true)
+            vim.api.nvim_replace_termcodes("<BS>", true, true, true),
+            "i",
+            true
+          )
         end
       end
     end, { "i", "s" }),
@@ -112,6 +113,10 @@ cmp.setup {
     {
       name = "buffer",
       max_item_count = 2,
+    },
+    {
+      name = "lazydev",
+      group_index = 0, -- set to 0 to skip loading LuaLS completions
     },
     {
       name = "nvim_lsp",

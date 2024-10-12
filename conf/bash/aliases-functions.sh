@@ -285,9 +285,11 @@ swap () {
 
 
 bak () {
+  local dst
   for file in "$@"; do
+    dst=$(basename "$file")
     [[ -e bak.$file ]] && { echo "bak.$file already exists"; return 1; }
-    cp -r "$file" "bak.$file"
+    cp -r "$file" "bak.${dst#.}"
   done
 }
 

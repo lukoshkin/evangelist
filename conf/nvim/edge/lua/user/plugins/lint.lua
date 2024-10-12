@@ -12,6 +12,13 @@ lint.linters.luacheck.args = {
   "--globals",
   "vim",
 }
+lint.linters.cspell = require("lint.util").wrap(
+  lint.linters.cspell,
+  function(diagnostic)
+    diagnostic.severity = vim.diagnostic.severity.HINT
+    return diagnostic
+  end
+)
 
 lint.linters_by_ft = {
   python = { "flake8", "pylint", "mypy" },
@@ -20,7 +27,7 @@ lint.linters_by_ft = {
   cpp = { "cpplint" },
   sh = { "shellcheck" },
   dockerfile = { "hadolint" },
-  markdown = { "markdownlint" },  -- 'write-good' should be installed manually
+  markdown = { "markdownlint" }, -- 'write-good' should be installed manually
 }
 
 local aug_lint = api.nvim_create_augroup("Lint", { clear = true })

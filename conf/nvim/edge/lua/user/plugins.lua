@@ -23,7 +23,8 @@ require("lazy").setup {
       automatic_installation = true,
       ensure_installed = {
         "bashls",
-        "pyright",
+        -- "pyright",
+        -- "basedpyright",
         "lua_ls",
         "marksman",
         "clangd",
@@ -42,6 +43,7 @@ require("lazy").setup {
     opts = {
       automatic_installation = true,
       ensure_installed = {
+        "python-lsp-server",
         "shellcheck",
         "flake8",
         "pylint",
@@ -57,22 +59,45 @@ require("lazy").setup {
       "williamboman/mason.nvim",
       "stevearc/conform.nvim",
     },
-    opts = {
-      automatic_installation = true,
-      ensure_installed = {
-        "isort",
-        "black",
-        "codespell",
-        "stylua",
-        "rustfmt",
-        "shfmt",
-        "prettier",
-        "prettierd",
-        "markdownlint",
-        "fixjson",
-        "clang-format",
-      },
-    },
+    config = function()
+      local mapping = require "mason-conform.mapping"
+
+      local function auto_install()
+        local config = require("mason-conform").config
+        local formatters_by_ft = require("conform").formatters_by_ft
+
+        local formatters_to_install = {}
+        for _, formatters in pairs(formatters_by_ft) do
+          if type(formatters) == "function" then
+            formatters = formatters()
+          end
+          for _, formatter in pairs(formatters) do
+            if type(formatter) == "table" then
+              for _, f in pairs(formatter) do
+                formatters_to_install[f] = 1
+              end
+            else
+              formatters_to_install[formatter] = 1
+            end
+          end
+        end
+
+        for _, formatter_to_ignore in pairs(config.ignore_install) do
+          formatters_to_install[formatter_to_ignore] = nil
+        end
+
+        for conformFormatter, _ in pairs(formatters_to_install) do
+          local package = mapping.conform_to_package[conformFormatter]
+          if package ~= nil then
+            require("mason-conform.install").try_install(package)
+          end
+        end
+      end
+
+      local mason_conform = require("mason-conform")
+      mason_conform.auto_install = auto_install
+      mason_conform.auto_install()
+    end,
   },
 
   --- CORE
@@ -142,11 +167,11 @@ require("lazy").setup {
     "lukoshkin/highlight-whitespace",
     config = true,
   },
-  -- {
-  --   "lukoshkin/tidy.nvim",
-  --   dependencies = "neovim/nvim-lspconfig",
-  --   config = true,
-  -- },
+  {
+    "lukoshkin/tidy.nvim",
+    dependencies = "neovim/nvim-lspconfig",
+    config = true,
+  },
   {
     "aznhe21/actions-preview.nvim",
     keys = {
@@ -301,8 +326,20 @@ require("lazy").setup {
 
   --- IDE-LIKE
   {
+    "NeogitOrg/neogit",
+    keys = { { "<Leader>ng", ":Neogit<CR>" } },
+    cmd = "Neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim", -- required
+      "sindrets/diffview.nvim", -- optional - Diff integration
+      "nvim-telescope/telescope.nvim", -- optional (fzf)
+    },
+    config = true,
+  },
+  {
     "github/copilot.vim", -- Do not load on InsertEnter (low UX)
-    ft = { "python", "cpp", "c", "rust", "lua" },
+    --- Exclude `sh` file to prevent Copilot accessing '.env' files
+    ft = { "python", "rust", "javascript", "lua", "bash", "cpp", "c" },
     config = function()
       require "user.plugins.copilot"
     end,
@@ -355,6 +392,18 @@ require("lazy").setup {
     config = true,
   },
   {
+    "folke/lazydev.nvim",
+    ft = "lua", -- only load on lua files
+    opts = {
+      library = {
+        -- See the configuration section for more details
+        -- Load luvit types when the `vim.uv` word is found
+        { path = "luvit-meta/library", words = { "vim%.uv" } },
+      },
+    },
+  },
+  { "Bilal2453/luvit-meta", lazy = true }, -- optional `vim.uv` typings
+  {
     "hrsh7th/nvim-cmp",
     event = { "InsertEnter", "CmdlineEnter" },
     dependencies = {
@@ -366,10 +415,10 @@ require("lazy").setup {
       "saadparwaiz1/cmp_luasnip",
       "rafamadriz/friendly-snippets",
       "L3MON4D3/LuaSnip",
-      {
-        "tzachar/cmp-tabnine",
-        build = "./install.sh",
-      },
+      -- { -- obsolete, one can use https://github.com/codota/tabnine-nvim instead
+      --   "tzachar/cmp-tabnine",
+      --   build = "./install.sh",
+      -- },
       "hrsh7th/cmp-nvim-lua",
       "onsails/lspkind-nvim",
     },

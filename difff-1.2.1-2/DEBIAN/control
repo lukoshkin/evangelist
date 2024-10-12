@@ -1,5 +1,5 @@
 Package: difff
-Version: 1.1
+Version: 1.2.1
 Architecture: all
 Maintainer: Vladislav Lukoshkin <lukoshkin.workspace@gmail.com>
 Description: Compare multiple files in a git project or a regular folder with those in a counterpart directory.

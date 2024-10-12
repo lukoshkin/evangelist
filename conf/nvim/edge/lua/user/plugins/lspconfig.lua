@@ -1,5 +1,6 @@
 local api = vim.api
 local lspconfig = require "lspconfig"
+local cmp_lsp = require "cmp_nvim_lsp"
 local buf_keymap = require("lib.utils").buf_keymap
 
 local servers = {
@@ -32,10 +33,14 @@ lspconfig.rust_analyzer.setup {
     },
   },
 }
-lspconfig.pyright.setup {
+lspconfig.pylsp.setup {
+  capabilities = cmp_lsp.default_capabilities(),
   settings = {
-    python = {
-      analysis = { diagnosticMode = "off", typeCheckingMode = "off" },
+    pylsp = {
+      plugins = {
+        jedi_rename = { enabled = true },
+        rope_rename = { enabled = true },
+      },
     },
   },
 }

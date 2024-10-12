@@ -276,4 +276,30 @@ function M.complete_lua_or_vim(arg_lead)
   return all
 end
 
+function M.copy_line_to_regL()
+  local content = fn.getreg "l"
+  fn.setreg("l", content .. fn.getline "." .. "\n")
+end
+
+function M.add_newline_to_regL()
+  local content = fn.getreg "l"
+  fn.setreg("l", content .. "\n")
+end
+
+function M.paste_regL_content(after)
+  local content = fn.getreg "l"
+  local lines = vim.split(content, "\n")
+  table.remove(lines)
+  api.nvim_put(lines, "l", after or true, true)
+end
+
+function M.move_regL_content_to_clipboard()
+  local content = fn.getreg "l"
+  fn.setreg("+", content)
+end
+
+function M.clear_regL()
+  fn.setreg("l", "")
+end
+
 return M
