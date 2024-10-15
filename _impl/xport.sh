@@ -8,7 +8,7 @@
 ## For this functionality, `save_analyze` and `load_analyze`
 ## can be introduced.
 
-_backup () {
+_backup() {
   local file=$1 prefix name
 
   file=${line/#\~/$HOME}
@@ -16,21 +16,24 @@ _backup () {
   prefix=$(dirname "$file")
 
   name=${file##*/}
-  ! [[ -d $file ]] && { echo "Missing $line"; return; }
-  tar czf "$bakdir/$name.tar.gz" -C "$prefix" "$name" \
-    && echo "$file tar-ed successfully"
+  ! [[ -d $file ]] && {
+    echo "Missing $line"
+    return
+  }
+  tar czf "$bakdir/$name.tar.gz" -C "$prefix" "$name" &&
+    echo "$file tar-ed successfully"
 }
 
-xport::save_all () {
+xport::save_all() {
   local bakdir=$1 baklist=$2
   mkdir -p "$bakdir"
 
   while read -r line; do
     _backup "$line"
-  done < "$baklist"
+  done <"$baklist"
 }
 
-_unpack () {
+_unpack() {
   local file=$1 prefix name
   file=${line/#\~/$HOME}
   file=${file%/}
@@ -44,14 +47,14 @@ _unpack () {
 
   ## --keep-newer-files may be not a good option.
   ## It is better to ask before unpacking.
-  tar xf "$bakdir/$name.tar.gz" --confirmation -C "$prefix" \
-    && echo "$file untar-ed successfully"
+  tar xf "$bakdir/$name.tar.gz" -C "$prefix" --keep-newer-files &&
+    echo "$file untar-ed successfully" || :
 }
 
-xport::load_all () {
-local bakdir=$1 baklist=$2
+xport::load_all() {
+  local bakdir=$1 baklist=$2
 
   while read -r line; do
     _unpack "$line"
-  done < "$baklist"
+  done <"$baklist"
 }

@@ -18,7 +18,7 @@ COPY --chown=$USER:$USER . "$HOME/.config/evangelist/"
 
 USER root
 RUN cd $HOME/.config/evangelist \
-    && bash sudo.builder.sh as_root \
+    && bash sudo.builder.sh docker \
     && rm -rf /var/lib/apt/lists/* \
     && locale-gen en_US.UTF-8 \
     && npm install -g neovim \

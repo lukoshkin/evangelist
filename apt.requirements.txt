@@ -8,6 +8,8 @@ libfuse2
 gettext
 locales
 x11-xserver-utils
+xclip
+luarocks
 uuid-runtime
 git
 tmux
