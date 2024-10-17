@@ -7,17 +7,17 @@ declare -A DIRS=(
   [keys-3.dconf]=/org/gnome/settings-daemon/plugins/media-keys/
 )
 
-keys::save () {
+keys::save() {
   [[ -z $1 || $1 = '/' ]] && prefix= || prefix="$1/"
 
   for key in "${!DIRS[@]}"; do
     if [[ -n $(dconf list "${DIRS[$key]}") ]]; then
-      dconf dump "${DIRS[$key]}" > "${prefix}${key}"
+      dconf dump "${DIRS[$key]}" >"${prefix}${key}"
     fi
   done
 }
 
-keys::load () {
+keys::load() {
   local keys_dir=${1:-.}
   echo "Looking for keys in $keys_dir"
 
@@ -26,10 +26,10 @@ keys::load () {
   fi
 
   declare -a FOUND
-  mapfile -t < <(ls "${keys_dir}/"keys-*.dconf 2> /dev/null) FOUND
+  mapfile -t FOUND < <(ls "${keys_dir}/"keys-*.dconf 2>/dev/null)
 
   for key in "${FOUND[@]}"; do
-    dconf load "${DIRS[${key##*/}]}" < "${key}"
+    dconf load "${DIRS[${key##*/}]}" <"${key}"
   done
   echo Restored successfully!
 }

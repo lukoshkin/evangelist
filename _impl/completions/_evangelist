@@ -16,7 +16,7 @@ _evangelist() {
   subcmds=(
     'zsh+:includes all settings except for bash and jupyter.'
     'bash+:includes all settings except for zsh and jupyter.'
-    'zsh' 'bash' 'vim' 'tmux' 'jupyter'
+    'zsh' 'bash' 'git' 'vim' 'tmux' 'jupyter'
   )
 
   # '-A pattern' - do not complete options matching 'pattern'

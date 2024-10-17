@@ -2,7 +2,7 @@
 
 ## in `docker build` command `TERM=dumb` is used
 if [[ $TERM = dumb ]]; then
-  tput () {
+  tput() {
     :
   }
 fi
@@ -19,44 +19,38 @@ GRAY=$(tput setaf 246)
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
 
-
 ##########################
 ## -----> MACROS -----> ##
 ##########################
-ECHO () {
+ECHO() {
   local RAIN=$(tput setaf 152)
   local PURPLE=$(tput setaf 111)
   echo -e "${BOLD}${PURPLE}EVANGELIST ~>$RESET ${RAIN}$*${RESET}"
 }
 
-
-NOTE () {
+NOTE() {
   local color=$(tput setaf $1)
   echo -e "\n${BOLD}${color}$2${RESET}"
 }
 
-
-ECHO2 () {
+ECHO2() {
   local SALMON=$(tput setaf 210)
   local BUFF=$(tput setaf 186)
   >&2 echo -e "$BOLD${SALMON}EVANGELIST:${RED}PROBLEM:$RESET $BUFF$*$RESET"
 }
 
-
 ## NOTE: stderr-pipe redirection (|&) doesn't work on old shells
-HAS () {
-  [[ $(sed '/alias/d' <(type "$@" 2>&1) | grep -c 'not found') -lt $# ]] \
-    && return 0
+HAS() {
+  [[ $(sed '/alias/d' <(type "$@" 2>&1) | grep -c 'not found') -lt $# ]] &&
+    return 0
   return 1
 }
 
-
-HASLIB () {
-  dpkg-query -W $1 &> /dev/null
+HASLIB() {
+  dpkg-query -W $1 &>/dev/null
 }
 
-
-PIPHAS () {
+PIPHAS() {
   ## In beta state.
   # conda list | grep -q "$1"
   # pip3 show "$1" 2> /dev/null
@@ -66,40 +60,34 @@ PIPHAS () {
 ## <----- MACROS <----- ##
 ##########################
 
-
 ## Takes one argument - shell rc-file where to append imports
-write::dynamic_imports () {
-  grep -q '## Dynamic (on-install) imports' $1 \
-    || echo -e '\n## Dynamic (on-install) imports' >> $1
+write::dynamic_imports() {
+  grep -q '## Dynamic (on-install) imports' $1 ||
+    echo -e '\n## Dynamic (on-install) imports' >>$1
 
-  [[ $1 =~ bash ]] && ! grep -q 'source .*/conf/bash/ps1.bash' $1 \
-    && echo 'source "$EVANGELIST/conf/bash/ps1.bash"' >> $1
+  [[ $1 =~ bash ]] && ! grep -q 'source .*/conf/bash/ps1.bash' $1 &&
+    echo 'source "$EVANGELIST/conf/bash/ps1.bash"' >>$1
 
-  if conda &> /dev/null
-  then
-    grep '.autoenv-evn' "$GITIGNORE" &> /dev/null \
-      || echo '.autoenv-evn.*' >> "$GITIGNORE"
-    grep -q 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' $1 \
-      || echo 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' >> $1
+  if conda &>/dev/null; then
+    grep -q 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' $1 ||
+      echo 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' >>$1
   fi
 
-  if ! grep -q 'source "$EVANGELIST/custom/custom\..*sh"' $1
-  then
+  if ! grep -q 'source "$EVANGELIST/custom/custom\..*sh"' $1; then
     if [[ $1 =~ zsh ]]; then
-      echo '[[ -f "$EVANGELIST/custom/custom.zsh" ]] \' >> $1
-      echo '  && source "$EVANGELIST/custom/custom.zsh"' >> $1
-      echo -e '\nzcomet compinit' >> $1
+      echo '[[ -f "$EVANGELIST/custom/custom.zsh" ]] \' >>$1
+      echo '  && source "$EVANGELIST/custom/custom.zsh"' >>$1
+      echo -e '\nzcomet compinit' >>$1
 
     elif [[ $1 =~ bash ]]; then
-      echo '[[ -f "$EVANGELIST/custom/custom.bash" ]] \' >> $1
-      echo '  && source "$EVANGELIST/custom/custom.bash" || :' >> $1
+      echo '[[ -f "$EVANGELIST/custom/custom.bash" ]] \' >>$1
+      echo '  && source "$EVANGELIST/custom/custom.bash" || :' >>$1
     fi
   fi
 }
 
-
 ## Takes one argument - shell for which to install settings: bash or zsh
-write::instructions_after_install () {
+write::instructions_after_install() {
   if [[ -n $_MSG ]] || [[ -n $_PARAMS ]]; then
     NOTE 210 '\nFURTHER INSTRUCTIONS:'
     printf 'TO FINISH THE INSTALLATION, '
@@ -119,7 +107,7 @@ write::instructions_after_install () {
       local code=$?
 
       if [[ ${SHELL##*/} != $1 ]]; then
-        printf "CHANGE THE CURRENT SHELL TO $(tr a-z A-Z <<< $1),\n\n"
+        printf "CHANGE THE CURRENT SHELL TO $(tr a-z A-Z <<<$1),\n\n"
         printf "\t${BOLD}${WHITE}chsh -s $(which $1)${RESET}\n\n"
       fi
 
@@ -139,7 +127,7 @@ write::instructions_after_install () {
     ## Another approach is to "parse" _PARAMS, and print instructions
     ## for each case. It is better in terms of functionality, but not
     ## if we consider "functionality - implementation efforts" trade-off.
-    if [[ -n $1 ]] && [[ ${SHELL##*/} != $1 ]]; then
+    if [[ -n $1 ]] && [[ ${SHELL##*/} != "$1" ]]; then
       printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
     else
       printf 'KILL THE CURRENT SHELL AND START A NEW INSTANCE.'
@@ -149,9 +137,8 @@ write::instructions_after_install () {
   fi
 }
 
-
 ## Operates on '.update-list' file
-write::instructions_after_removal () {
+write::instructions_after_removal() {
   local shell curr orig msg
   shell=$(grep 'LOGIN-SHELL' .update-list | cut -d ':' -f2)
 
@@ -169,7 +156,7 @@ write::instructions_after_removal () {
     printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
   else
     curr=$(update-alternatives --query vim | grep 'Value:' | cut -d ' ' -f2)
-    orig=$(grep 'VIM-ALTERNATIVE' .update-list 2> /dev/null | cut -d: -f2)
+    orig=$(grep 'VIM-ALTERNATIVE' .update-list 2>/dev/null | cut -d: -f2)
 
     if [[ -n $orig ]] && [[ $curr != $orig ]]; then
       msg="${BOLD}${WHITE}sudo update-alternatives --set vim ${orig}${RESET}"
@@ -185,21 +172,22 @@ write::instructions_after_removal () {
   fi
 }
 
-
-_prepend_text () {
+_prepend_text() {
   if [[ $(uname) = Darwin ]]; then
     sed -i '' "1i\\
 $2\\
 " $1
   else
-    [[ -z $2 ]] && { sed -i '1i\\' $1; return; }
+    [[ -z $2 ]] && {
+      sed -i '1i\\' $1
+      return
+    }
     sed -i "1i $2" $1
   fi
 }
 
-
 ## Takes one argument - shell for which to install settings: bash or zsh
-write::file_header () {
+write::file_header() {
   if [[ $1 =~ zsh ]]; then
     _prepend_text $1 ''
     _prepend_text $1 "export ZDOTDIR=\"$ZDOTDIR\""
@@ -223,8 +211,7 @@ write::file_header () {
   fi
 }
 
-
-_register_package () {
+_register_package() {
   local out
   local newer=false
   local v1 v2=$1
@@ -232,24 +219,22 @@ _register_package () {
   ## It is not necessary to check these two conditions since
   ## `utils::v1_ge_v2` handles these cases (empty variables, to be exact).
   ## However, it slightly reduces exec. time and prevents error messages.
-  if [[ -n $v2 ]] && HAS $package
-  then
-    v1=$(dpkg-query -W -f '${Version}\n' $package 2> /dev/null)
+  if [[ -n $v2 ]] && HAS $package; then
+    v1=$(dpkg-query -W -f '${Version}\n' $package 2>/dev/null)
     [[ -z $v1 ]] && v1=$(eval "$package --version 2> /dev/null")
     ## NOTE: `grep -E` doesn't work with non-capturing groups.
-    v1=$(grep -oE '[0-9]+(\.[0-9]+)+' <<< $v1)
+    v1=$(grep -oE '[0-9]+(\.[0-9]+)+' <<<$v1)
     utils::v1_ge_v2 $v1 $v2 && newer=true
   else
     newer=true
   fi
 
   case $mode in
-    [ro+]l) has () { HASLIB $1; } ;;
-    *) has () { HAS "$@"; } ;;
+  [ro+]l) has() { HASLIB $1; } ;;
+  *) has() { HAS "$@"; } ;;
   esac
 
-  if ! has $package || ! $newer
-  then
+  if ! has $package || ! $newer; then
     [[ -n $v2 ]] && v2="${GRAY}>=${v2}$RESET"
     ## NOTE: There should be no spaces in `out`, and thus, `v2`,
     ## since the former is an element of an array with default IFS.
@@ -259,8 +244,7 @@ _register_package () {
   echo $out
 }
 
-
-_diagnostics () {
+_diagnostics() {
   local title=$1
   local color=$2
   shift 2
@@ -272,8 +256,7 @@ _diagnostics () {
   done
 }
 
-
-write::modulecheck () {
+write::modulecheck() {
   echo -e "${BOLD}${WHITE}\n$1${RESET}"
   local delim=$(printf "%${#1}s")
   echo -e "${BOLD}${delim// /-}${RESET}"
@@ -286,19 +269,22 @@ write::modulecheck () {
   local mode name package version pack_info
 
   while [[ -n $1 ]]; do
-    mode=$(cut -d ':' -f1 <<< "$1")
-    name=$(cut -d ':' -f3 <<< "$1")
-    package=$(cut -d ':' -f2 <<< "$1")
-    version=$(cut -d ':' -f4 <<< "$1")
+    mode=$(cut -d ':' -f1 <<<"$1")
+    name=$(cut -d ':' -f3 <<<"$1")
+    package=$(cut -d ':' -f2 <<<"$1")
+    version=$(cut -d ':' -f4 <<<"$1")
 
     pack_info=$(_register_package "$version")
 
     if [[ -n $pack_info ]]; then
       case $mode in
-        r*) required+=( "$pack_info" ) ;;
-        o*) optional+=( "$pack_info" ) ;;
-        +*) extended+=( "$pack_info" ) ;;
-        *) echo Wrong argument specification; exit 1 ;;
+      r*) required+=("$pack_info") ;;
+      o*) optional+=("$pack_info") ;;
+      +*) extended+=("$pack_info") ;;
+      *)
+        echo Wrong argument specification
+        exit 1
+        ;;
       esac
     fi
 
@@ -306,21 +292,21 @@ write::modulecheck () {
   done
 
   local ok=0
-  [[ ${#required[@]} -ne 0 ]] && (( ok+=2 ))
-  [[ ${#optional[@]} -ne 0 ]] && (( ok+=1 ))
+  [[ ${#required[@]} -ne 0 ]] && ((ok += 2))
+  [[ ${#optional[@]} -ne 0 ]] && ((ok += 1))
 
   case $ok in
-    0)
-      echo -e "${GREEN}All dependencies are satisfied!$RESET"
-      ;;
-    1)
-      echo -e "${YELLOW}Some of features may not work.$RESET"
-      local color=$YELLOW
-      ;;
-    *)
-      echo -e "${RED}Cannot be installed.$RESET"
-      local color=$RED
-      ;;
+  0)
+    echo -e "${GREEN}All dependencies are satisfied!$RESET"
+    ;;
+  1)
+    echo -e "${YELLOW}Some of features may not work.$RESET"
+    local color=$YELLOW
+    ;;
+  *)
+    echo -e "${RED}Cannot be installed.$RESET"
+    local color=$RED
+    ;;
   esac
 
   [[ $ok -gt 0 ]] && echo -e "${color}Missing the following packages:$RESET"
@@ -332,8 +318,7 @@ write::modulecheck () {
   echo
 }
 
-
-write::how_to_install_conda () {
+write::how_to_install_conda() {
   link=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 
   if [[ $(uname) != Linux ]]; then
@@ -342,10 +327,10 @@ write::how_to_install_conda () {
 
   echo -e '\nTo install conda, you can copy-paste the following snippet:'
 
-  cmd=( "\n\n\tcurl -o miniconda.sh $link\n" )
-  cmd+=( '\tbash miniconda.sh -b -p "$HOME/miniconda"\n' )
-  cmd+=( '\t"$HOME/miniconda/bin/conda" init'" ${SHELL##*/}\n" )
-  cmd+=( "\texec ${SHELL##*/}\n\n" )
+  cmd=("\n\n\tcurl -o miniconda.sh $link\n")
+  cmd+=('\tbash miniconda.sh -b -p "$HOME/miniconda"\n')
+  cmd+=('\t"$HOME/miniconda/bin/conda" init'" ${SHELL##*/}\n")
+  cmd+=("\texec ${SHELL##*/}\n\n")
   echo -e ${BOLD}${WHITE}${cmd[*]}${RESET}
 
   echo If one has wget installed instead of curl or prefer
@@ -354,8 +339,7 @@ write::how_to_install_conda () {
   echo leaving the remaining code unchanged.
 }
 
-
-write::commit_messages () {
+write::commit_messages() {
   ## 1 commit -> full message
   ## more than 1 -> only title
 

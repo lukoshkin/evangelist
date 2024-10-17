@@ -8,7 +8,7 @@
 export EVANGELIST=${EVANGELIST:-.}
 [[ -f evangelist.sh ]] && {
   ## If installing from the directory (probably moved or another one)
-  export EVANGELIST=.
+  export EVANGELIST=$PWD
 }
 export XDG_CACHE_HOME=${XDG_CACHE_HOME:-"$HOME/.cache"}
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}

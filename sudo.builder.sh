@@ -31,6 +31,9 @@ ask_user() {
     read -rn1 -p "$yes_or_no_question [Yn] "
     if [[ $REPLY =~ [yYnN] ]]; then
       echo
+    elif [[ -z $REPLY ]]; then
+      REPLY='y'
+      echo
     else
       echo -e "\nInvalid input: $REPLY\nPlease, type 'y' or 'n'"
       ask_user "$yes_or_no_question"
@@ -95,7 +98,9 @@ install() {
     curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
     mkdir -p "$_HOME/.local/bin" && chmod +x nvim.appimage
     mv nvim.appimage "$_HOME/.local/bin"
-    $_sudo ln -sf "$_HOME/.local/bin/nvim.appimage" /usr/bin/nvim
+    $_sudo ln -sf "$_HOME/.local/bin/nvim.appimage" /usr/bin/nvim || {
+      cd "$_HOME/.local/bin" && mv nvim.appimage nvim
+    }
   fi
 
   if [[ $_MODE = docker || $REPLY =~ [nN] ]]; then
@@ -192,7 +197,7 @@ install() {
       cp conf/git/key_bindings.ron "$_HOME/.config/gitui"
   fi
 
-  ask_user 'Set up delta for prettier git diff?'
+  ask_user 'Set up delta for prettier git diff? (works only after `evn install git`)'
   if [[ $_MODE != docker && $REPLY =~ [yY] ]]; then
     local tag delta repo=dandavison/delta
     tag=$(_get_latest_tag $repo)
@@ -210,6 +215,11 @@ install() {
   if [[ $_MODE != docker && $REPLY =~ [yY] ]]; then
     $_sudo add-apt-repository -y ppa:safeeyes-team/safeeyes
     $_sudo apt-get update && eval $sudo_env $_sudo apt-get install -y safeeyes
+  fi
+
+  ask_user 'Install latexmk to enable VimTex plugin?'
+  if [[ $_MODE = user && $REPLY =~ [yY] ]]; then
+    eval $sudo_env $_sudo apt-get install -y latexmk
   fi
 }
 

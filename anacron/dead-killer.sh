@@ -5,16 +5,19 @@
 PURGEDIR="$1"
 
 if [ -z "$PURGEDIR" ]; then
-   >&2 echo "Path to PURGEDIR not specified."
+  >&2 echo "Path to PURGEDIR not specified."
   exit 1
 fi
 
 if ! [ -d "$PURGEDIR" ]; then
-   >&2 echo "Directory not found: PURGEDIR ($PURGEDIR)"
+  >&2 echo "Directory not found: PURGEDIR ($PURGEDIR)"
   exit 2
 fi
 
-cd "$PURGEDIR" || { echo "Cannot entry $PURGEDIR"; exit 3; }
+cd "$PURGEDIR" || {
+  echo "Cannot entry $PURGEDIR"
+  exit 3
+}
 for file in *; do
   ## File path mangling is similar for undo and backup files.
   ## Except the latter ones have trailing char `~`.

@@ -42,7 +42,7 @@ conform.setup {
     sh = { "shfmt" },
     javascript = { "prettierd", "prettier", stop_after_first = true },
     yaml = function(bufnr)
-      return { first(bufnr, "prettierd", "prettier"), "yamlfix"}
+      return { first(bufnr, "prettierd", "prettier"), "yamlfix" }
     end,
     json = function(bufnr)
       return { first(bufnr, "prettierd", "prettier"), "fixjson" }

@@ -94,7 +94,7 @@ require("lazy").setup {
         end
       end
 
-      local mason_conform = require("mason-conform")
+      local mason_conform = require "mason-conform"
       mason_conform.auto_install = auto_install
       mason_conform.auto_install()
     end,
@@ -278,8 +278,7 @@ require("lazy").setup {
     "lervag/vimtex",
     ft = "tex",
     init = function()
-      vim.g.vimtex_compiler_progname = "nvr"
-      vim.g.tex_flavor = "xelatex"
+      -- for some reason, `config = true` does not work
     end,
   },
   {
@@ -307,6 +306,9 @@ require("lazy").setup {
     "iamcco/markdown-preview.nvim",
     ft = "markdown",
     build = function()
+      vim.opt.rtp:prepend(
+        vim.fn.stdpath "data" .. "/lazy/markdown-preview.nvim"
+      )
       vim.fn["mkdp#util#install"]()
     end,
     config = function()
@@ -471,7 +473,12 @@ require("lazy").setup {
   },
   {
     "rxi/json.lua",
-    build = "mkdir -p lua/json && mv json.lua lua/json/init.lua",
+    build = function()
+      local build_dir = vim.fn.stdpath "data" .. "/lazy/json.lua/"
+      local json_lua = build_dir .. "lua/json/"
+      os.execute("mkdir -p " .. json_lua)
+      os.execute("cp " .. build_dir .. "json.lua " .. json_lua .. "init.lua")
+    end,
   },
   {
     "lukoshkin/auenv.nvim",

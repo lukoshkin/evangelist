@@ -1,9 +1,9 @@
 #!/usr/env/bin bash
 
-_evangelist () {
+_evangelist() {
   opts=--version
   cmds='checkhealth install save load update reinstall uninstall'
-  subcmds='zsh bash vim tmux jupyter'
+  subcmds='zsh bash git vim tmux jupyter'
 
   list=$cmds
 
@@ -16,34 +16,34 @@ _evangelist () {
 
   # >= bash 4.0
   case ${COMP_WORDS[1]} in
-    -*)
-      list=$opts
-      ;;&
+  -*)
+    list=$opts
+    ;;&
 
-    --version)
-      return
-      ;;
+  --version)
+    return
+    ;;
 
-    install)
-      list=$subcmds;
-      local -i maxopts=7
-      # There are 5 options at max: bash zsh vim tmux jupyter.
-      # Plus, command and program names (i.e., evangelist install ...).
+  install)
+    list=$subcmds
+    local -i maxopts=8
+    # There are 5 options at max: bash zsh git vim tmux jupyter.
+    # Plus, command and program names (i.e., evangelist install ...).
 
-      # If $line contains '+', the maximum number of options falls to 3
-      # Plus, command and program names (i.e., evangelist install ...).
-      [[ ${COMP_WORDS[*]} = *'+'* ]] && maxopts=5
-      [[ ${#COMP_WORDS[@]} -gt $maxopts ]] && return
-      ;;
+    # If $line contains '+', the maximum number of options falls to 3
+    # Plus, command and program names (i.e., evangelist install ...).
+    [[ ${COMP_WORDS[*]} = *'+'* ]] && maxopts=5
+    [[ ${#COMP_WORDS[@]} -gt $maxopts ]] && return
+    ;;
 
-    *)
-      [[ ${#COMP_WORDS[@]} -ge 3 ]] && return
-      ;;
+  *)
+    [[ ${#COMP_WORDS[@]} -ge 3 ]] && return
+    ;;
   esac
 
   # Negative indexing is available since bash 4.2.
   # For older versions, use `${arr[${#arr[@]-1}]}`.
-  COMPREPLY=( $(compgen -W "$list" -- ${COMP_WORDS[-1]}) )
+  COMPREPLY=($(compgen -W "$list" -- ${COMP_WORDS[-1]}))
 }
 
 complete -F _evangelist evangelist
