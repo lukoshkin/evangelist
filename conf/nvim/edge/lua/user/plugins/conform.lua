@@ -36,6 +36,7 @@ conform.setup {
   },
   formatters_by_ft = {
     ["*"] = { "codespell" },
+    toml = { "taplo" },
     lua = { "stylua" },
     python = { "isort", "black" },
     rust = { "rustfmt" },

@@ -1,3 +1,6 @@
 ~/.ssh
-~/.gitconfig
 ~/.aws
+~/.gitconfig
+~/.config/git
+~/Documents
+$EVANGELIST/custom

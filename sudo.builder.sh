@@ -23,6 +23,11 @@ _extract_exe_to_bin() {
     cp "$tmp_dir/$executable" "$_HOME/.local/bin"
 }
 
+_install_with_apt() {
+  $_sudo apt-get -qq update
+  eval "$sudo_env $_sudo apt-get install -y $*"
+}
+
 ask_user() {
   local yes_or_no_question=$1
 
@@ -75,20 +80,21 @@ install() {
 
   ask_user 'Would you like to install them?'
   if [[ $REPLY =~ [yY] ]]; then
-    $_sudo apt-get -qq update
-    eval "$sudo_env $_sudo apt-get install -y $apt_packages"
+    _install_with_apt "$apt_packages"
   fi
 
   ask_user 'Install zsh (a more user friendly shell)?'
   if [[ $REPLY =~ [yY] ]]; then
-    $_sudo apt-get -qq update ## In case, it wasn't updated previously
-    eval "$sudo_env $_sudo apt-get install -y zsh"
+    _install_with_apt zsh
   fi
 
   ask_user 'Install miniconda to create Python virtual envs?'
   if [[ $_MODE != docker && $REPLY =~ [yY] ]]; then
     curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-    bash miniconda.sh -b -p "$HOME/miniconda"
+    bash miniconda.sh -ubp "$HOME/miniconda"
+    ## -b = batch mode (non-interactive),
+    ## -u = update (ignore if installed already)
+    ## -p <PREFIX> = installation prefix
     "$HOME/miniconda/bin/conda" init ${SHELL##*/}
     exec ${SHELL##*/}
   fi
@@ -116,12 +122,24 @@ install() {
     fi
   fi
 
+  ask_user "Install the latest npm?"
+  if [[ $_MODE = user && $REPLY =~ [yY] ]]; then
+    _install_with_apt npm
+    $_sudo npm cache clean -f
+    $_sudo npm install -g n
+    $_sudo n stable
+    $_sudo npm install -g npm@latest
+  fi
+
   ask_user "Install Neovim's extras?"
   if [[ $_MODE = user && $REPLY =~ [yY] ]]; then
-    $_sudo gem install neovim
-    $_sudo npm install -g npm@latest
-    $_sudo npm install -g neovim
-    pip3 install $pip_opts neovim
+    [[ -z $(command -v npm) ]] && {
+      echo 'npm is not installed! Skipping..'
+    } || {
+      $_sudo npm install -g npm@latest
+      $_sudo npm install -g neovim
+      pip3 install $pip_opts neovim
+    }
     ## Go
     # local latest
     # latest=$(

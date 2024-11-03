@@ -14,25 +14,23 @@ if ! [[ $CDPATH =~ ~ ]]; then
   CDPATH=$CDPATH:~
 fi
 
-
 ## Alias completion in Zsh is possible after setting complete_aliases option
 ## or specifying `compdef alias_name=function_name`. I don't know how to
 ## complete aliases in Bash that are not connected to a function. Thus, at
 ## least `evangelist` should be a function. `evn` can be an alias to
 ## `evangelist` or its wrapper function.
 
-evangelist () {
+evangelist() {
   "$EVANGELIST/evangelist.sh" "$@"
 }
 
-evn () {
+evn() {
   if [[ $# -gt 0 ]]; then
     evangelist "$@"
   elif [[ $PWD != "$EVANGELIST" ]]; then
     cd "$EVANGELIST" || return
   fi
 }
-
 
 alias l='ls -lAh'
 alias ll='ls -lh'
@@ -50,7 +48,7 @@ alias gds='git diff --staged'
 alias gs='git switch'
 alias glpr='git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset"'
 
-gsm () {
+gsm() {
   if git show-ref --quiet refs/heads/master; then
     git switch master
     return
@@ -59,7 +57,7 @@ gsm () {
   git switch main
 }
 
-gsd () {
+gsd() {
   if git show-ref --quiet refs/heads/develop; then
     git switch develop
     return
@@ -71,7 +69,7 @@ gsd () {
 ## Open the last file closed:
 # alias v="vim +'e #<1'"
 # alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
-v () {
+v() {
   if [[ $# -gt 0 ]]; then
     vim "$@"
     return
@@ -93,16 +91,16 @@ alias vimrc="vim $EVANGELIST/custom/custom.vim"
 alias d='dirs -v'
 alias G='gg 0'
 
-gg () {
+gg() {
   if [[ -z $1 ]]; then
-    pushd +1 &> /dev/null
+    pushd +1 &>/dev/null
     [[ $? -ne 0 ]] && echo Singular dir stack || :
 
   elif [[ $1 = 0 ]]; then
-    pushd -0 > /dev/null
+    pushd -0 >/dev/null
 
   elif [[ $1 =~ ^[0-9]+$ ]]; then
-    pushd +$1 > /dev/null
+    pushd +$1 >/dev/null
 
   elif [[ $1 =~ ^-[0-9]+$ ]]; then
     popd +${1:1}
@@ -112,40 +110,38 @@ gg () {
   fi
 }
 
-
-tmp () {
+tmp() {
   cd /tmp || return
   [[ -z $1 ]] && return
   eval "$*"
-  cd - > /dev/null
+  cd - >/dev/null
 }
 
-
-tarz () {
-  [[ -z $1 ]] && { echo Path must be provided!; exit 1; }
+tarz() {
+  [[ -z $1 ]] && {
+    echo Path must be provided!
+    exit 1
+  }
 
   local name=${1##*/}
   tar czf "$name.tar.gz" "$@"
 }
 
-
-_math () {
+_math() {
   ## _ANS can be reused later.
-  _ANS=$(( $* ))
+  _ANS=$(($*))
   echo $_ANS
 }
 
-
-st () {
-  if [[ -n $1 ]] || ! git status 2> /dev/null; then
+st() {
+  if [[ -n $1 ]] || ! git status 2>/dev/null; then
     eval "du -hm --max-depth=1 $1" | sort -n -r
   fi
 }
 
-
 if [[ $_shell = bash ]]; then
   ## Repeat the last command in Bash (just like in Zsh).
-  r () {
+  r() {
     fc -s
   }
 
@@ -155,27 +151,25 @@ else
   alias math='noglob _math'
 fi
 
-
-_mangle_name () {
+_mangle_name() {
   local name=$1
-  no=$(sed -nr 's;.*\(([0-9]+)\)(\.[^\.]+)?$;\1;p' <<< "$name")
+  no=$(sed -nr 's;.*\(([0-9]+)\)(\.[^\.]+)?$;\1;p' <<<"$name")
 
   if [[ -z $no ]]; then
     if [[ $name != *.* || -d /tmp/$name ]]; then
       name+='(1)'
     else
-      name=$(sed -r 's;(.*)(\.[^\.]+);\1(1)\2;' <<< "$name")
+      name=$(sed -r 's;(.*)(\.[^\.]+);\1(1)\2;' <<<"$name")
     fi
   else
-    copy_no=$(( no + 1 ))
-    name=$(sed -r "s;(.*\()$no(\)(\.[^\.]+)?)\$;\1$copy_no\2;" <<< "$name")
+    copy_no=$((no + 1))
+    name=$(sed -r "s;(.*\()$no(\)(\.[^\.]+)?)\$;\1$copy_no\2;" <<<"$name")
   fi
 
   echo "$name"
 }
 
-
-mv () {
+mv() {
   ## Something like 'gvfs-trash' implementation.
   ## When passing just one argument, it "removes" file or folder
   ## backing it up at the "trash bin" (/tmp).
@@ -183,7 +177,7 @@ mv () {
   ## Some of concerns:
   ## - /tmp is a limited in size partition
   ## - `while`-loop
-  command -v realpath &> /dev/null
+  command -v realpath &>/dev/null
   local code=$?
 
   if [[ $# != 1 || $code -ne 0 ]]; then
@@ -202,7 +196,7 @@ mv () {
     while [[ -e /tmp/$name ]]; do
       name=$(_mangle_name "$name")
 
-      (( loop_cnt ++ ))
+      ((loop_cnt++))
       if [[ $loop_cnt -ge $max_loop_cnt ]]; then
         echo "EVANGELIST's Impl.error: infinite loop"
         return 1
@@ -211,25 +205,23 @@ mv () {
 
     [[ $name != "$1" ]] && landing+="/$name"
 
-    command mv "$1" "$landing" \
-      && echo "$1 has been moved to $landing."
+    command mv "$1" "$landing" &&
+      echo "$1 has been moved to $landing."
   fi
 }
 
-
 ## Some other functions that might be useful.
-md () {
+md() {
   mkdir -p "$@"
   [[ $# -gt 1 ]] && return 1
   cd "$1"
 }
 
-
-dtree () {
+dtree() {
   local w8
   [[ -n $1 ]] && w8=$1 || w8=.5
 
-  timeout $w8 find . ! -path '*/\.*' -type d &> /dev/null
+  timeout $w8 find . ! -path '*/\.*' -type d &>/dev/null
 
   ## 124 - command timed out
   if [[ $? -eq 124 ]]; then
@@ -242,10 +234,8 @@ dtree () {
     's;[^-][^\/]*\/;--;g' -e 's;^;   ;' -e 's;-;|;'
 }
 
-
-tree () {
-  if ! command -v tree &> /dev/null
-  then
+tree() {
+  if ! command -v tree &>/dev/null; then
     dtree "$1"
     return
   fi
@@ -272,66 +262,68 @@ tree () {
   echo "$hierarchy"
 }
 
-
-swap () {
-  [[ -z $1 || -z $2 ]] && { echo 'Requires src and dest'; return 1; }
+swap() {
+  [[ -z $1 || -z $2 ]] && {
+    echo 'Requires src and dest'
+    return 1
+  }
   local bak="/tmp/${1##*/}.bak"
 
-  cp -R "$1" "$bak" \
-    && command rm -rf "$1" \
-    && mv "$2" "$1" \
-    && mv "$bak" "$2"
+  cp -R "$1" "$bak" &&
+    command rm -rf "$1" &&
+    mv "$2" "$1" &&
+    mv "$bak" "$2"
 }
 
-
-bak () {
+bak() {
   local dst
   for file in "$@"; do
     dst=$(basename "$file")
-    [[ -e bak.$file ]] && { echo "bak.$file already exists"; return 1; }
+    [[ -e bak.$file ]] && {
+      echo "bak.$file already exists"
+      return 1
+    }
     cp -r "$file" "bak.${dst#.}"
   done
 }
 
-
-_think_before () {
+_think_before() {
   local nsec=$1
-  while [[ $(( nsec -= 1 )) -gt 0 ]]; do
+  while [[ $((nsec -= 1)) -gt 0 ]]; do
     echo "You have $nsec second(s) to change your mind"
     sleep 1
   done
 }
 
-
-rm () {
+rm() {
   if [[ " $* " =~ ' -rf ' ]]; then
     _think_before 5
   fi
   command rm -I "$@"
 }
 
-
-vrmswp () {
-  [[ -z $1 ]] && { echo "Pass the name of swap file to delete."; return 1; }
+vrmswp() {
+  [[ -z $1 ]] && {
+    echo "Pass the name of swap file to delete."
+    return 1
+  }
   local swp=${1//\//%}
   rm "$XDG_STATE_HOME/nvim/swap/"*$swp*
 }
 
-
 ## https://stackoverflow.com/questions/1527049
-join_by () {
+join_by() {
   local d=$1 f=$2
   if shift 2; then
     printf %s "$f" "${@/#/$d}"
   fi
 }
 
-
-(which tmux &> /dev/null \
-  && grep -qE '^n?vim' "$EVANGELIST/.update-list" \
-  && grep -q '^source .*slime\.vim' "$XDG_CONFIG_HOME/nvim/init.vim" \
-  && grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME/nvim/init.vim") \
-  &> /dev/null && source "$EVANGELIST/conf/tmux/templates.sh"
+(which tmux &>/dev/null &&
+  grep -qE '^n?vim' "$EVANGELIST/.update-list" &&
+  grep -q '^source .*slime\.vim' "$XDG_CONFIG_HOME/nvim/init.vim" &&
+  grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME/nvim/init.vim") \
+  &>/dev/null && source "$EVANGELIST/conf/tmux/templates.sh"
 
 ## Save to use from the interactive shell?
 # unset _shell

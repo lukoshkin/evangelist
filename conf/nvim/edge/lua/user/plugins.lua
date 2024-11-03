@@ -50,6 +50,7 @@ require("lazy").setup {
         "cpplint",
         "hadolint",
         "markdownlint",
+        "cspell",
       },
     },
   },

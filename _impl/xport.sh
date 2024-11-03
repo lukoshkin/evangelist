@@ -11,16 +11,18 @@
 _backup() {
   local file=$1 prefix name
 
-  file=${line/#\~/$HOME}
+  file=$(eval echo "$file")
   file=${file%/}
   prefix=$(dirname "$file")
 
   name=${file##*/}
-  ! [[ -d $file ]] && {
+  ! [[ -e $file ]] && {
     echo "Missing $line"
     return
   }
-  tar czf "$bakdir/$name.tar.gz" -C "$prefix" "$name" &&
+  ## Exclude moving-over folder to be able to tar $EVANGELIST directory.
+  tar czf "$bakdir/$name.tar.gz" -C "$prefix" \
+    --exclude=$EVANGELIST/moving-over "$name" &&
     echo "$file tar-ed successfully"
 }
 
