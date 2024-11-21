@@ -3,23 +3,21 @@ local api = vim.api
 
 local function lsp_clients()
   local msg = "None"
-  local clients = vim.lsp.buf_get_clients()
-
-  if next(clients) == nil then
-    return msg
-  end
-
   local client_names = {}
-  for _, client in pairs(clients) do
+  for _, client in pairs(vim.lsp.get_clients()) do
     table.insert(client_names, client.name)
   end
 
-  local buf_ft = api.nvim_buf_get_option(0, "filetype")
+  local buf_ft = api.nvim_get_option_value("filetype", { buf = 0 })
   local linters = require("lint").linters_by_ft[buf_ft]
-  vim.list_extend(client_names, linters)
+  if linters then
+    vim.list_extend(client_names, linters)
+  end
 
   local formatters = require("conform").list_formatters_for_buffer(0)
-  vim.list_extend(client_names, formatters)
+  if formatters then
+    vim.list_extend(client_names, formatters)
+  end
 
   if next(client_names) then
     return "[" .. table.concat(unique(client_names), ", ") .. "]"
@@ -30,7 +28,7 @@ end
 
 local function conda_env()
   local msg = ""
-  local buf_ft = api.nvim_buf_get_option(0, "filetype")
+  local buf_ft = api.nvim_get_option_value("filetype", { buf = 0 })
 
   if buf_ft == "python" then
     msg = "(" .. vim.env.CONDA_DEFAULT_ENV .. ")"

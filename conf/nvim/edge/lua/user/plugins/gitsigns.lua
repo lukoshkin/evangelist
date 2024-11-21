@@ -17,20 +17,14 @@ local function focused_move(move)
 end
 
 require("gitsigns").setup {
-  on_attach = function(_bufnr)
+  on_attach = function()
     local gs = package.loaded.gitsigns
     keymap("n", "]g", function()
-      if vim.wo.diff then
-        return "]g"
-      end
       vim.schedule(focused_move(gs.next_hunk))
       return "<Ignore>"
     end, { expr = true })
 
     keymap("n", "[g", function()
-      if vim.wo.diff then
-        return "[g"
-      end
       vim.schedule(focused_move(gs.prev_hunk))
       return "<Ignore>"
     end, { expr = true })
@@ -38,8 +32,9 @@ require("gitsigns").setup {
     keymap("n", "<leader>hs", gs.stage_hunk)
     keymap("n", "<leader>hr", gs.reset_hunk)
     keymap("n", "<leader>hS", gs.stage_buffer)
-    keymap('n', '<leader>hR', gs.reset_buffer)
+    keymap("n", "<leader>hR", gs.reset_buffer)
     keymap("n", "<leader>hh", gs.preview_hunk)
+    keymap("n", "<leader>hu", gs.undo_stage_hunk)
 
     keymap("v", "<leader>hs", function()
       gs.stage_hunk { vim.fn.line ".", vim.fn.line "v" }

@@ -33,6 +33,13 @@ conform.setup {
         "--column-width=80",
       },
     },
+    yamlfix = {
+      env = {
+        YAMLFIX_SEQUENCE_STYLE = "block_style",
+        YAMLFIX_LINE_LENGTH = 80,
+        YAMLFIX_WHITELINES = 1,
+      },
+    },
   },
   formatters_by_ft = {
     ["*"] = { "codespell" },
@@ -42,9 +49,7 @@ conform.setup {
     rust = { "rustfmt" },
     sh = { "shfmt" },
     javascript = { "prettierd", "prettier", stop_after_first = true },
-    yaml = function(bufnr)
-      return { first(bufnr, "prettierd", "prettier"), "yamlfix" }
-    end,
+    yaml = { "yamlfix" },
     json = function(bufnr)
       return { first(bufnr, "prettierd", "prettier"), "fixjson" }
     end,

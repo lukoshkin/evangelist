@@ -192,7 +192,7 @@ function difff() {
 
   local counter
   for file in "${files[@]}"; do
-    matches_path "$counter" "${ignore[@]}" && continue
+    matches_path "$file" "${ignore[@]}" && continue
     counter=$(sed -r "s;\/?([^\/]+\/){$trim_cnt}(.*);\2;" <<<"$file")
     counter="${prefix%/}/$counter"
 
