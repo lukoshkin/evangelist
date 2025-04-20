@@ -104,9 +104,19 @@ require("lazy").setup {
   },
 
   --- CORE
-  "LunarVim/bigfile.nvim",
+  { require "user.plugins.avante" },
   {
-    "anuvyklack/hydra.nvim",
+    "pteroctopus/faster.nvim",
+  },
+  {
+    "echasnovski/mini.nvim",
+    version = "*",
+    config = function()
+      require "user.plugins.mini"
+    end,
+  },
+  {
+    "nvimtools/hydra.nvim",
     config = function()
       --- For some reason, a small delay should be introduced.
       vim.defer_fn(function()
@@ -289,10 +299,6 @@ require("lazy").setup {
     { "tpope/vim-repeat", event = "BufRead" },
     { "dstein64/vim-startuptime", cmd = "StartupTime" },
     {
-      "tpope/vim-surround",
-      keys = { "ys", "cs", "ds" },
-    },
-    {
       "junegunn/vim-easy-align",
       keys = { { "ga", mode = "" } },
       config = function()
@@ -341,14 +347,15 @@ require("lazy").setup {
     },
     config = true,
   },
-  {
-    "github/copilot.vim", -- Do not load on InsertEnter (low UX)
-    --- Exclude `sh` file to prevent Copilot accessing '.env' files
-    ft = { "python", "rust", "javascript", "lua", "bash", "cpp", "c" },
-    config = function()
-      require "user.plugins.copilot"
-    end,
-  },
+  { require "user.plugins.copilot" },
+  -- {
+  --   "github/copilot.vim", -- Do not load on InsertEnter (low UX)
+  --   --- Exclude `sh` file to prevent Copilot accessing '.env' files
+  --   ft = { "python", "rust", "javascript", "lua", "bash", "cpp", "c" },
+  --   config = function()
+  --     require "user.plugins.copilot"
+  --   end,
+  -- },
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate | :TSInstall! query",
@@ -379,16 +386,6 @@ require("lazy").setup {
     },
     config = function()
       require "user.plugins.conform"
-    end,
-  },
-  {
-    "neovim/nvim-lspconfig",
-    dependencies = {
-      "folke/lsp-colors.nvim",
-      "SmiteshP/nvim-navic",
-    },
-    config = function()
-      require "user.plugins.lspconfig"
     end,
   },
   {
@@ -444,6 +441,7 @@ require("lazy").setup {
     keys = { "<Leader>di", "<Space>.", "<Space>,", "<Space>;", "<Space>g" },
     dependencies = {
       "rcarriga/nvim-dap-ui",
+      "nvim-neotest/nvim-nio",
       "mfussenegger/nvim-dap-python",
       "nvim-telescope/telescope-dap.nvim",
     },

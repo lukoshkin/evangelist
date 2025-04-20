@@ -101,12 +101,13 @@ install() {
 
   ask_user "Install Neovim's AppImage?"
   if [[ $_MODE != docker && $REPLY =~ [yY] ]]; then
-    curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
-    mkdir -p "$_HOME/.local/bin" && chmod +x nvim.appimage
-    mv nvim.appimage "$_HOME/.local/bin"
-    $_sudo ln -sf "$_HOME/.local/bin/nvim.appimage" /usr/bin/nvim || {
-      cd "$_HOME/.local/bin" && mv nvim.appimage nvim
-    }
+    local link=https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
+    local dl_path="$_HOME/.local/bin"
+
+    mkdir -p "$dl_path"
+    curl -L $link -o "$dl_path/nvim"
+    chmod +x "$dl_path/nvim"
+    $_sudo ln -sf "$dl_path/nvim" /usr/bin/nvim
   fi
 
   if [[ $_MODE = docker || $REPLY =~ [nN] ]]; then

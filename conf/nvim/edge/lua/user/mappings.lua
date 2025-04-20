@@ -51,6 +51,17 @@ end)
 keymap("x", "<Leader>y", '"+y')
 keymap("n", "<Leader>y", ":%y+<CR>")
 
+--- Copy highlighted text with search to the clipboard.
+keymap("n", "<Space>/y", function()
+  vim.cmd 'let @l = ""'
+  vim.cmd "g//y L"
+  vim.cmd "let @+ = @L"
+  vim.notify(
+    " Copied the matched lines of last searched pattern to the clipboard",
+    vim.log.levels.INFO,
+    { title = "evn" }
+  )
+end)
 --- Copying non-adjacent lines to a pre-defined register.
 keymap("n", "<Space>yc", fn.clear_regL)
 keymap("n", "<Space>yy", fn.copy_line_to_regL)
@@ -169,12 +180,15 @@ api.nvim_create_user_command("Print", fn.print_inspect, {
   complete = fn.complete_lua_or_vim,
 })
 
---- Set 'nowrap' if window width is < 110 char.
-local aug_tw = api.nvim_create_augroup("AutoTW", { clear = true })
-api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
-  callback = fn.narrow_win_nowrap,
-  group = aug_tw,
-})
+keymap("n", "<Leader>w", function()
+  local wrap = vim.o.wrap
+  vim.wo.wrap = not wrap
+  vim.notify(
+    " `set wrap` " .. (vim.wo.wrap and "applied" or "revoked"),
+    vim.log.levels.INFO,
+    { title = "evn-settings" }
+  )
+end, { noremap = true, silent = true })
 
 api.nvim_create_user_command("PyMove", function(opts)
   local old_name = opts.fargs[1]

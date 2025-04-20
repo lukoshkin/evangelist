@@ -112,7 +112,7 @@ cmp.setup {
     --- Order matters.
     {
       name = "buffer",
-      max_item_count = 2,
+      max_item_count = 5,
     },
     {
       name = "lazydev",

@@ -1,9 +1,21 @@
-AGKOZAK_MULTILINE=0
-AGKOZAK_PROMPT_CHAR=( '>' '>' ':' )
-AGKOZAK_VIRTUALENV_CHARS=( '' '' )
+#!/bin/zsh
+AGKOZAK_CUSTOM_PROMPT='%(?..%B%F{red}(%?%)%f%b )' # Exit status
+AGKOZAK_CUSTOM_PROMPT+='%(9V.%9v .)' # Command execution time
+AGKOZAK_CUSTOM_PROMPT+='%(!.%S%B.%B%F{yellow})%n%1v%(!.%b%s.%f%b) ' # Username and hostname
+AGKOZAK_CUSTOM_PROMPT+='%B%F{white}%2v%f%b' # Path
+AGKOZAK_CUSTOM_PROMPT+=$'%(3V.%F{red}%3v%f.)' # Git status and newline
+AGKOZAK_CUSTOM_PROMPT+='%(10V. %F{blue}%10v%f.)' # Virtual environment
+AGKOZAK_CUSTOM_PROMPT+='%(1j. %F{magenta}%jj%f.)' # Background jobs indicator
+AGKOZAK_CUSTOM_PROMPT+='%(4V.:. >) ' # Prompt character
+AGKOZAK_CUSTOM_RPROMPT='%*' # current time
 
-AGKOZAK_COLORS_PATH=white
-AGKOZAK_COLORS_USER_HOST=yellow
-AGKOZAK_COLORS_BRANCH_STATUS=red
-AGKOZAK_COLORS_VIRTUALENV=blue
-AGKOZAK_COLORS_PROMPT_CHAR=white
+## Legacy settings: compilations via flags
+# AGKOZAK_MULTILINE=0
+# AGKOZAK_PROMPT_CHAR=( '>' '>' ':' )
+# AGKOZAK_VIRTUALENV_CHARS=( '' '' )
+
+# AGKOZAK_COLORS_PATH=white
+# AGKOZAK_COLORS_USER_HOST=yellow
+# AGKOZAK_COLORS_BRANCH_STATUS=red
+# AGKOZAK_COLORS_VIRTUALENV=blue
+# AGKOZAK_COLORS_PROMPT_CHAR=white

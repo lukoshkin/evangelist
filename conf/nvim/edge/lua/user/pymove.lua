@@ -137,6 +137,7 @@ local function update_imports(
 
   api.nvim_buf_call(bufnr, function()
     vim.cmd "write!"
+    require("conform").format()
   end)
 end
 

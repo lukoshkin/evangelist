@@ -1,6 +1,6 @@
-local telescope = require "telescope"
 local actions = require "telescope.actions"
 local state = require "telescope.actions.state"
+local telescope = require "telescope"
 local keymap = require("lib.utils").keymap
 
 local lga_actions = require "telescope-live-grep-args.actions"
@@ -64,7 +64,7 @@ telescope.setup {
       override_generic_sorter = true,
       override_file_sorter = true,
       case_mode = "smart_case", --  or "ignore_case" or "respect_case"
-                                --- the default case_mode is "smart_case"
+      --- the default case_mode is "smart_case"
     },
     live_grep_args = {
       mappings = {
@@ -75,6 +75,11 @@ telescope.setup {
       },
     },
     undo = {
+      mappings = {
+        n = {
+          ["<C-r>"] = require("telescope-undo.actions").restore,
+        },
+      },
       entry_format = "#$ID, $STAT, $TIME",
       layout_config = {
         width = 0.95,

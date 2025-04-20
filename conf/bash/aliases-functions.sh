@@ -66,6 +66,12 @@ gsd() {
   git switch dev
 }
 
+gpub() {
+  local branch
+  branch=$(git rev-parse --abbrev-ref HEAD)
+  git push -u origin "$branch"
+}
+
 ## Open the last file closed:
 # alias v="vim +'e #<1'"
 # alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
@@ -133,7 +139,7 @@ _math() {
   echo $_ANS
 }
 
-st() {
+st() { # git STatus or STorage
   if [[ -n $1 ]] || ! git status 2>/dev/null; then
     eval "du -hm --max-depth=1 $1" | sort -n -r
   fi
@@ -184,8 +190,10 @@ mv() {
     command mv "$@"
   else
     local no copy_no parent
+    local name=${1%/} landing=/tmp
     local loop_cnt=0 max_loop_cnt=100
-    local name=${1##*/} landing=/tmp
+
+    name=${name##*/}
     parent=$(realpath "$(dirname "$name")")
 
     if [[ $parent = "/tmp" ]]; then

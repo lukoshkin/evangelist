@@ -9,7 +9,8 @@ local function lsp_clients()
   end
 
   local buf_ft = api.nvim_get_option_value("filetype", { buf = 0 })
-  local linters = require("lint").linters_by_ft[buf_ft]
+  -- local linters = require("lint").linters_by_ft[buf_ft]
+  local linters = require("lint").get_running()
   if linters then
     vim.list_extend(client_names, linters)
   end

@@ -3,6 +3,7 @@ require("ts_context_commentstring").setup {}
 vim.g.skip_ts_context_commentstring_module = true
 
 require("nvim-treesitter.configs").setup {
+  modules = {},   -- For some reason, is a required field `TSConfig` type, though does nothing
   ensure_installed = {
     "c",
     "rust",
@@ -15,7 +16,9 @@ require("nvim-treesitter.configs").setup {
     "make",
     "cmake",
   },
-
+  sync_install = false,
+  auto_install = false,
+  ignore_install = {},
   indent = {
     enable = true,
     disable = { "yaml", "python" },
@@ -38,8 +41,8 @@ require("nvim-treesitter.configs").setup {
         ["if"] = "@function.inner",
         ["ac"] = "@class.outer",
         ["ic"] = "@class.inner",
-        ["ab"] = "@block.outer",
-        ["ib"] = "@block.inner",
+        -- ["ab"] = "@block.outer", -- conflicts with mini.surround
+        -- ["ib"] = "@block.inner", -- conflicts with mini.surround
         --- TODO: add mapping for python docstring selection.
       },
     },

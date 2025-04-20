@@ -107,17 +107,6 @@ function M.trim(opts)
   vim.notify(" Trimmed!", vim.log.levels.INFO, { title = "evn-settings" })
 end
 
-function M.narrow_win_nowrap()
-  for _, wid in pairs(M.only_normal_windows()) do
-    local tw = api.nvim_win_get_width(wid)
-    if tw < 110 then
-      api.nvim_win_set_option(wid, "wrap", false)
-    else
-      api.nvim_win_set_option(wid, "wrap", true)
-    end
-  end
-end
-
 function M.resize(arg, opts)
   local cmd = "resize " .. arg
   opts = opts or {}
@@ -127,7 +116,6 @@ function M.resize(arg, opts)
   end
 
   vim.cmd(cmd)
-  M.narrow_win_nowrap()
 end
 
 function M.gitui()

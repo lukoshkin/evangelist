@@ -12,6 +12,9 @@ lint.linters.luacheck.args = {
   "--globals",
   "vim",
 }
+-- lint.linters.mypy.args = {
+--   "--config-file=" .. vim.fn.getcwd() .. "/setup.cfg",
+-- }
 lint.linters.cspell = require("lint.util").wrap(
   lint.linters.cspell,
   function(diagnostic)
@@ -39,6 +42,8 @@ api.nvim_create_autocmd({
 }, {
   group = aug_lint,
   callback = function()
+    os.execute "kill -9 $(pgrep -f shellcheck)"
+    os.execute "pkill -9 -f flake8"
     lint.try_lint()
     if
       api.nvim_win_get_config(0).relative == ""
