@@ -4,7 +4,7 @@ local api = vim.api
 local function lsp_clients()
   local msg = "None"
   local client_names = {}
-  for _, client in pairs(vim.lsp.get_clients()) do
+  for _, client in pairs(vim.lsp.get_clients { bufnr = 0 }) do
     table.insert(client_names, client.name)
   end
 

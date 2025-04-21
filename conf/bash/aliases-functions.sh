@@ -141,6 +141,10 @@ _math() {
 
 st() { # git STatus or STorage
   if [[ -n $1 ]] || ! git status 2>/dev/null; then
+    if [[ $PWD = "$HOME" ]]; then
+      echo "You are in the home directory."
+      return 1
+    fi
     eval "du -hm --max-depth=1 $1" | sort -n -r
   fi
 }
