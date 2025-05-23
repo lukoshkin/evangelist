@@ -65,39 +65,42 @@ aws_region = us-east-1
 ## Usage
 
 ### Basic Usage
-
 ```bash
+
 # Generate a commit message for staged changes
-ai-commit.py
+ai-commit.py commit
+
+# Include unstaged modifications
+ai-commit.py commit --all
 
 # Generate and automatically commit
-ai-commit.py --commit
-
-# Generate with previous commit context
-ai-commit.py --previous-commits
+ai-commit.py commit --commit
 
 # Edit the message before committing
-ai-commit.py --edit --commit
+ai-commit.py commit --edit --commit
+
+# Create a commit style template from previous commits
+ai-commit.py mimic --count 20
 ```
 
 ### Command-line Options
 
 | Option                | Description                                               |
 | --------------------- | --------------------------------------------------------- |
-| `--config PATH`       | Path to custom configuration file                         |
-| `--provider PROVIDER` | LLM provider to use (openai, anthropic, google, bedrock)  |
-| `--model MODEL`       | Model to use for generating commit messages               |
-| `--temperature FLOAT` | Temperature for LLM generation (0.0-1.0)                  |
-| `--previous-commits`  | Include previous commit messages for context              |
-| `--commit`            | Automatically commit with the generated message           |
+| `--config PATH`       | Path to custom configuration file |
+| `--provider PROVIDER` | LLM provider to use (openai, anthropic, google, bedrock) |
+| `--model MODEL`       | Model to use for generating commit messages |
+| `--temperature FLOAT` | Temperature for LLM generation (0.0-1.0) |
+| `--commit`            | Automatically commit with the generated message |
 | `--edit`              | Open the generated message in an editor before committing |
+| `--all`               | Use all modified files instead of just staged |
 
 ## Examples
 
 ### Generate a commit message
 
 ```bash
-$ ai-commit.py
+$ ai-commit.py commit
 
 Generated commit message:
 --------------------------------------------------
@@ -111,23 +114,16 @@ To use this message, run:
 git commit -m 'feat(auth): implement JWT authentication'
 ```
 
-### Generate with previous commit context
+### Create a commit style template
 
 ```bash
-$ ai-commit.py --previous-commits
-
-Generated commit message:
---------------------------------------------------
-fix(ui): correct button alignment in navbar
-
-Resolves issue #123
---------------------------------------------------
+$ ai-commit.py mimic --count 20
 ```
 
 ### Use a different provider and model
 
 ```bash
-$ ai-commit.py --provider anthropic --model claude-3-opus
+$ ai-commit.py commit --provider anthropic --model claude-3-opus
 
 Generated commit message:
 --------------------------------------------------

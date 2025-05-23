@@ -8,12 +8,15 @@ through litellm and can analyze previous commit messages to maintain
 consistent formatting and style.
 """
 
-import argparse
 import configparser
 import os
 import subprocess
 import sys
 from pathlib import Path
+from tempfile import NamedTemporaryFile
+
+import click
+from loguru import logger
 
 from litellm import completion
 
@@ -85,6 +88,7 @@ Example: "feat(auth): implement JWT authentication"
             "temperature": "0.7",
             "max_tokens": "500",
             "system_prompt": self.DEFAULT_SYSTEM_PROMPT,
+            "commit_template": "",
         }
 
         config["API_KEYS"] = {
@@ -101,8 +105,8 @@ Example: "feat(auth): implement JWT authentication"
         with open(self.config_path, "w", encoding="utf-8") as config_file:
             config.write(config_file)
 
-        print(f"Created default configuration at {self.config_path}")
-        print(
+        logger.info(f"Created default configuration at {self.config_path}")
+        logger.info(
             "Please edit this file to add your API keys and customize settings."
         )
         sys.exit(0)
@@ -131,25 +135,44 @@ Example: "feat(auth): implement JWT authentication"
                 "aws_region", "us-east-1"
             )
 
-    def get_staged_diff(self) -> str:
-        """Get the git diff of staged changes.
+    def _ensure_git_repo(self) -> None:
+        """Ensure the current directory is a git repository."""
+        try:
+            subprocess.run(
+                ["git", "rev-parse", "--is-inside-work-tree"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+        except subprocess.CalledProcessError:
+            logger.error("Current directory is not a git repository.")
+            sys.exit(1)
+
+    def get_diff(self, include_all: bool = False) -> str:
+        """Get the git diff of changes.
+
+        Args:
+            include_all: Include unstaged changes as well as staged ones.
 
         Returns:
-            String containing the git diff output
-
-        Raises:
-            subprocess.CalledProcessError: If git command fails
+            Git diff output as a string.
         """
+        self._ensure_git_repo()
+
+        diff_cmd = ["git", "diff", "--staged"]
+        if include_all:
+            diff_cmd = ["git", "diff"]
+
         try:
             result = subprocess.run(
-                ["git", "diff", "--staged"],
+                diff_cmd,
                 capture_output=True,
                 text=True,
                 check=True,
             )
             return result.stdout
         except subprocess.CalledProcessError as e:
-            print(f"Error getting git diff: {e}")
+            logger.error(f"Error getting git diff: {e}")
             sys.exit(1)
 
     def get_previous_commits(self, count: int = 5) -> str:
@@ -170,17 +193,58 @@ Example: "feat(auth): implement JWT authentication"
             )
             return result.stdout
         except subprocess.CalledProcessError as e:
-            print(f"Warning: Could not get previous commits: {e}")
+            logger.warning(f"Could not get previous commits: {e}")
             return ""
 
-    def generate_commit_message(
-        self, diff: str, previous_commits: str | None = None
-    ) -> str:
+    def generate_commit_template(self, commits: str) -> str:
+        """Generate a commit message template from previous commits."""
+        provider = self.config["DEFAULT"]["provider"]
+        model = self.config["DEFAULT"]["model"]
+        max_tokens = int(self.config["DEFAULT"]["max_tokens"])
+
+        system_prompt = (
+            "You are a git commit style analyzer. "
+            "Given a list of commit messages, produce a concise template or set "
+            "of guidelines that describes the style so it can be followed later."
+        )
+
+        user_message = f"Here are past commit messages:\n\n```\n{commits}\n```"
+
+        provider_model_map = {
+            "openai": f"openai/{model}",
+            "anthropic": f"anthropic/{model}",
+            "google": f"google/{model}",
+            "bedrock": f"bedrock/{model}",
+        }
+
+        model_name = provider_model_map.get(provider, f"{provider}/{model}")
+
+        try:
+            response = completion(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message},
+                ],
+                temperature=0,
+                max_tokens=max_tokens,
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.error(f"Error generating commit template: {e}")
+            sys.exit(1)
+
+    def save_commit_template(self, template: str) -> None:
+        """Save generated commit template to config."""
+        self.config["DEFAULT"]["commit_template"] = template
+        with open(self.config_path, "w", encoding="utf-8") as f:
+            self.config.write(f)
+
+    def generate_commit_message(self, diff: str) -> str:
         """Generate a commit message using an LLM.
 
         Args:
             diff: Git diff output
-            previous_commits: Previous commit messages for context
 
         Returns:
             Generated commit message
@@ -193,17 +257,17 @@ Example: "feat(auth): implement JWT authentication"
         temperature = float(self.config["DEFAULT"]["temperature"])
         max_tokens = int(self.config["DEFAULT"]["max_tokens"])
         system_prompt = self.config["DEFAULT"]["system_prompt"]
+        commit_template = self.config["DEFAULT"].get("commit_template", "")
 
         # Prepare the user message
         user_message = (
-            f"Here is the git diff of staged changes:\n\n```\n{diff}\n```\n\n"
+            f"Here is the git diff of changes:\n\n```\n{diff}\n```\n\n"
         )
 
-        if previous_commits:
+        if commit_template:
             user_message += (
-                f"Here are the previous commit messages for context:\n\n"
-                f"```\n{previous_commits}\n```\n\n"
-                f"Please generate a commit message that follows a similar style and format."
+                "Please use the following commit style template when generating the message:\n"
+                f"```\n{commit_template}\n```\n"
             )
         else:
             user_message += (
@@ -227,13 +291,13 @@ Example: "feat(auth): implement JWT authentication"
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message},
                 ],
-                temperature=temperature,
+                temperature=0,
                 max_tokens=max_tokens,
             )
 
             return response.choices[0].message.content.strip()
         except Exception as e:
-            print(f"Error generating commit message: {e}")
+            logger.error(f"Error generating commit message: {e}")
             sys.exit(1)
 
     def commit_with_message(self, message: str) -> None:
@@ -247,145 +311,118 @@ Example: "feat(auth): implement JWT authentication"
         """
         try:
             subprocess.run(["git", "commit", "-m", message], check=True)
-            print("Successfully committed changes with AI-generated message.")
+            logger.info("Successfully committed changes with AI-generated message.")
         except subprocess.CalledProcessError as e:
-            print(f"Error committing changes: {e}")
+            logger.error(f"Error committing changes: {e}")
             sys.exit(1)
 
+    def edit_message(self, message: str) -> str:
+        """Open the generated message in an editor for modification."""
+        with NamedTemporaryFile("w+", delete=False) as tmp:
+            tmp.write(message)
+            tmp_path = tmp.name
 
-def main():
-    """Main entry point for the script."""
-    parser = argparse.ArgumentParser(
-        description="Generate commit messages using LLMs based on staged changes."
-    )
+        try:
+            editor = (
+                subprocess.run(
+                    ["git", "config", "core.editor"],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                ).stdout.strip()
+                or os.environ.get("EDITOR", "vim")
+            )
+        except subprocess.CalledProcessError:
+            editor = os.environ.get("EDITOR", "vim")
 
-    parser.add_argument("--config", help="Path to configuration file")
+        subprocess.run([editor, tmp_path], check=True)
 
-    parser.add_argument(
-        "--provider",
-        help="LLM provider to use (openai, anthropic, google, bedrock)",
-    )
+        with open(tmp_path, "r", encoding="utf-8") as f:
+            edited = f.read()
 
-    parser.add_argument(
-        "--model", help="Model to use for generating commit messages"
-    )
+        os.unlink(tmp_path)
+        return edited
 
-    parser.add_argument(
-        "--temperature", type=float, help="Temperature for LLM generation"
-    )
 
-    parser.add_argument(
-        "--previous-commits",
-        action="store_true",
-        help="Include previous commit messages for context",
-    )
+@click.group()
+@click.option("--config", help="Path to configuration file")
+@click.pass_context
+def cli(ctx: click.Context, config: str | None) -> None:
+    """AI-Commit command line interface."""
+    ctx.obj = {"CONFIG": config}
 
-    parser.add_argument(
-        "--commit",
-        action="store_true",
-        help="Automatically commit with the generated message",
-    )
 
-    parser.add_argument(
-        "--edit",
-        action="store_true",
-        help="Open the generated message in an editor before committing",
-    )
+@cli.command()
+@click.option("--provider", help="LLM provider")
+@click.option("--model", help="Model to use")
+@click.option("--temperature", type=float, help="Temperature for generation")
+@click.option("--commit", "do_commit", is_flag=True, help="Commit after generation")
+@click.option("--edit", is_flag=True, help="Edit the message before committing")
+@click.option("--all", "include_all", is_flag=True, help="Use all modified files")
+@click.pass_context
+def commit(
+    ctx: click.Context,
+    provider: str | None,
+    model: str | None,
+    temperature: float | None,
+    do_commit: bool,
+    edit: bool,
+    include_all: bool,
+) -> None:
+    """Generate a commit message based on repository changes."""
+    ai_commit = AICommit(config_path=ctx.obj.get("CONFIG"))
 
-    args = parser.parse_args()
+    if provider:
+        ai_commit.config["DEFAULT"]["provider"] = provider
+    if model:
+        ai_commit.config["DEFAULT"]["model"] = model
+    if temperature is not None:
+        ai_commit.config["DEFAULT"]["temperature"] = str(temperature)
 
-    # Initialize AICommit with optional config path
-    ai_commit = AICommit(config_path=args.config)
-
-    # Override config with command line arguments if provided
-    if args.provider:
-        ai_commit.config["DEFAULT"]["provider"] = args.provider
-
-    if args.model:
-        ai_commit.config["DEFAULT"]["model"] = args.model
-
-    if args.temperature is not None:
-        ai_commit.config["DEFAULT"]["temperature"] = str(args.temperature)
-
-    # Get git diff
-    diff = ai_commit.get_staged_diff()
-
+    diff = ai_commit.get_diff(include_all)
     if not diff:
-        print(
-            "No staged changes found. Please stage your changes with 'git add' first."
-        )
+        logger.error("No changes found to commit.")
         sys.exit(1)
 
-    # Get previous commits if requested
-    previous_commits = None
-    if args.previous_commits:
-        previous_commits = ai_commit.get_previous_commits()
+    commit_message = ai_commit.generate_commit_message(diff)
 
-    # Generate commit message
-    commit_message = ai_commit.generate_commit_message(diff, previous_commits)
+    if edit:
+        commit_message = ai_commit.edit_message(commit_message)
 
-    # Edit message if requested
-    if args.edit:
-        commit_message = edit_message(commit_message)
+    click.echo("\nGenerated commit message:")
+    click.echo("-" * 50)
+    click.echo(commit_message)
+    click.echo("-" * 50)
 
-    # Print the generated message
-    print("\nGenerated commit message:")
-    print("-" * 50)
-    print(commit_message)
-    print("-" * 50)
-
-    # Commit if requested
-    if args.commit:
+    if do_commit:
         ai_commit.commit_with_message(commit_message)
     else:
-        print("\nTo use this message, run:")
-        print(f"git commit -m '{commit_message.splitlines()[0]}'")
+        click.echo("\nTo use this message, run:")
+        click.echo(f"git commit -m '{commit_message.splitlines()[0]}'")
 
         if len(commit_message.splitlines()) > 1:
-            print(
-                "(Note: The message has multiple lines. For full message, use:"
-            )
-            print("git commit -F <(cat << 'EOF'")
-            print(commit_message)
-            print("EOF")
-            print(")")
+            click.echo("(Note: The message has multiple lines. For full message, use:")
+            click.echo("git commit -F <(cat << 'EOF'")
+            click.echo(commit_message)
+            click.echo("EOF")
+            click.echo(")")
 
 
-def edit_message(message: str) -> str:
-    """Open the generated message in an editor for modification.
+@cli.command(name="mimic")
+@click.option("--count", default=20, help="Number of previous commits to analyze")
+@click.pass_context
+def mimic(ctx: click.Context, count: int) -> None:
+    """Generate and store a commit message template from previous commits."""
+    ai_commit = AICommit(config_path=ctx.obj.get("CONFIG"))
+    previous = ai_commit.get_previous_commits(count)
+    if not previous:
+        logger.error("No previous commits available to analyze.")
+        sys.exit(1)
 
-    Args:
-        message: Initial commit message
-
-    Returns:
-        Edited commit message
-    """
-    # Create a temporary file
-    temp_file = Path("/tmp/ai-commit-message.txt")
-    temp_file.write_text(message, encoding="utf-8")
-
-    # Get the editor from git config or environment
-    try:
-        editor = subprocess.run(
-            ["git", "config", "core.editor"],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.strip()
-    except subprocess.CalledProcessError:
-        editor = os.environ.get("EDITOR", "vim")
-
-    # Open the editor
-    subprocess.run([editor, temp_file], check=True)
-
-    # Read the edited message
-    edited_message = temp_file.read_text(encoding="utf-8")
-
-    # Remove the temporary file
-    temp_file.unlink()
-
-    return edited_message
+    template = ai_commit.generate_commit_template(previous)
+    ai_commit.save_commit_template(template)
+    click.echo("Stored commit message template in configuration.")
 
 
 if __name__ == "__main__":
-    main()
+    cli()
