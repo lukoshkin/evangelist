@@ -51,6 +51,9 @@ end)
 keymap("x", "<Leader>y", '"+y')
 keymap("n", "<Leader>y", ":%y+<CR>")
 
+--- Fold tags (as 'at' is also occupied by Mini.nvim)
+keymap("n", "zk", "zfat")
+
 --- Copy highlighted text with search to the clipboard.
 keymap("n", "<Space>/y", function()
   vim.cmd 'let @l = ""'
@@ -150,12 +153,6 @@ keymap("n", "<Leader>g", fn.gitui)
 
 --- Toggle the diff mode for two aligned buffers.
 keymap("n", "<Leader>cv", misc.cmp_buffs_toggle)
-
---- Disable Copilot (when offline, e.g.)
-keymap("n", "<Space>cd", ":Copilot disable<CR>")
-
---- Enable Copilot (when it is not loaded on the plugin ft.)
-keymap("n", "<Space>ce", ":Lazy load copilot.vim | Copilot restart<CR>")
 
 --- Trim trailing whitespaces.
 api.nvim_create_user_command("Trim", fn.trim, { range = "%" })

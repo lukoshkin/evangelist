@@ -44,7 +44,6 @@ require("lazy").setup {
     opts = {
       automatic_installation = true,
       ensure_installed = {
-        "python-lsp-server",
         "shellcheck",
         "flake8",
         "pylint",
@@ -182,7 +181,6 @@ require("lazy").setup {
   },
   {
     "lukoshkin/tidy.nvim",
-    dependencies = "neovim/nvim-lspconfig",
     config = true,
   },
   {
@@ -348,14 +346,6 @@ require("lazy").setup {
     config = true,
   },
   { require "user.plugins.copilot" },
-  -- {
-  --   "github/copilot.vim", -- Do not load on InsertEnter (low UX)
-  --   --- Exclude `sh` file to prevent Copilot accessing '.env' files
-  --   ft = { "python", "rust", "javascript", "lua", "bash", "cpp", "c" },
-  --   config = function()
-  --     require "user.plugins.copilot"
-  --   end,
-  -- },
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate | :TSInstall! query",

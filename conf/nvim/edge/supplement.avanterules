@@ -1,0 +1,25 @@
+When editing Python code or generating new lines thereof, abide to the
+instructions below (given in the "CODE_RULES" section). You **MUST ALWAYS**
+strictly follow them giving the highest priority.
+
+CODE_RULES
+1. Prefer the following conventions:
+  - at least two letters for variable names (exc instead of e, fd instead of f)
+  - Path from pathlib over os.path
+  - f-strings over .format() and % formatting
+  - loguru's logger over print and logging
+    (note: loguru uses f-string instead of formatting with %s)
+  - up-to-date typing hints:
+    - dict, list, tuple over Dict, List, Tuple
+    - "... | None" over Optional[...]
+2. Fit the code into 79 characters per line limitation. It mainly applies to
+strings, since the code can be formatted with black. Thus, you should format
+the code with black first and then ensure 79 char per line by reformulating
+strings.
+  simply breaking lines,
+3. Avoid deep nesting by:
+  - using functions to break down complex logic.
+  - re-structuring conditionals
+  - using early returns
+4. Split long strings using string concatenation or triple quotes.
+END_OF_CODE_RULES

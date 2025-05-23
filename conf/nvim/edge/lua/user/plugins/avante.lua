@@ -1,36 +1,138 @@
 return {
   "yetone/avante.nvim",
   event = "VeryLazy",
-  version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
+  keys = {
+    {
+      "<Space>aM",
+      ":AvanteModels<CR>",
+      desc = "Open a window to pick a model",
+    },
+    {
+      "<Space>am",
+      function()
+        local current_model = require("avante.config").provider
+        local new_model = current_model == "bedrock-claude-3.7-sonnet"
+            and "bedrock-claude-3.7-sonnet-reasoning"
+          or "bedrock-claude-3.7-sonnet"
+        local api = require "avante.api"
+        api.select_model() -- opens a picker window
+        vim.defer_fn(function()
+          vim.api.nvim_feedkeys(new_model, "m", false)
+          vim.defer_fn(function()
+            vim.api.nvim_feedkeys(
+              vim.api.nvim_replace_termcodes("<CR>", true, false, true),
+              "m",
+              true
+            )
+          end, 100)
+        end, 500)
+      end,
+      desc = "Switch between regular model and reasoning one",
+    },
+    {
+      "<Space>aM",
+      ":AvanteModels<CR>",
+      desc = "Open a window to pick a model",
+    },
+    {
+      "<C-w>",
+      "<Esc><C-w>",
+      mode = "i",
+      desc = "Exit insert mode in AvanteInput and embrace for a jump",
+      ft = "AvanteInput",
+    },
+    {
+      "<Space>a=",
+      function()
+        local tree_ext = require "avante.extensions.nvim_tree"
+        tree_ext.add_file()
+      end,
+      desc = "Select file in NvimTree",
+      ft = "NvimTree",
+    },
+    {
+      "<Space>a-",
+      function()
+        local tree_ext = require "avante.extensions.nvim_tree"
+        tree_ext.remove_file()
+      end,
+      desc = "Deselect file in NvimTree",
+      ft = "NvimTree",
+    },
+  },
   opts = {
-    ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
-    provider = "copilot", -- The provider used in Aider mode or in the planning phase of Cursor Planning Mode
-    -- WARNING: Since auto-suggestions are a high-frequency operation and therefore expensive,
-    -- currently designating it as `copilot` provider is dangerous because: https://github.com/yetone/avante.nvim/issues/1048
-    -- Of course, you can reduce the request frequency by increasing `suggestion.debounce`.
-    auto_suggestions_provider = "copilot",
-    cursor_applying_provider = nil, -- The provider used in the applying phase of Cursor Planning Mode, defaults to nil, when nil uses Config.provider as the provider for the applying phase
-    -- claude = {
-    --   endpoint = "https://api.anthropic.com",
-    --   model = "claude-3-5-sonnet-20241022",
-    --   temperature = 0,
-    --   max_tokens = 4096,
-    -- },
-    ---Specify the special dual_boost mode
-    ---1. enabled: Whether to enable dual_boost mode. Default to false.
-    ---2. first_provider: The first provider to generate response. Default to "openai".
-    ---3. second_provider: The second provider to generate response. Default to "claude".
-    ---4. prompt: The prompt to generate response based on the two reference outputs.
-    ---5. timeout: Timeout in milliseconds. Default to 60000.
-    ---How it works:
-    --- When dual_boost is enabled, avante will generate two responses from the first_provider and second_provider respectively. Then use the response from the first_provider as provider1_output and the response from the second_provider as provider2_output. Finally, avante will generate a response based on the prompt and the two reference outputs, with the default Provider as normal.
-    ---Note: This is an experimental feature and may not work as expected.
-    dual_boost = {
+    system_prompt = function()
+      local file_path = os.getenv "EVANGELIST"
+        .. "/conf/nvim/edge/supplement.avanterules"
+      local file = io.open(file_path, "r")
+      if not file then
+        vim.notify(
+          "File not found: " .. file_path,
+          vim.log.levels.WARN,
+          { title = "Avante" }
+        )
+        return nil
+      end
+
+      local content = file:read "*all"
+      file:close()
+      return content
+    end,
+    selector = {
+      exclude_auto_select = { "NvimTree" },
+    },
+    vendors = {
+      ["bedrock-claude-3.7-sonnet"] = {
+        __inherited_from = "bedrock",
+        model = "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        timeout = 120000, -- in milliseconds
+        temperature = 0,
+        max_tokens = 10000,
+      },
+      ["bedrock-claude-3.7-sonnet-reasoning"] = {
+        __inherited_from = "bedrock",
+        model = "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        thinking = { type = "enabled", budget_tokens = 4000 },
+        timeout = 150000, -- in milliseconds
+        temperature = 1, -- (at the time) should be set to 1 for Claude's thinking models
+        max_tokens = 14000,
+      },
+    },
+    ---@alias avante.ProviderName "claude" | "openai" | "azure" | "gemini" | "vertex" | "cohere" | "copilot" | "bedrock" | "ollama" | string
+    --- WARNING: Since auto-suggestions are a high-frequency operation and
+    --- therefore expensive, currently designating it as `copilot` provider is
+    --- dangerous because: https://github.com/yetone/avante.nvim/issues/1048 Of
+    --- course, you can reduce the request frequency by increasing
+    --- `suggestion.debounce` time.
+    provider = "bedrock-claude-3.7-sonnet", -- The provider used in Aider mode or in the planning phase of Cursor Planning Mode
+    auto_suggestions_provider = nil, -- use Copilot and Avante separately
+    cursor_applying_provider = nil, -- The provider used in the applying phase
+    -- of Cursor Planning Mode. Defaults to nil. When nil, uses Config.provider
+    -- as the provider for the applying phase
+    web_search_engine = {
+      provider = "tavily",
+      proxy = nil,
+      providers = {
+        tavily = {
+          api_key_name = "TAVILY_API_KEY",
+          extra_request_body = {
+            include_answer = "basic",
+          },
+          ---@type WebSearchEngineProviderResponseBodyFormatter
+          format_response_body = function(body)
+            return body.answer, nil
+          end,
+        },
+      },
+    },
+    rag_service = {
       enabled = false,
-      first_provider = "openai",
-      second_provider = "claude",
-      prompt = "Based on the two reference outputs below, generate a response that incorporates elements from both but reflects your own judgment and unique perspective. Do not provide any explanation, just give the response directly. Reference Output 1: [{{provider1_output}}], Reference Output 2: [{{provider2_output}}]",
-      timeout = 60000, -- Timeout in milliseconds
+      -- host_mount = os.getenv "HOME" .. "/Workspace", -- Host mount path for the rag service
+      host_mount = vim.fn.getcwd(),
+      provider = "openai",
+      llm_model = "4o-mini", -- The LLM model to use for RAG service
+      embed_model = "text-embedding-3-small",
+      endpoint = "https://api.openai.com/v1",
     },
     behaviour = {
       auto_suggestions = false, -- Experimental stage
@@ -57,7 +159,7 @@ return {
         accept = "<C-j>",
         next = "<M-]>",
         prev = "<M-[>",
-        dismiss = "<C-]>",
+        dismiss = "<C-e>",
       },
       jump = {
         next = "]]",
@@ -67,11 +169,21 @@ return {
         normal = "<CR>",
         insert = "<C-s>",
       },
+      cancel = {
+        normal = { "<C-c>" },
+        insert = { "<C-c>" },
+      },
       sidebar = {
         apply_all = "A",
         apply_cursor = "a",
+        retry_user_request = "r",
+        edit_user_request = "e",
         switch_windows = "<Tab>",
         reverse_switch_windows = "<S-Tab>",
+        remove_file = "d",
+        add_file = "a",
+        close = { "q" },
+        close_from_input = { normal = "q", insert = "<C-d>" },
       },
     },
     hints = { enabled = true },
@@ -119,8 +231,8 @@ return {
       override_timeoutlen = 500,
     },
     suggestion = {
-      debounce = 600,
-      throttle = 600,
+      debounce = 1000, -- in case, auto-suggestions are enabled
+      throttle = 1000,
     },
   },
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
@@ -143,21 +255,16 @@ return {
       "HakonHarnes/img-clip.nvim",
       event = "VeryLazy",
       opts = {
-        -- recommended settings
         default = {
           embed_image_as_base64 = false,
           prompt_for_file_name = false,
-          drag_and_drop = {
-            insert_mode = true,
-          },
-          -- required for Windows users
-          use_absolute_path = true,
+          drag_and_drop = { insert_mode = true },
+          use_absolute_path = true, -- required for Windows users
         },
       },
     },
     {
-      -- Make sure to set this up properly if you have lazy=true
-      "MeanderingProgrammer/render-markdown.nvim",
+      "OXY2DEV/markview.nvim",
       opts = {
         file_types = { "markdown", "Avante" },
       },

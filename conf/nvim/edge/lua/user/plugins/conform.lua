@@ -44,6 +44,7 @@ conform.setup {
   formatters_by_ft = {
     ["*"] = { "codespell" },
     toml = { "taplo" },
+    html = { "htmlbeautifier" },
     lua = { "stylua" },
     python = { "isort", "black" },
     rust = { "rustfmt" },

@@ -1,9 +1,17 @@
 local aug_cc = vim.api.nvim_create_augroup("CustomColors", { clear = true })
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = {"lazy", "Avante"},
+  pattern = { "lazy", "Avante*" },
   group = aug_cc,
   callback = function()
     vim.wo.cursorline = true
+  end,
+})
+vim.api.nvim_create_autocmd("WinEnter", {
+  group = aug_cc,
+  callback = function()
+    if vim.bo.filetype == "AvanteSelectedFiles" then
+      vim.wo.cursorline = true
+    end
   end,
 })
 

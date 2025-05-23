@@ -1,6 +1,25 @@
 return {
   "zbirenbaum/copilot.lua",
   event = "VeryLazy",
+  keys = {
+    {
+      "<Space>ca",
+      function()
+        require("copilot.suggestion").toggle_auto_trigger()
+      end,
+      desc = "Toggle Copilot Auto-Suggestion",
+    },
+    {
+      "<Space>cd",
+      ":Copilot disable<CR>",
+      desc = "Disable Copilot",
+    },
+    {
+      "<Space>ce",
+      ":Copilot enable<CR>",
+      desc = "Enable Copilot",
+    },
+  },
   opts = {
     panel = {
       enabled = true,
@@ -21,14 +40,14 @@ return {
       enabled = true,
       auto_trigger = true,
       hide_during_completion = true,
-      debounce = 75,
+      debounce = 500,
       trigger_on_accept = true,
       keymap = {
         accept = "<C-j>",
         accept_word = "<C-w>",
         accept_line = "<C-l>",
-        next = "<C-]>",
-        prev = "<C-[>",
+        next = "<C-n>", --- won't work when completion menu is visible
+        prev = "<C-p>", --- won't work when completion menu is visible
         dismiss = "<C-e>",
       },
     },
@@ -49,8 +68,20 @@ return {
         end
         return true
       end,
+      zsh = function()
+        local filename = vim.fs.basename(vim.api.nvim_buf_get_name(0))
+        if
+          filename == ".zshrc"
+          or filename == ".zprofile"
+          or filename == "custom.zsh"
+        then
+          return false
+        end
+        return true
+      end,
       help = false,
       gitrebase = false,
+      confini = false,
       ["*"] = true,
     },
     auth_provider_url = nil, -- URL to authentication provider, if not "https://github.com/"
