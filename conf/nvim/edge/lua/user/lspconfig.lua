@@ -1,3 +1,5 @@
+--- NOTE: requires `neovim/nvim-lspconfig` plugin for default LSP configuration.
+--- Otherwise, one will have to manually specify at least the "cmd" field.
 vim.lsp.config("*", {
   capabilities = {
     textDocument = {
@@ -6,20 +8,18 @@ vim.lsp.config("*", {
       },
     },
   },
-  root_markers = { ".git" },
 })
+--- The "setter" syntax also works for merging with the default settings
 vim.lsp.config.pylsp = {
-  cmd = { "pylsp" },
-  filetypes = { "python" },
   root_markers = {
     "pyproject.toml",
     "setup.cfg",
     "requirements.txt",
   },
-  single_file_support = true,
   settings = {
     pylsp = {
       plugins = {
+        ignore = { "W391" }, -- Ignore "blank line at end of file" warning.
         jedi_rename = { enabled = true },
         rope_rename = { enabled = true },
         -- (Make sure `pylsp-rope` plugin is installed in Python for Rope use)
@@ -27,124 +27,86 @@ vim.lsp.config.pylsp = {
     },
   },
 }
+--- Comment out since not working with Rust currently.
 --- Add clippy linting (includes performance hints).
-vim.lsp.config.rust_analyzer = {
-  cmd = { "rust-analyzer" },
-  filetypes = { "rust" },
-  root_markers = { "Cargo.toml", "rust-project.json" },
+-- vim.lsp.config.rust_analyzer = {
+--   settings = {
+--     ["rust-analyzer"] = {
+--       checkOnSave = {
+--         allFeatures = true,
+--         overrideCommand = {
+--           "cargo",
+--           "clippy",
+--           "--workspace",
+--           "--message-format=json",
+--           "--all-targets",
+--           "--all-features",
+--         },
+--       },
+--     },
+--   },
+-- }
+vim.lsp.config("lua_ls", {
+  on_init = function(client)
+    if client.workspace_folders then
+      local path = client.workspace_folders[1].name
+      if
+        path ~= vim.fn.stdpath "config"
+        and (
+          vim.uv.fs_stat(path .. "/.luarc.json")
+          or vim.uv.fs_stat(path .. "/.luarc.jsonc")
+        )
+      then
+        return
+      end
+    end
+
+    client.config.settings.Lua =
+      vim.tbl_deep_extend("force", client.config.settings.Lua, {
+        runtime = {
+          -- Tell the language server which version of Lua you're using
+          -- (most likely LuaJIT in the case of Neovim)
+          version = "LuaJIT",
+          -- Tell the language server how to find Lua modules same way as Neovim
+          -- (see `:h lua-module-load`)
+          path = {
+            "lua/?.lua",
+            "lua/?/init.lua",
+          },
+        },
+        -- Make the server aware of Neovim runtime files
+        workspace = {
+          checkThirdParty = false,
+          library = {
+            vim.env.VIMRUNTIME,
+            -- Depending on the usage, you might want to add additional paths
+            -- here.
+            -- '${3rd}/luv/library'
+            -- '${3rd}/busted/library'
+          },
+          -- Or pull in all of 'runtimepath'.
+          -- NOTE: this is a lot slower and will cause issues when working on
+          -- your own configuration.
+          -- See https://github.com/neovim/nvim-lspconfig/issues/3189
+          -- library = {
+          --   vim.api.nvim_get_runtime_file('', true),
+          -- }
+        },
+      })
+  end,
   settings = {
-    ["rust-analyzer"] = {
-      checkOnSave = {
-        allFeatures = true,
-        overrideCommand = {
-          "cargo",
-          "clippy",
-          "--workspace",
-          "--message-format=json",
-          "--all-targets",
-          "--all-features",
+    Lua = {},
+  },
+})
+vim.lsp.config("dockerls", {
+  settings = {
+    docker = {
+      languageserver = {
+        formatter = {
+          ignoreMultilineInstructions = true,
         },
       },
     },
-  },
-}
-vim.lsp.config.bashls = {
-  cmd = { "bash-language-server", "start" },
-  filetypes = { "sh", "bash" },
-  root_markers = { ".git" },
-  single_file_support = true,
-  settings = {
-    bashIde = {
-      -- Limit glob pattern for workspace scanning
-      globPattern = vim.env.GLOB_PATTERN or "*@(.sh|.inc|.bash|.command)",
-    },
-  },
-}
-vim.lsp.config.clangd = {
-  cmd = {
-    "clangd",
-    "--clang-tidy",
-    "--background-index",
-    "--offset-encoding=utf-8",
-  },
-  root_markers = { ".clangd", "compile_commands.json" },
-  filetypes = { "c", "cpp" },
-}
-local runtime_path = vim.split(package.path, ";")
-table.insert(runtime_path, "lua/?.lua")
-table.insert(runtime_path, "lua/?/init.lua")
-vim.lsp.config.lua_ls = {
-  cmd = { "lua-language-server" },
-  filetypes = { "lua" },
-  root_markers = { ".luarc.json", ".luarc.jsonc" },
-  settings = {
-    Lua = {
-      diagnostics = { globals = { "vim" } },
-      runtime = { version = "LuaJIT", path = runtime_path },
-    },
-    workspace = { library = vim.api.nvim_get_runtime_file("", true) },
-    telemetry = { enable = false },
-  },
-}
-vim.lsp.config.dockerls = {
-  cmd = { "docker-langserver", "--stdio" },
-  filetypes = { "dockerfile" },
-  root_markers = { "Dockerfile" },
-  single_file_support = true,
-}
-vim.lsp.config.marksman = {
-  cmd = { "marksman", "server" },
-  filetypes = { "markdown", "markdown.mdx" },
-  root_markers = { ".marksman.toml" },
-  single_file_support = true,
-}
-vim.lsp.config.jsonls = {
-  cmd = { "vscode-json-language-server", "--stdio" },
-  filetypes = { "json", "jsonc" },
-  -- One can specify JSON schemas via settings if needed:
-  -- settings = { json = { schemas = {...} } }
-}
-vim.lsp.config(
-  "tsserver",
-  { -- TypeScript/JavaScript: tsserver (TypeScript Language Server)
-    cmd = { "typescript-language-server", "--stdio" },
-    filetypes = {
-      "typescript",
-      "typescriptreact",
-      "typescript.tsx",
-      "javascript",
-      "javascriptreact",
-      "javascript.jsx",
-    },
-    root_markers = { "package.json", "tsconfig.json", "jsconfig.json" },
-    single_file_support = false, -- (tsserver usually expects a project context)
-    -- Note: formatting is disabled globally, so tsserver won't format (you likely use eslint or prettier for that).
-  }
-)
-vim.lsp.config("eslint", { -- eslint (for linting JavaScript/TypeScript)
-  cmd = { "vscode-eslint-language-server", "--stdio" },
-  filetypes = {
-    "javascript",
-    "javascriptreact",
-    "javascript.jsx",
-    "typescript",
-    "typescriptreact",
-    "typescript.tsx",
-    "vue",
-    "svelte",
-  },
-  root_markers = {
-    ".eslintrc",
-    ".eslintrc.json",
-    ".eslintrc.js",
-    ".eslintrc.cjs",
-    "eslint.config.js",
-    "package.json",
-  },
-  settings = {
-    -- We disable ESLint formatting via our on_attach (below), but ensure linting is enabled:
-    codeActionOnSave = { enable = false }, -- don't auto-fix on save
-    format = false, -- don't format (let external formatter handle it)
   },
 })
 
@@ -174,18 +136,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
     buf_keymap(ev.buf, "n", "gD", vim.lsp.buf.declaration)
     buf_keymap(ev.buf, "n", "gd", vim.lsp.buf.definition)
     buf_keymap(ev.buf, "n", "K", vim.lsp.buf.hover)
-    buf_keymap(ev.buf, "n", "gs", vim.lsp.buf.signature_help)
-    buf_keymap(ev.buf, "n", "<Leader>td", vim.lsp.buf.type_definition)
-    buf_keymap(ev.buf, "n", "<Leader>rn", vim.lsp.buf.rename)
-    buf_keymap(ev.buf, "n", "gr", ":Telescope lsp_references<CR>")
-    --- gi and gI are reserved by original Vim command (see :h gi, e.g.).
-    buf_keymap(ev.buf, "n", "<Leader>i", vim.lsp.buf.implementation)
-
-    --- A standard lsp approach would be
-    --- vim.lsp.buf.xxx_action()
-    ---               or
-    --- ':Telescope lsp_xxx_actions<CR>'
-    --- where 'xxx' is 'code' or 'range_code'.
+    buf_keymap(ev.buf, "n", "grt", vim.lsp.buf.type_definition)
+    buf_keymap(ev.buf, "n", "grr", ":Telescope lsp_references<CR>")
 
     --- 'ge' like (E)xplain (E)rror.
     buf_keymap(ev.buf, "n", "ge", vim.diagnostic.open_float)
@@ -228,16 +180,19 @@ vim.api.nvim_create_autocmd("LspAttach", {
     --- NOTE: to format relying only on 'textwidth' use 'gw'.
   end,
 })
-
 vim.lsp.enable {
-  "clangd",
   "bashls",
+  "clangd",
   "dockerls",
-  "jsonls",
-  "marksman",
-  "rust_analyzer",
-  "pylsp",
-  "lua_ls",
-  "tsserver",
   "eslint",
+  "jsonls",
+  "lua_ls",
+  "marksman",
+  "pylsp",
+  "ruff",
+  "rust_analyzer",
+  "taplo",
+  "tflint",
+  "tsserver",
+  "yamlls",
 }

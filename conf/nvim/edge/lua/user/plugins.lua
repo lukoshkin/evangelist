@@ -103,6 +103,38 @@ require("lazy").setup {
   },
 
   --- CORE
+  -- { "glacambre/firenvim", build = ":call firenvim#install(0)" },
+  {
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    opts = {
+      bigfile = {
+        enabled = true,
+        notify = true,
+        size = 1.5 * 1024 * 1024, -- 1.5MB
+        line_length = 1000, -- average line length (useful for minified files)
+        -- Enable or disable features when big file detected
+        ---@param ctx {buf: number, ft:string}
+        setup = function(ctx)
+          if vim.fn.exists ":NoMatchParen" ~= 0 then
+            vim.cmd [[NoMatchParen]]
+          end
+          require("snacks").util.wo(
+            0,
+            { foldmethod = "manual", statuscolumn = "", conceallevel = 0 }
+          )
+          vim.b.minianimate_disable = true
+          vim.schedule(function()
+            if vim.api.nvim_buf_is_valid(ctx.buf) then
+              vim.bo[ctx.buf].syntax = ctx.ft
+            end
+          end)
+        end,
+      },
+    },
+  },
+
   { require "user.plugins.avante" },
   {
     "pteroctopus/faster.nvim",
@@ -233,13 +265,7 @@ require("lazy").setup {
       require "user.plugins.bufferline"
     end,
   },
-  {
-    "nvim-lualine/lualine.nvim",
-    dependencies = "nvim-tree/nvim-web-devicons",
-    config = function()
-      require "user.plugins.lualine"
-    end,
-  },
+  { require "user.plugins.lualine" },
   {
     "lewis6991/gitsigns.nvim",
     event = "BufRead",
@@ -334,6 +360,7 @@ require("lazy").setup {
   },
 
   --- IDE-LIKE
+  { "neovim/nvim-lspconfig" },
   {
     "NeogitOrg/neogit",
     keys = { { "<Leader>ng", ":Neogit<CR>" } },
@@ -345,6 +372,7 @@ require("lazy").setup {
     },
     config = true,
   },
+  { require "user.plugins.mcp" },
   { require "user.plugins.copilot" },
   {
     "nvim-treesitter/nvim-treesitter",

@@ -20,17 +20,18 @@ end
 
 conform.setup {
   formatters = {
-    black = {
-      prepend_args = {
-        "--fast",
-        "--line-length=79",
-        "--preview",
-      },
-    },
+    --- Using ruff instead
+    -- black = {
+    --   prepend_args = {
+    --     "--fast",
+    --     "--line-length=79",
+    --     "--preview",
+    --   },
+    -- },
     stylua = {
       prepend_args = {
         "--config-path=" .. config_path,
-        "--column-width=80",
+        "--column-width=79",
       },
     },
     yamlfix = {
@@ -46,7 +47,8 @@ conform.setup {
     toml = { "taplo" },
     html = { "htmlbeautifier" },
     lua = { "stylua" },
-    python = { "isort", "black" },
+    -- python = { "isort", "black" },
+    python = { "ruff_fix", "ruff_format", "ruff_organize_imports" },
     rust = { "rustfmt" },
     sh = { "shfmt" },
     javascript = { "prettierd", "prettier", stop_after_first = true },

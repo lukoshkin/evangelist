@@ -379,29 +379,29 @@ Example: "feat(auth): implement JWT authentication"
 
         return templates
 
-    def delete_template(self, project_name: str) -> bool:
-        """Delete a project template.
+    # def delete_template(self, project_name: str) -> bool:
+    #     """Delete a project template.
 
-        Args:
-            project_name: The name of the project to delete the template for.
-                Use "global" for the global template.
+    #     Args:
+    #         project_name: The name of the project to delete the template for.
+    #             Use "global" for the global template.
 
-        Returns:
-            True if the template was deleted, False if it didn't exist
-        """
-        if project_name == "global":
-            if "*" in self.config["PROJECT_TEMPLATES"]:
-                self.config["PROJECT_TEMPLATES"].pop("*")
-                with open(self.config_path, "w", encoding="utf-8") as f:
-                    self.config.write(f)
-                return True
-            return False
-        if project_name in self.config["PROJECT_TEMPLATES"]:
-            self.config["PROJECT_TEMPLATES"].pop(project_name)
-            with open(self.config_path, "w", encoding="utf-8") as f:
-                self.config.write(f)
-            return True
-        return False
+    #     Returns:
+    #         True if the template was deleted, False if it didn't exist
+    #     """
+    #     if project_name == "global":
+    #         if "*" in self.config["PROJECT_TEMPLATES"]:
+    #             self.config["PROJECT_TEMPLATES"].pop("*")
+    #             with open(self.config_path, "w", encoding="utf-8") as f:
+    #                 self.config.write(f)
+    #             return True
+    #         return False
+    #     if project_name in self.config["PROJECT_TEMPLATES"]:
+    #         self.config["PROJECT_TEMPLATES"].pop(project_name)
+    #         with open(self.config_path, "w", encoding="utf-8") as f:
+    #             self.config.write(f)
+    #         return True
+    #     return False
 
     def generate_commit_message(self, diff: str) -> str:
         """Generate a commit message using an LLM.
@@ -455,6 +455,7 @@ Example: "feat(auth): implement JWT authentication"
             )
             result = response.choices[0].message.content.strip()
             if not result:
+                logger.debug(f"Response: {response}")
                 logger.error("Received empty response from LLM.")
                 sys.exit(1)
 
@@ -658,7 +659,6 @@ def commit(
         "Default is current project."
     ),
 )
-@click.option("--delete", help="Delete a specific project template")
 @click.pass_context
 def mimic(
     ctx: click.Context,
@@ -673,7 +673,6 @@ def mimic(
     - Generate a template from commits in a source repository
     - Save templates for specific projects
     - List all stored templates
-    - Delete project templates
 
     Examples:
     - Use current project for both source and target:
@@ -684,8 +683,6 @@ def mimic(
       ai-commit mimic -t project-name
     - Generate a global template (applied to projects without specific templates):
       ai-commit mimic -t "*"
-    - Delete a project template:
-      ai-commit mimic --delete project-name
     """
     ai_commit = AICommit(config_path=ctx.obj.get("CONFIG"))
     target = (

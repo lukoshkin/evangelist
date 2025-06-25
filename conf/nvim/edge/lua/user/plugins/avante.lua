@@ -1,6 +1,10 @@
 return {
   "yetone/avante.nvim",
   event = "VeryLazy",
+  init = function()
+    vim.g.root_spec = { { ".git" }, "lsp", "cwd" }
+    vim.opt.laststatus = 3
+  end,
   keys = {
     {
       "<Space>aM",
@@ -62,40 +66,53 @@ return {
   },
   opts = {
     system_prompt = function()
+      local hub = require("mcphub").get_hub_instance()
+      local mcp_prompts = hub and hub:get_active_servers_prompt() or ""
+
       local file_path = os.getenv "EVANGELIST"
         .. "/conf/nvim/edge/supplement.avanterules"
       local file = io.open(file_path, "r")
-      if not file then
+      local custom_prompt = ""
+      if file then
+        custom_prompt = file:read "*all"
+        file:close()
+      else
         vim.notify(
           "File not found: " .. file_path,
           vim.log.levels.WARN,
           { title = "Avante" }
         )
-        return nil
       end
 
-      local content = file:read "*all"
-      file:close()
-      return content
+      return table.concat(
+        vim.tbl_filter(function(s)
+          return s ~= nil and s ~= ""
+        end, { mcp_prompts, custom_prompt }),
+        "\n\n"
+      )
     end,
     selector = {
       exclude_auto_select = { "NvimTree" },
     },
-    vendors = {
+    providers = {
       ["bedrock-claude-3.7-sonnet"] = {
         __inherited_from = "bedrock",
         model = "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
         timeout = 120000, -- in milliseconds
-        temperature = 0,
-        max_tokens = 10000,
+        extra_request_body = {
+          temperature = 0,
+          max_tokens = 20000,
+        },
       },
       ["bedrock-claude-3.7-sonnet-reasoning"] = {
         __inherited_from = "bedrock",
         model = "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        thinking = { type = "enabled", budget_tokens = 4000 },
         timeout = 150000, -- in milliseconds
-        temperature = 1, -- (at the time) should be set to 1 for Claude's thinking models
-        max_tokens = 14000,
+        extra_request_body = {
+          thinking = { type = "enabled", budget_tokens = 6000 },
+          temperature = 1, -- (at the time) should be set to 1 for Claude's thinking models
+          max_tokens = 40000,
+        },
       },
     },
     ---@alias avante.ProviderName "claude" | "openai" | "azure" | "gemini" | "vertex" | "cohere" | "copilot" | "bedrock" | "ollama" | string
@@ -104,7 +121,7 @@ return {
     --- dangerous because: https://github.com/yetone/avante.nvim/issues/1048 Of
     --- course, you can reduce the request frequency by increasing
     --- `suggestion.debounce` time.
-    provider = "bedrock-claude-3.7-sonnet", -- The provider used in Aider mode or in the planning phase of Cursor Planning Mode
+    provider = "bedrock-claude-3.7-sonnet",
     auto_suggestions_provider = nil, -- use Copilot and Avante separately
     cursor_applying_provider = nil, -- The provider used in the applying phase
     -- of Cursor Planning Mode. Defaults to nil. When nil, uses Config.provider
@@ -127,13 +144,28 @@ return {
     },
     rag_service = {
       enabled = false,
-      -- host_mount = os.getenv "HOME" .. "/Workspace", -- Host mount path for the rag service
       host_mount = vim.fn.getcwd(),
-      provider = "openai",
-      llm_model = "4o-mini", -- The LLM model to use for RAG service
-      embed_model = "text-embedding-3-small",
-      endpoint = "https://api.openai.com/v1",
+      -- host_mount = os.getenv "HOME" .. "/Workspace",
+      runner = "docker",
+      llm = {
+        provider = "openai",
+        endpoint = "https://api.openai.com/v1",
+        model = "gpt-4o-mini",
+        extra = nil,
+      },
+      embed = {
+        provider = "openai",
+        endpoint = "https://api.openai.com/v1",
+        model = "text-embedding-3-large",
+        extra = nil,
+      },
+      docker_extra_args = "", -- Extra arguments to pass to the docker command
     },
+    custom_tools = function()
+      return {
+        require("mcphub.extensions.avante").mcp_tool(),
+      }
+    end,
     behaviour = {
       auto_suggestions = false, -- Experimental stage
       auto_set_highlight_group = true,
@@ -186,6 +218,13 @@ return {
         close_from_input = { normal = "q", insert = "<C-d>" },
       },
     },
+    disabled_tools = {
+      "bash",
+      "glob",
+      "read_file",
+      "move_path",
+      "delete_path",
+    },
     hints = { enabled = true },
     windows = {
       ---@type "right" | "left" | "top" | "bottom"
@@ -237,8 +276,18 @@ return {
   },
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
   build = "make",
-  -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
   dependencies = {
+    {
+      "ravitemer/mcphub.nvim",
+      event = "VeryLazy",
+      opts = {
+        extensions = {
+          avante = {
+            make_slash_commands = true, -- make /slash commands from MCP server prompts
+          },
+        },
+      },
+    },
     "nvim-treesitter/nvim-treesitter",
     "stevearc/dressing.nvim",
     "nvim-lua/plenary.nvim",

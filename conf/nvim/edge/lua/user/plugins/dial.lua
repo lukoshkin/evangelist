@@ -11,6 +11,11 @@ require("dial.config").augends:register_group {
       cyclic = true, -- "or" is incremented into "and".
     },
     augend.constant.new {
+      elements = { "TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL" },
+      word = true,
+      cyclic = true,
+    },
+    augend.constant.new {
       elements = { "&&", "||" },
       word = false,
       cyclic = true,
@@ -34,6 +39,6 @@ require("dial.config").augends:register_group {
   typescript = {
     augend.integer.alias.decimal,
     augend.integer.alias.hex,
-    augend.constant.new{ elements = {"let", "const"} },
+    augend.constant.new { elements = { "let", "const" } },
   },
 }

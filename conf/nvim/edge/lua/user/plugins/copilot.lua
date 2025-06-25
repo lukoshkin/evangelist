@@ -100,19 +100,31 @@ return {
       return vim.fs.dirname(vim.fs.find(".git", { upward = true })[1])
     end,
     --- More granular than `filetypes` control of when to attach the Copilot
-    -- should_attach = function(_, _)
-    --   if not vim.bo.buflisted then
-    --     --- a hidden buffer
-    --     return false
-    --   end
+    should_attach = function(_, _)
+      if not vim.bo.buflisted then
+        return false
+      end
 
-    --   if vim.bo.buftype ~= "" then
-    --     --- not a regular buffer
-    --     return false
-    --   end
+      if vim.bo.buftype ~= "" then
+        return false
+      end
 
-    --   return true
-    -- end,
+      if
+        string.match(vim.fs.basename(vim.api.nvim_buf_get_name(0)), "secret")
+        or string.match(
+          vim.fs.basename(vim.api.nvim_buf_get_name(0)),
+          "%f[%a]credentials%f[^%a]"
+        )
+        or string.match(
+          vim.fs.basename(vim.api.nvim_buf_get_name(0)),
+          "%f[%a]creds%f[^%a]"
+        )
+      then
+        return false
+      end
+
+      return true
+    end,
     server = {
       type = "nodejs", -- "nodejs" | "binary"
       custom_server_filepath = nil,
