@@ -19,7 +19,9 @@ vim.lsp.config.pylsp = {
   settings = {
     pylsp = {
       plugins = {
-        ignore = { "W391" }, -- Ignore "blank line at end of file" warning.
+        pylint = { enabled = true },
+        pyflakes = { enabled = false },
+        pycodestyle = { enabled = false },
         jedi_rename = { enabled = true },
         rope_rename = { enabled = true },
         -- (Make sure `pylsp-rope` plugin is installed in Python for Rope use)

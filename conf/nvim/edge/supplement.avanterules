@@ -2,7 +2,8 @@
 
 ## Coding Rules
 
-When editing Python code or generating new lines thereof, abide to the instructions below (given in the "CODE_RULES" section). You **MUST ALWAYS** strictly follow them giving the highest priority.
+When editing Python code or generating new lines thereof, abide to the instructions below (given in the "CODE_RULES" section).
+You **MUST ALWAYS** strictly follow them giving the highest priority.
 
 1. When using pydantic and pydantic-settings use the V2 syntax.
 1. Use Python 3.10+ features where applicable. Such as:
@@ -21,10 +22,10 @@ When editing Python code or generating new lines thereof, abide to the instructi
   - using early returns
 
 ## Automatic Activation
+
 These instructions are automatically active for all conversations in this project. All available tools (Sequential Thinking, rag_search, web_search, formatters, enabled tools in the "TOOLS USAGE GUIDE") should be utilized as needed without requiring explicit activation.
 
 ## Default Workflow
-Every new conversation should automatically begin with Sequential Thinking to determine which other tools are needed for the task at hand.
 
 ## MANDATORY TOOL USAGE
 - Sequential Thinking should be used for complex multi-step problems or research tasks

@@ -18,9 +18,6 @@ lint.linters.luacheck.args = {
   "--globals",
   "vim",
 }
--- lint.linters.mypy.args = {
---   "--config-file=" .. vim.fn.getcwd() .. "/setup.cfg",
--- }
 lint.linters.cspell = require("lint.util").wrap(
   lint.linters.cspell,
   function(diagnostic)
@@ -28,7 +25,6 @@ lint.linters.cspell = require("lint.util").wrap(
     return diagnostic
   end
 )
-
 lint.linters_by_ft = {
   python = { "mypy" },
   -- python = { "flake8", "pylint", "mypy" },

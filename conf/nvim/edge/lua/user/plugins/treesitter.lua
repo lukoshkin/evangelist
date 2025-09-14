@@ -41,8 +41,8 @@ require("nvim-treesitter.configs").setup {
         ["if"] = "@function.inner",
         ["ac"] = "@class.outer",
         ["ic"] = "@class.inner",
-        -- ["ab"] = "@block.outer", -- conflicts with mini.surround
-        -- ["ib"] = "@block.inner", -- conflicts with mini.surround
+        ["av"] = "@block.outer", -- conflicts with mini.surround
+        ["iv"] = "@block.inner", -- conflicts with mini.surround
         --- TODO: add mapping for python docstring selection.
       },
     },

@@ -45,8 +45,6 @@ require("lazy").setup {
       automatic_installation = true,
       ensure_installed = {
         "shellcheck",
-        "flake8",
-        "pylint",
         "cpplint",
         "hadolint",
         "markdownlint",
@@ -110,7 +108,7 @@ require("lazy").setup {
     lazy = false,
     opts = {
       bigfile = {
-        enabled = true,
+        enabled = false,
         notify = true,
         size = 1.5 * 1024 * 1024, -- 1.5MB
         line_length = 1000, -- average line length (useful for minified files)
@@ -210,6 +208,10 @@ require("lazy").setup {
   {
     "lukoshkin/highlight-whitespace",
     config = true,
+  },
+  {
+    "SmiteshP/nvim-navic",
+    dependencies = { "neovim/nvim-lspconfig" },
   },
   {
     "lukoshkin/tidy.nvim",

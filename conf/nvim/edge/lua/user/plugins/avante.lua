@@ -1,11 +1,44 @@
+local bedrock_model = "bedrock-claude-sonnet-4"
+local model_uri = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+
 return {
   "yetone/avante.nvim",
+  -- version = "0.0.25",
+  version = false, -- nightly build
   event = "VeryLazy",
   init = function()
     vim.g.root_spec = { { ".git" }, "lsp", "cwd" }
     vim.opt.laststatus = 3
   end,
   keys = {
+    {
+      "<Space>am",
+      function()
+        vim.cmd "normal :"
+        local start_line = vim.fn.line "'<"
+        local end_line = vim.fn.line "'>"
+        if start_line == end_line then
+          vim.cmd(
+            ":'<,'>AvanteEdit Make it multiline: fit each new line into 79"
+              .. " char line-length limitation. Move the space from the end of"
+              .. " the line to the beginning of the next line<CR>"
+          )
+          return
+        end
+        vim.cmd(
+          ":'<,'>AvanteEdit Rewrite the multiline string: make long lines"
+            .. " shorter, and to short ones longer. Splits should be done"
+            .. " on a char **BEFORE** space after which goes punctuation or"
+            .. " a new word<CR>"
+        )
+      end,
+      mode = "v",
+    },
+    {
+      "<Space>at",
+      ":AvanteEdit make it ternary operator<CR>",
+      mode = "v",
+    },
     {
       "<Space>aM",
       ":AvanteModels<CR>",
@@ -15,21 +48,23 @@ return {
       "<Space>am",
       function()
         local current_model = require("avante.config").provider
-        local new_model = current_model == "bedrock-claude-3.7-sonnet"
-            and "bedrock-claude-3.7-sonnet-reasoning"
-          or "bedrock-claude-3.7-sonnet"
+        local new_model = current_model == bedrock_model
+            and bedrock_model .. "-reasoning"
+          or bedrock_model
         local api = require "avante.api"
-        api.select_model() -- opens a picker window
-        vim.defer_fn(function()
-          vim.api.nvim_feedkeys(new_model, "m", false)
-          vim.defer_fn(function()
-            vim.api.nvim_feedkeys(
-              vim.api.nvim_replace_termcodes("<CR>", true, false, true),
-              "m",
-              true
-            )
-          end, 100)
-        end, 500)
+        api.switch_provider(new_model)
+        --- Outdated approach
+        -- api.select_model() -- opens a picker window
+        -- vim.defer_fn(function()
+        --   vim.api.nvim_feedkeys(new_model, "m", false)
+        --   vim.defer_fn(function()
+        --     vim.api.nvim_feedkeys(
+        --       vim.api.nvim_replace_termcodes("<CR>", true, false, true),
+        --       "m",
+        --       true
+        --     )
+        --   end, 100)
+        -- end, 500)
       end,
       desc = "Switch between regular model and reasoning one",
     },
@@ -95,18 +130,18 @@ return {
       exclude_auto_select = { "NvimTree" },
     },
     providers = {
-      ["bedrock-claude-3.7-sonnet"] = {
+      [bedrock_model] = {
         __inherited_from = "bedrock",
-        model = "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        timeout = 120000, -- in milliseconds
+        model = model_uri,
+        timeout = 60000, -- in milliseconds
         extra_request_body = {
           temperature = 0,
           max_tokens = 20000,
         },
       },
-      ["bedrock-claude-3.7-sonnet-reasoning"] = {
+      [bedrock_model .. "-reasoning"] = {
         __inherited_from = "bedrock",
-        model = "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        model = model_uri,
         timeout = 150000, -- in milliseconds
         extra_request_body = {
           thinking = { type = "enabled", budget_tokens = 6000 },
@@ -121,7 +156,7 @@ return {
     --- dangerous because: https://github.com/yetone/avante.nvim/issues/1048 Of
     --- course, you can reduce the request frequency by increasing
     --- `suggestion.debounce` time.
-    provider = "bedrock-claude-3.7-sonnet",
+    provider = bedrock_model,
     auto_suggestions_provider = nil, -- use Copilot and Avante separately
     cursor_applying_provider = nil, -- The provider used in the applying phase
     -- of Cursor Planning Mode. Defaults to nil. When nil, uses Config.provider
@@ -162,9 +197,7 @@ return {
       docker_extra_args = "", -- Extra arguments to pass to the docker command
     },
     custom_tools = function()
-      return {
-        require("mcphub.extensions.avante").mcp_tool(),
-      }
+      return { require("mcphub.extensions.avante").mcp_tool() }
     end,
     behaviour = {
       auto_suggestions = false, -- Experimental stage
@@ -218,19 +251,21 @@ return {
         close_from_input = { normal = "q", insert = "<C-d>" },
       },
     },
-    disabled_tools = {
-      "bash",
-      "glob",
-      "read_file",
-      "move_path",
-      "delete_path",
-    },
+    -- disabled_tools = {  -- Can be disabled in favor of MCP Neovim server
+    --   "bash",
+    --   "glob",
+    --   "read_file", -- likely is outdated name
+    --   "move_path", -- likely is outdated name
+    --   "delete_path", -- likely is outdated name
+    --   "replace_in_file",
+    --   "write_to_file",
+    -- },
     hints = { enabled = true },
     windows = {
       ---@type "right" | "left" | "top" | "bottom"
       position = "right", -- the position of the sidebar
       wrap = true, -- similar to vim.o.wrap
-      width = 30, -- default % based on available width
+      width = 35, -- default % based on available width
       sidebar_header = {
         enabled = true, -- true, false to enable/disable the header
         align = "center", -- left, center, right for title
