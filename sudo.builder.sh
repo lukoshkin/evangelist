@@ -123,36 +123,6 @@ install() {
     fi
   fi
 
-  ask_user "Install the latest npm?"
-  if [[ $_MODE = user && $REPLY =~ [yY] ]]; then
-    _install_with_apt npm
-    $_sudo npm cache clean -f
-    $_sudo npm install -g n
-    $_sudo n stable
-    $_sudo npm install -g npm@latest
-  fi
-
-  ask_user "Install Neovim's extras?"
-  if [[ $_MODE = user && $REPLY =~ [yY] ]]; then
-    [[ -z $(command -v npm) ]] && {
-      echo 'npm is not installed! Skipping..'
-    } || {
-      $_sudo npm install -g npm@latest
-      $_sudo npm install -g neovim
-      pip3 install $pip_opts neovim
-    }
-    ## Go
-    # local latest
-    # latest=$(
-    #   curl -s "https://go.dev/dl/?mode=json" |
-    #   grep -Po '"filename":\s*"\Kgo[0-9.]+linux-amd64.tar.gz' |
-    #   head -1
-    # )
-    # wget -nc https://go.dev/dl/$latest &&
-    #   rm -rf "$HOME/.local/bin/go" &&
-    #   tar -C "$HOME/.local/bin" -xzf go1.23.2.linux-amd64.tar.gz
-  fi
-
   ask_user 'Install Nerd fonts?'
   if [[ $_MODE != docker && $REPLY =~ [yY] ]]; then
     local default=FiraCode
@@ -167,35 +137,78 @@ install() {
     # fc-cache -fv  # not sure it is helpful
   fi
 
-  ask_user 'Install Node.js?'
+  ask_user 'Install Node.js and npm?'
   if [[ $REPLY =~ [yY] ]]; then
     local tmp_dir
     tmp_dir=/tmp/$(uuidgen)
     mkdir -p "$tmp_dir" && cd "$tmp_dir" &&
       wget -r -nd -A gz --accept-regex='node-.*-linux-x64\.tar\.gz' \
         https://nodejs.org/download/release/latest/ &&
-      tar xf node* && mv node*/bin/node "$_HOME/.local/bin"
+      tar xf node* --strip-components=1 &&
+      mkdir -p "$_HOME/.local" &&
+      cp -r bin lib share "$_HOME/.local/" &&
 
-    # $_sudo apt-get -qq update ## In case, it wasn't updated previously
-    # eval "$sudo_env $_sudo apt-get install -y ca-certificates curl gnupg"
-    # $_sudo mkdir -p /etc/apt/keyrings
-    # curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key |
-    #   $_sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+      # Configure npm to use local directories (no sudo needed)
+      mkdir -p "$_HOME/.local/share/npm-global" &&
+      "$_HOME/.local/bin/npm" config set prefix "$_HOME/.local/share/npm-global"
 
-    # local default=21
-    # if [[ $_MODE != docker ]]; then
-    #   read -rp "Input node version [$default]:" NODE_MAJOR
-    # fi
-    # echo "NOTE this script may be too old to rely on its default major value"
-    # echo "Check the latest version major on the internet"
-    # echo "(Just in case, check the latest major version on the internet)"
-    # local source=https://deb.nodesource.com/node_${NODE_MAJOR:-$default}.x
-    # if ! grep -q "$source" /etc/apt/sources.list.d/nodesource.list; then
-    #   echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] $source nodistro main" |
-    #     sudo tee /etc/apt/sources.list.d/nodesource.list
-    # fi
-    # $_sudo apt-get -qq update ## required
-    # $_sudo apt-get install -yq nodejs
+    if [[ ":$PATH:" == *":$_HOME/.local/bin:"* ]] &&
+      [[ ":$PATH:" == *":$_HOME/.local/share/npm-global/bin:"* ]]; then
+      echo "Node.js and npm installed locally. PATH already configured."
+    fi
+
+    local shell_config=""
+    case "${SHELL##*/}" in
+    zsh)
+      shell_config="${ZDOTDIR:-$_HOME}/.zshrc"
+      ;;
+    bash)
+      shell_config="$_HOME/.bashrc"
+      [[ ! -f "$shell_config" && -f "$_HOME/.bash_profile" ]] && {
+        shell_config="$_HOME/.bash_profile"
+      }
+      ;;
+    *)
+      >&2 echo "Unsupported shell: $SHELL."
+      echo -n "Please, add \$HOME/.local/bin and"
+      echo " \$HOME/.local/share/npm-global/bin to your PATH manually."
+      return 1
+      ;;
+    esac
+
+    local new_path_dirs="\$HOME/.local/bin:\$HOME/.local/share/npm-global/bin"
+    if grep -q "^\\(export \\)\\?PATH=" "$shell_config"; then
+      sed -i.bak "s|^\\(export \\)\\?PATH=|\\1PATH=\"$new_path_dirs:\"|" "$shell_config"
+      echo "Updated PATH in $shell_config"
+    else
+      {
+        echo ""
+        echo "# Added by evangelist installer"
+        echo "export PATH=\"$new_path_dirs:\$PATH\""
+      } >>"$shell_config"
+      echo "Added PATH export to $shell_config"
+    fi
+    echo "Node.js and npm installed locally. Restart your shell"
+  fi
+
+  ask_user "Install Neovim's extras?"
+  if [[ $_MODE = user && $REPLY =~ [yY] ]]; then
+    [[ -z $(command -v npm) ]] && {
+      echo 'npm is not installed! Skipping..'
+    } || {
+      npm install -g neovim
+      pip3 install $pip_opts neovim
+    }
+    ## Go
+    # local latest
+    # latest=$(
+    #   curl -s "https://go.dev/dl/?mode=json" |
+    #   grep -Po '"filename":\s*"\Kgo[0-9.]+linux-amd64.tar.gz' |
+    #   head -1
+    # )
+    # wget -nc https://go.dev/dl/$latest &&
+    #   rm -rf "$HOME/.local/bin/go" &&
+    #   tar -C "$HOME/.local/bin" -xzf go1.23.2.linux-amd64.tar.gz
   fi
 
   ask_user "Download ru-dictionary for Neovim's spellchecker?"
