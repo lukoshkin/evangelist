@@ -68,20 +68,29 @@ write::dynamic_imports() {
   [[ $1 =~ bash ]] && ! grep -q 'source .*/conf/bash/ps1.bash' $1 &&
     echo 'source "$EVANGELIST/conf/bash/ps1.bash"' >>$1
 
+  local venv_creator=venv
   if conda &>/dev/null; then
-    grep -q 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' $1 ||
-      echo 'source "$EVANGELIST/conf/zsh/conda-autoenv.sh"' >>$1
+    venv_creator=conda
   fi
+  venv_creator="$venv_creator.sh"
+
+  # Remove any existing autoenv source lines to prevent conflicts
+  sed -i '/source.*\/conf\/autoenv\/.*\.sh/d' $1
+  echo "source \"\$EVANGELIST/conf/autoenv/$venv_creator\"" >>$1
 
   if ! grep -q 'source "$EVANGELIST/custom/custom\..*sh"' $1; then
     if [[ $1 =~ zsh ]]; then
-      echo '[[ -f "$EVANGELIST/custom/custom.zsh" ]] \' >>$1
-      echo '  && source "$EVANGELIST/custom/custom.zsh"' >>$1
-      echo -e '\nzcomet compinit' >>$1
+      {
+        echo '[[ -f "$EVANGELIST/custom/custom.zsh" ]] \'
+        echo '  && source "$EVANGELIST/custom/custom.zsh"'
+        echo -e '\nzcomet compinit'
+      } >>"$1"
 
     elif [[ $1 =~ bash ]]; then
-      echo '[[ -f "$EVANGELIST/custom/custom.bash" ]] \' >>$1
-      echo '  && source "$EVANGELIST/custom/custom.bash" || :' >>$1
+      {
+        echo '[[ -f "$EVANGELIST/custom/custom.bash" ]] \'
+        echo '  && source "$EVANGELIST/custom/custom.bash" || :'
+      } >>"$1"
     fi
   fi
 }
