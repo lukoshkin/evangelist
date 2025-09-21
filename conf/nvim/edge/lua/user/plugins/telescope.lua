@@ -91,9 +91,7 @@ telescope.setup {
   },
 }
 
---- Telescope builds its own 'fzf' starting from some version.
--- require'telescope'.load_extension 'fzf'
-require("telescope").load_extension "projects"
+require("telescope").load_extension "project"
 require("telescope").load_extension "neoclip"
 require("telescope").load_extension "notify"
 require("telescope").load_extension "undo"
@@ -142,7 +140,7 @@ keymap("n", "<Leader>fg", _with_opts(ext.live_grep_args.live_grep_args))
 keymap("n", "<Leader>fo", _with_opts(builtin.oldfiles))
 
 --- Find a project
-keymap("n", "<Leader>fp", _with_opts(ext.projects.projects))
+keymap("n", "<Leader>fp", _with_opts(ext.project.project))
 
 --- Request help using fuzzy search and preview.
 keymap("n", "<Leader>fh", _with_opts(builtin.help_tags))

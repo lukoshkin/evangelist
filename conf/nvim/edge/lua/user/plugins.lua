@@ -194,9 +194,9 @@ require("lazy").setup {
       "nvim-tree/nvim-web-devicons",
       "AckslD/nvim-neoclip.lua",
       "rcarriga/nvim-notify",
+      "nvim-telescope/telescope-project.nvim",
       { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
       "nvim-telescope/telescope-live-grep-args.nvim",
-      "ahmedkhalf/project.nvim",
       "debugloop/telescope-undo.nvim",
     },
     config = function()
@@ -477,19 +477,6 @@ require("lazy").setup {
     init = function()
       vim.g.doge_doc_standard_python = "numpy"
       vim.g.doge_enable_mappings = false
-    end,
-  },
-  {
-    "ahmedkhalf/project.nvim",
-    config = function()
-      require("project_nvim").setup {
-        --- use pattern. If it doesn't find anything, use lsp.
-        --- https://github.com/ahmedkhalf/project.nvim/issues/67
-        -- detection_methods = { 'pattern', 'lsp' },
-
-        -- manual_mode = true,
-        -- silent_chdir = false, -- for debug
-      }
     end,
   },
   {

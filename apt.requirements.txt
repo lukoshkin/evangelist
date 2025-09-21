@@ -9,6 +9,7 @@ gettext
 locales
 x11-xserver-utils
 xclip
+wl-clipboard
 luarocks
 uuid-runtime
 git
