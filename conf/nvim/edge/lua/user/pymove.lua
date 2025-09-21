@@ -95,8 +95,20 @@ local function update_imports(
   local bufnr = fn.bufadd(file)
   fn.bufload(bufnr)
 
-  local parser = vim.treesitter.get_parser(bufnr, "python")
-  local tree = parser:parse()[1]
+  -- Add error handling for treesitter parsing
+  local success, parser = pcall(vim.treesitter.get_parser, bufnr, "python")
+  if not success then
+    log.warn("Failed to get parser for file: " .. file)
+    return
+  end
+
+  local trees = parser:parse()
+  if not trees or #trees == 0 then
+    log.warn("Failed to parse file: " .. file)
+    return
+  end
+
+  local tree = trees[1]
   local root = tree:root()
   local query = [[
     (import_from_statement
@@ -106,23 +118,35 @@ local function update_imports(
   ]]
   local query_obj = vim.treesitter.query.parse("python", query)
   local changes = {}
-  for _, match in query_obj:iter_matches(root, bufnr) do
-    for _, node in pairs(match) do
-      local name = vim.treesitter.get_node_text(node, bufnr)
-      if name:find "^%." then
-        local rel_path = Path:new(file):make_relative(project_root)
-        name = absolute_dotted_path(rel_path, name)
-      end
 
-      if name:find("^" .. old_dotted_name) then
-        local new_import = name:gsub("^" .. old_dotted_name, new_dotted_name)
-        table.insert(
-          changes,
-          { node = node, old_import = name, new_import = new_import }
-        )
+  -- Use iter_captures to properly handle capture groups
+  for id, node, metadata in query_obj:iter_captures(root, bufnr) do
+    if node then
+      local capture_name = query_obj.captures[id]
+      if capture_name == "module_name" then
+        local success, name = pcall(vim.treesitter.get_node_text, node, bufnr)
+        if not success then
+          log.warn("Failed to get node text: " .. tostring(name))
+          goto continue
+        end
+
+        if name:find "^%." then
+          local rel_path = Path:new(file):make_relative(project_root)
+          name = absolute_dotted_path(rel_path, name)
+        end
+
+        if name:find("^" .. old_dotted_name) then
+          local new_import = name:gsub("^" .. old_dotted_name, new_dotted_name)
+          table.insert(
+            changes,
+            { node = node, old_import = name, new_import = new_import }
+          )
+        end
+        ::continue::
       end
     end
   end
+
   for _, change in ipairs(changes) do
     local start_row, start_col, end_row, end_col = change.node:range()
     api.nvim_buf_set_text(
@@ -135,10 +159,17 @@ local function update_imports(
     )
   end
 
-  api.nvim_buf_call(bufnr, function()
-    vim.cmd "write!"
-    require("conform").format()
-  end)
+  -- Only write and format if there were changes
+  if #changes > 0 then
+    api.nvim_buf_call(bufnr, function()
+      vim.cmd "write!"
+      -- Check if conform is available before using it
+      local success, conform = pcall(require, "conform")
+      if success then
+        conform.format()
+      end
+    end)
+  end
 end
 
 local function find_files_with_pattern(pattern, directory, extension)
@@ -188,7 +219,7 @@ function M.move_module_or_package(old_name, new_name, project_root)
   local pattern = file_change_pattern(change)
   local files = find_files_with_pattern(pattern, project_root, "*.py")
   for _, file in ipairs(files) do
-    update_imports(file, old_dotted, new_dotted)
+    update_imports(file, old_dotted, new_dotted, project_root)
   end
 end
 
