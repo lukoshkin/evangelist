@@ -192,3 +192,9 @@ api.nvim_create_user_command("PyMove", function(opts)
   local new_name = opts.fargs[2]
   require("user.pymove").move_module_or_package(old_name, new_name)
 end, { nargs = "+" })
+
+api.nvim_create_user_command("MasonReinstall", function()
+  require("user.mason-reinstall").reinstall_from_logfile()
+end, {
+  desc = "Reinstall Mason packages that failed due to lock files",
+})
