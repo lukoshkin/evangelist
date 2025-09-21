@@ -83,7 +83,6 @@ _setup_autoenv_hooks() {
 
 # Common function to process found autoenv files
 # Usage: _process_autoenv_files <directory> [first_elem_id]
-# Returns: array of found files in global variable 'found'
 _process_autoenv_files() {
   [[ $AUENV_SHELL == false ]] && return
 
@@ -93,7 +92,7 @@ _process_autoenv_files() {
   }
 
   local first_elem_id=${2:-$(_get_array_index)}
-  found=()
+  local -a found=()
   while IFS= read -r line; do
     [[ -n "$line" ]] && found+=("$line")
   done < <(up_hierarchy_search "$1" '.autoenv-evn.*')
@@ -119,9 +118,7 @@ _process_autoenv_files() {
 
 # Safe file removal for marker files
 _remove_marker_files() {
-  for file in .autoenv-evn.*; do
-    [[ -f "$file" ]] && rm "$file"
-  done 2>/dev/null
+  command rm -f .autoenv-evn.* 2>/dev/null
 }
 
 # Check if a command is available

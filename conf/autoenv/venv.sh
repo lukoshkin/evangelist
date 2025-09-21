@@ -32,7 +32,9 @@ _venv_autoenv() {
   fi
 
   if [[ "$VIRTUAL_ENV" == "$venv_path" ]]; then
-    return 0
+    if command -v deactivate &>/dev/null; then
+      return 0
+    fi
   fi
 
   if [[ -n "$VIRTUAL_ENV" ]]; then
@@ -52,8 +54,9 @@ _venv_autoenv_zsh() {
   _venv_autoenv "$PWD"
 }
 
-mkenv() {
+_mkenv_common() {
   local env_name=$1
+  local use_seed=$2
   local venv_path=".venv"
   local use_uv=false
 
@@ -62,16 +65,26 @@ mkenv() {
     use_uv=true
   fi
 
-  if [[ -n $1 ]]; then
+  if [[ -n $env_name ]]; then
     venv_path="$env_name"
   fi
 
+  local action_made
+  action_made=Created
+  if [[ -f ".autoenv-evn.$env_name" ]]; then
+    action_made=Updated
+  fi
   _remove_marker_files
 
   if [[ ! -d "$venv_path" ]]; then
     echo "Creating virtual environment: $venv_path"
     if [[ $use_uv == true ]]; then
-      uv venv "$venv_path" || {
+      local uv_args=("$venv_path")
+      if [[ $use_seed == true ]]; then
+        echo "Using --seed option for Neovim integration"
+        uv_args=("--seed" "${uv_args[@]}")
+      fi
+      uv venv "${uv_args[@]}" || {
         echo "Failed to create virtual environment with uv"
         return 1
       }
@@ -81,6 +94,9 @@ mkenv() {
         return 1
       }
     fi
+  else
+    echo "Virtual environment already exists: $venv_path"
+    echo "To recreate, delete the directory and run the command again."
   fi
 
   source "$venv_path/bin/activate" || {
@@ -110,7 +126,15 @@ mkenv() {
   fi
 
   touch ".autoenv-evn.$env_name"
-  echo "Created marker file: .autoenv-evn.$env_name"
+  echo "$action_made marker file: .autoenv-evn.$env_name"
+}
+
+mkenv() {
+  _mkenv_common "$1" false
+}
+
+mkennv() {
+  _mkenv_common "$1" true
 }
 
 # Setup shell hooks using common function
