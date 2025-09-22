@@ -17,7 +17,8 @@ _venv_autoenv() {
   fi
 
   local _env_ venv_path marker_dir
-  _env_=${_AE_EVNFILE##*.}
+  _env_=$(basename "$_AE_EVNFILE")
+  _env_=${_env_#$AE_PREFIX}
   marker_dir=$(dirname "$_AE_EVNFILE")
   venv_path="$marker_dir/${_env_:-.venv}"
 

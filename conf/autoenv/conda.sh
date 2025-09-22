@@ -15,7 +15,8 @@ _conda_autoenv() {
   fi
 
   local _env_
-  _env_=${_AE_EVNFILE##*.}
+  _env_=$(basename "$_AE_EVNFILE")
+  _env_=${_env_#$AE_PREFIX}
   _env_=${_env_:-base} # for compatibility to be able to parse
   ## old .autoenv-evn files after switching to conda-autoenv from venv-autoenv
 

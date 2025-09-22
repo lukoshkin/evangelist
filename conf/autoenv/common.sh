@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Common functions shared between conda-autoenv.sh and venv-autoenv.sh
+AE_PREFIX=.autoenv-evn.
 
 up_hierarchy_search() {
   if [[ -z $1 || -z $2 ]]; then
@@ -68,7 +69,7 @@ _setup_autoenv_hooks() {
   elif [[ -n $BASH_VERSION ]]; then
     ## PROMPT_COMMAND contents is executed before each prompt.
     ## However, we want to be able to run `deactivate` in a directory
-    ## with .autoenv-evn.* file. To this end, we use PREV_WORK_DIR variable
+    ## with $AE_PREFIX* file. To this end, we use PREV_WORK_DIR variable
     ## to run the autoenv function only when the directory is changed.
 
     ## To call autoenv on the shell startup, we initialize
@@ -95,7 +96,7 @@ _process_autoenv_files() {
   local -a found=()
   while IFS= read -r line; do
     [[ -n "$line" ]] && found+=("$line")
-  done < <(up_hierarchy_search "$1" '.autoenv-evn.*')
+  done < <(up_hierarchy_search "$1" "$AE_PREFIX*")
 
   if [[ -z ${found[*]} ]]; then
     return 1 # No files found
@@ -107,7 +108,7 @@ _process_autoenv_files() {
     echo
     echo Note, the autoenv-script tries to activate only the environment
     echo "corresponding to the first autoenv-file listed by \`ls\`."
-    echo Please, keep only one '.autoenv-evn.*'
+    echo Please, keep only one "$AE_PREFIX*"
     echo
   fi
 
@@ -118,7 +119,7 @@ _process_autoenv_files() {
 
 # Safe file removal for marker files
 _remove_marker_files() {
-  command rm -f .autoenv-evn.* 2>/dev/null
+  command rm -f $AE_PREFIX* 2>/dev/null
 }
 
 # Check if a command is available
