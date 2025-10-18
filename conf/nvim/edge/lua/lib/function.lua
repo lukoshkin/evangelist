@@ -269,16 +269,38 @@ function M.copy_line_to_regL()
   fn.setreg("l", content .. fn.getline "." .. "\n")
 end
 
+function M.copy_selection_to_regL()
+  local content = fn.getreg "l"
+  local start_pos = fn.getpos("v")
+  local end_pos = fn.getpos(".")
+  local start_line = start_pos[2]
+  local end_line = end_pos[2]
+
+  -- Ensure start_line <= end_line
+  if start_line > end_line then
+    start_line, end_line = end_line, start_line
+  end
+
+  local lines = api.nvim_buf_get_lines(0, start_line - 1, end_line, true)
+  table.insert(lines, "")
+  fn.setreg("l", content .. table.concat(lines, "\n"))
+  api.nvim_feedkeys(
+    api.nvim_replace_termcodes("<Esc>", true, true, true),
+    "n",
+    false
+  )
+end
+
 function M.add_newline_to_regL()
   local content = fn.getreg "l"
   fn.setreg("l", content .. "\n")
 end
 
-function M.paste_regL_content(after)
+function M.paste_regL_content(opts)
   local content = fn.getreg "l"
   local lines = vim.split(content, "\n")
   table.remove(lines)
-  api.nvim_put(lines, "l", after or true, true)
+  api.nvim_put(lines, "l", opts.after or false, true)
 end
 
 function M.move_regL_content_to_clipboard()

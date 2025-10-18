@@ -1,6 +1,24 @@
 return {
   "zbirenbaum/copilot.lua",
   event = "VeryLazy",
+  config = function(_, opts)
+    require("copilot").setup(opts)
+    --- Suppress annoying Copilot limit messages
+    local _select = vim.ui.select
+    function vim.ui.select(items, opts, on_choice)
+      if
+        opts
+        and opts.prompt
+        and type(opts.prompt) == "string"
+        and string.match(opts.prompt, [[^You've reached.*limit.*Upgrade.*$]])
+      then
+        -- vim.notify("Copilot: " .. opts.prompt, vim.log.levels.ERROR)
+        vim.cmd "Copilot disable"
+      else
+        return _select(items, opts, on_choice)
+      end
+    end
+  end,
   keys = {
     {
       "<Space>ca",

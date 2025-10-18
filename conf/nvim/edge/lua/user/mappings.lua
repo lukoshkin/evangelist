@@ -69,12 +69,13 @@ end)
 keymap("n", "<Space>yc", fn.clear_regL)
 keymap("n", "<Space>yy", fn.copy_line_to_regL)
 keymap("n", "<Space>y<Space>", fn.add_newline_to_regL)
+keymap("x", "<Space>y", fn.copy_selection_to_regL)
 keymap("n", "<Space>y8", fn.move_regL_content_to_clipboard)
 keymap("n", "<Space>yp", function()
-  fn.paste_regL_content(false)
+  fn.paste_regL_content { after = true }
 end)
 keymap("n", "<Space>yP", function()
-  fn.paste_regL_content(true)
+  fn.paste_regL_content { after = false }
 end)
 
 --- Change the terminal bg's transparency from within Vim

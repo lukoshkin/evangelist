@@ -139,7 +139,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
     buf_keymap(ev.buf, "n", "gd", vim.lsp.buf.definition)
     buf_keymap(ev.buf, "n", "K", vim.lsp.buf.hover)
     buf_keymap(ev.buf, "n", "grt", vim.lsp.buf.type_definition)
-    buf_keymap(ev.buf, "n", "grr", ":Telescope lsp_references<CR>")
 
     --- 'ge' like (E)xplain (E)rror.
     buf_keymap(ev.buf, "n", "ge", vim.diagnostic.open_float)

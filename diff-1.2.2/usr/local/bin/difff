@@ -31,13 +31,51 @@ help_msg() {
   printf '%-40s %s\n' ' ' 'Leave trailing "/" to treat as a directory.'
 }
 
+function validate_path() {
+  local path=$1
+  local resolved
+
+  # Expand tilde if present
+  path="${path/#\~/$HOME}"
+
+  # Check for path traversal attempts in the input
+  if [[ "$path" == *../* || "$path" == */../* || "$path" == *.. ]]; then
+    echo "Error: Path traversal detected: $path" >&2
+    return 1
+  fi
+
+  # If path exists, resolve it and check destination
+  if [[ -e "$path" ]]; then
+    resolved=$(readlink -f "$path" 2>/dev/null) || resolved="$path"
+
+    # Prevent access to sensitive system directories
+    case "$resolved" in
+    /etc/* | /sys/* | /proc/* | /dev/* | /boot/* | /root/*)
+      echo "Error: Access to system directories is forbidden" >&2
+      return 1
+      ;;
+    esac
+  fi
+
+  return 0
+}
+
 function matches_path() {
   local target=$1
   shift
 
   if $REGEX_PATTERN; then
     for path in "$@"; do
-      [[ -n "$path" ]] && [[ "$target" =~ $path ]] && return 0
+      if [[ -n "$path" ]]; then
+        # Timeout regex to prevent ReDoS attacks
+        # Use a subshell with timeout
+        if timeout 1s bash -c "[[ \"$target\" =~ $path ]]" 2>/dev/null; then
+          return 0
+        elif [[ $? -eq 124 ]]; then
+          echo "Warning: Regex pattern timed out (possible ReDoS)" >&2
+          return 1
+        fi
+      fi
     done
   else
     for path in "$@"; do
@@ -98,17 +136,33 @@ function difff() {
     return $PRINT_ES
   fi
 
+  # Validate trim_cnt is a positive integer to prevent command injection
+  if [[ -n $trim_cnt ]] && ! [[ $trim_cnt =~ ^[0-9]+$ ]]; then
+    echo "Error: trim-cnt must be a positive integer" >&2
+    return 1
+  fi
+
+  # Validate and sanitize paths
   ! [[ -d $prefix ]] && {
-    echo Prefix $prefix not found
+    echo "Prefix $prefix not found" >&2
     return 1
   }
+  validate_path "$prefix" || {
+    echo "Invalid prefix path: $prefix" >&2
+    return 1
+  }
+
   ! [[ -d ${folder:=.} ]] && {
-    echo Folder $folder not found
+    echo "Folder $folder not found" >&2
+    return 1
+  }
+  validate_path "$folder" || {
+    echo "Invalid folder path: $folder" >&2
     return 1
   }
 
   if [[ ${mode:=folder} != folder ]] && [[ $mode != git ]]; then
-    echo Invalid mode: $mode
+    echo "Invalid mode: $mode" >&2
     return $PRINT_ES
   fi
 
@@ -166,19 +220,44 @@ function difff() {
         desc+='[e] exclude parent dir of the current file\n'
         desc+='Press the corresponding key to take an action.\n'
         desc+='Or any other key to continue.\n'
-        echo -e $desc
+        echo -e "$desc"
 
         # read -srk1    # zsh syntax
         read -srn1 # bash syntax
         case $REPLY in
         c)
-          mkdir -p "$(dirname "$file")"
-          cp "$counter" "$file" && echo -e "${GREEN}Copied!${NC}"
+          # Validate counter file before copying
+          if [[ -f "$counter" ]] && ! [[ -L "$counter" ]]; then
+            local target_dir
+            target_dir=$(dirname "$file")
+
+            # Ensure target directory is safe
+            mkdir -p "$target_dir" || {
+              echo -e "${BRED}Error: Cannot create directory${NC}" >&2
+              break
+            }
+
+            # Use install for safer copying with permissions
+            if install -m 0644 -p "$counter" "$file" 2>/dev/null; then
+              echo -e "${GREEN}Copied!${NC}"
+            else
+              echo -e "${BRED}Error: Copy failed${NC}" >&2
+            fi
+          else
+            echo -e "${BRED}Error: Invalid source file${NC}" >&2
+          fi
           ;;
         r)
           # read -srk1 '?Confirm deletion - [yN] '    # zsh syntaxis
           read -srn1 -p 'Confirm deletion - [yN] ' # bash syntaxis
-          [[ $REPLY =~ [yY] ]] && rm "$counter"
+          if [[ $REPLY =~ [yY] ]]; then
+            # Double-check file exists and is not a symlink before deletion
+            if [[ -f "$counter" ]] && ! [[ -L "$counter" ]]; then
+              rm -f "$counter"
+            else
+              echo -e "${BRED}Error: Invalid file for deletion${NC}" >&2
+            fi
+          fi
           echo
           ;;
         e)
@@ -199,22 +278,24 @@ function difff() {
     [[ $mode = folder ]] && [[ -d $file || -d $counter ]] && continue
 
     ## Why check `file`? ─ `git diff` reports also deleted.
-    ! [[ -f $file ]] && {
-      echo Not in project: $counter
+    # Validate files exist and resolve to regular files (allow symlinks to files)
+    if ! [[ -f $file ]]; then
+      echo "Not in project: $counter" >&2
       continue
-    }
-    ! [[ -f $counter ]] && {
-      echo Not in counterpart: $file
-      continue
-    }
-
-    if [[ -n $dry_run ]]; then
-      echo $file -- $counter
+    fi
+    if ! [[ -f $counter ]]; then
+      echo "Not in counterpart: $file" >&2
       continue
     fi
 
-    cmp -s $file $counter && continue
-    vimdiff $file $counter
+    # Compare files (cmp follows symlinks safely)
+    cmp -s "$file" "$counter" && continue
+    if [[ -n $dry_run ]]; then
+      echo "$file -- $counter"
+      continue
+    fi
+
+    vimdiff "$file" "$counter"
     sleep 0.28 # small window to abort with <Ctrl-c>
     ## 250ms - is the avg reaction time
   done

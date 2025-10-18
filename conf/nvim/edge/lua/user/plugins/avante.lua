@@ -272,6 +272,7 @@ return {
         rounded = true,
       },
       input = {
+        provider = "snacks",
         prefix = "> ",
         height = 8, -- Height of the input window in vertical layout
       },
@@ -324,7 +325,7 @@ return {
       },
     },
     "nvim-treesitter/nvim-treesitter",
-    "stevearc/dressing.nvim",
+    "folke/snacks.nvim",
     "nvim-lua/plenary.nvim",
     "MunifTanjim/nui.nvim",
     --- The below dependencies are optional,
