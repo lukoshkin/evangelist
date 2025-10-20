@@ -47,6 +47,7 @@ alias gd='git diff'
 alias gds='git diff --staged'
 alias gs='git switch'
 alias glpr='git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset"'
+alias avante='nvim -c "lua vim.defer_fn(function()require(\"avante.api\").zen_mode()end, 100)"'
 
 gsm() {
   if git show-ref --quiet refs/heads/master; then

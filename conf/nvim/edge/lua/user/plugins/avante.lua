@@ -1,9 +1,19 @@
-local bedrock_model = "bedrock-claude-sonnet-4"
-local model_uri = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+local bedrock_keys = os.getenv "BEDROCK_KEYS"
+local has_bedrock = bedrock_keys ~= nil and bedrock_keys ~= ""
+local bedrock_model, model_uri, copilot_model, provider_name
+
+if has_bedrock then
+  bedrock_model = "bedrock-claude-sonnet-4-5"
+  model_uri = "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
+  provider_name = bedrock_model
+else
+  copilot_model = "claude-sonnet-4.5"
+  provider_name = "copilot"
+end
 
 return {
   "yetone/avante.nvim",
-  -- version = "0.0.25",
+  -- version = "0.0.27",
   version = false, -- nightly build
   event = "VeryLazy",
   init = function()
@@ -47,6 +57,14 @@ return {
     {
       "<Space>am",
       function()
+        if not has_bedrock then
+          vim.notify(
+            "Model switching not available for Copilot provider",
+            vim.log.levels.WARN,
+            { title = "Avante" }
+          )
+          return
+        end
         local current_model = require("avante.config").provider
         local new_model = current_model == bedrock_model
             and bedrock_model .. "-reasoning"
@@ -129,35 +147,41 @@ return {
     selector = {
       exclude_auto_select = { "NvimTree" },
     },
-    providers = {
-      [bedrock_model] = {
-        __inherited_from = "bedrock",
-        model = model_uri,
-        timeout = 60000, -- in milliseconds
-        extra_request_body = {
-          temperature = 0,
-          max_tokens = 20000,
+    providers = has_bedrock
+        and {
+          [bedrock_model] = {
+            __inherited_from = "bedrock",
+            model = model_uri,
+            timeout = 60000, -- in milliseconds
+            extra_request_body = {
+              temperature = 0,
+              max_tokens = 20000,
+            },
+          },
+          [bedrock_model .. "-reasoning"] = {
+            __inherited_from = "bedrock",
+            model = model_uri,
+            timeout = 150000, -- in milliseconds
+            extra_request_body = {
+              thinking = { type = "enabled", budget_tokens = 6000 },
+              temperature = 1, -- (at the time) should be set to 1 for Claude's thinking models
+              max_tokens = 40000,
+            },
+          },
+        }
+      or {
+        copilot = {
+          model = copilot_model,
         },
       },
-      [bedrock_model .. "-reasoning"] = {
-        __inherited_from = "bedrock",
-        model = model_uri,
-        timeout = 150000, -- in milliseconds
-        extra_request_body = {
-          thinking = { type = "enabled", budget_tokens = 6000 },
-          temperature = 1, -- (at the time) should be set to 1 for Claude's thinking models
-          max_tokens = 40000,
-        },
-      },
-    },
     ---@alias avante.ProviderName "claude" | "openai" | "azure" | "gemini" | "vertex" | "cohere" | "copilot" | "bedrock" | "ollama" | string
     --- WARNING: Since auto-suggestions are a high-frequency operation and
     --- therefore expensive, currently designating it as `copilot` provider is
     --- dangerous because: https://github.com/yetone/avante.nvim/issues/1048 Of
     --- course, you can reduce the request frequency by increasing
     --- `suggestion.debounce` time.
-    provider = bedrock_model,
-    auto_suggestions_provider = nil, -- use Copilot and Avante separately
+    provider = provider_name,
+    auto_suggestions_provider = "copilot", -- use Copilot and Avante separately
     cursor_applying_provider = nil, -- The provider used in the applying phase
     -- of Cursor Planning Mode. Defaults to nil. When nil, uses Config.provider
     -- as the provider for the applying phase
