@@ -107,7 +107,8 @@ install() {
     mkdir -p "$dl_path"
     curl -L $link -o "$dl_path/nvim"
     chmod +x "$dl_path/nvim"
-    $_sudo ln -sf "$dl_path/nvim" /usr/bin/nvim
+    ## No longer needed as we have ~/.local/bin on PATH
+    # $_sudo ln -sf "$dl_path/nvim" /usr/bin/nvim
   fi
 
   if [[ $_MODE = docker || $REPLY =~ [nN] ]]; then

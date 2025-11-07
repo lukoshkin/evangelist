@@ -24,7 +24,7 @@ local options = {
 
   ignorecase = true,
   smartcase = true,
-  lazyredraw = true,
+  -- lazyredraw = true,
   updatetime = 250,
 
   --- The mouse is turned off by default.

@@ -20,8 +20,19 @@ local function on_attach(bufnr)
   api.config.mappings.default_on_attach(bufnr)
 
   -- Custom mappings
+  keymap(
+    "n",
+    "<C-s>",
+    api.node.open.horizontal,
+    opts "Open: In a Horizontal Split"
+  )
+  keymap(
+    "n",
+    "<A-v>",
+    api.node.open.vertical,
+    opts "Open: In a Vertical Split"
+  )
   keymap("n", "t", api.node.open.tab, opts "Open: In a New Tab")
-  keymap("n", "<C-s>", api.node.open.horizontal, opts "Open: In a Horizontal Split")
   keymap("n", "go", api.node.open.preview, opts "Open: Preview")
   keymap("n", "?", api.tree.toggle_help, opts "Help")
   keymap("n", "r", api.tree.reload, opts "Refresh")

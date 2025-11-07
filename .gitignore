@@ -1,4 +1,5 @@
-custom
+custom/*
+!custom/template.custom.*
 ai-traits
 
 .bak
