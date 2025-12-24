@@ -24,10 +24,10 @@ require("lazy").setup {
       automatic_installation = true,
       ensure_installed = {
         "bashls",
-        -- "pyright",
-        -- "basedpyright",
+        "basedpyright",
         "lua_ls",
         "marksman",
+        "ruff",
         "clangd",
         "dockerls",
         "docker_compose_language_service",

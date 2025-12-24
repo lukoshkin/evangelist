@@ -1,34 +1,38 @@
 --- NOTE: requires `neovim/nvim-lspconfig` plugin for default LSP configuration.
 --- Otherwise, one will have to manually specify at least the "cmd" field.
-vim.lsp.config("*", {
-  capabilities = {
-    textDocument = {
-      semanticTokens = {
-        multilineTokenSupport = true,
-      },
-    },
-  },
-})
---- The "setter" syntax also works for merging with the default settings
-vim.lsp.config.pylsp = {
-  root_markers = {
-    "pyproject.toml",
-    "setup.cfg",
-    "requirements.txt",
-  },
+local caps = vim.lsp.protocol.make_client_capabilities()
+caps.general = caps.general or {}
+caps.general.positionEncodings = { "utf-16" }
+caps.textDocument = caps.textDocument or {}
+caps.textDocument.semanticTokens = caps.textDocument.semanticTokens or {}
+caps.textDocument.semanticTokens.multilineTokenSupport = true
+vim.lsp.config("*", { capabilities = caps })
+
+--- Basedpyright for Python LSP (completion, navigation, rename, code actions)
+vim.lsp.config.basedpyright = {
   settings = {
-    pylsp = {
-      plugins = {
-        pylint = { enabled = true },
-        pyflakes = { enabled = false },
-        pycodestyle = { enabled = false },
-        jedi_rename = { enabled = true },
-        rope_rename = { enabled = true },
-        -- (Make sure `pylsp-rope` plugin is installed in Python for Rope use)
+    basedpyright = {
+      analysis = {
+        diagnosticMode = "openFilesOnly",
+        typeCheckingMode = "off",
+        autoSearchPaths = true,
+        useLibraryCodeForTypes = true,
+        reportMissingTypeStubs = "none",
+        reportUnreachable = "warning",
       },
     },
   },
 }
+
+--- Ruff LSP for diagnostics (reads config from pyproject.toml)
+vim.lsp.config.ruff = {
+  on_attach = function(client, bufnr)
+    -- Disable formatting - handled by conform.nvim
+    client.server_capabilities.documentFormattingProvider = false
+    client.server_capabilities.documentRangeFormattingProvider = false
+  end,
+}
+
 --- Comment out since not working with Rust currently.
 --- Add clippy linting (includes performance hints).
 -- vim.lsp.config.rust_analyzer = {
@@ -138,7 +142,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
     buf_keymap(ev.buf, "n", "gD", vim.lsp.buf.declaration)
     buf_keymap(ev.buf, "n", "gd", vim.lsp.buf.definition)
     buf_keymap(ev.buf, "n", "K", vim.lsp.buf.hover)
-    buf_keymap(ev.buf, "n", "grt", vim.lsp.buf.type_definition)
 
     --- 'ge' like (E)xplain (E)rror.
     buf_keymap(ev.buf, "n", "ge", vim.diagnostic.open_float)
@@ -178,22 +181,29 @@ vim.api.nvim_create_autocmd("LspAttach", {
       require("telescope.builtin").lsp_document_symbols
     )
 
+    --- Toggle inlay hints for current buffer
+    buf_keymap(ev.buf, "n", "<Leader>ih", function()
+      vim.lsp.inlay_hint.enable(
+        not vim.lsp.inlay_hint.is_enabled { bufnr = ev.buf },
+        { bufnr = ev.buf }
+      )
+    end)
     --- NOTE: to format relying only on 'textwidth' use 'gw'.
   end,
 })
 vim.lsp.enable {
   "bashls",
+  "basedpyright",
   "clangd",
   "dockerls",
-  "eslint",
-  "jsonls",
+  -- "eslint",  -- Not installed, enable if needed
+  -- "jsonls",  -- Not installed, enable if needed
   "lua_ls",
   "marksman",
-  "pylsp",
   "ruff",
   "rust_analyzer",
   "taplo",
   "tflint",
-  "tsserver",
+  -- "tsserver",  -- Not configured, enable if needed
   "yamlls",
 }

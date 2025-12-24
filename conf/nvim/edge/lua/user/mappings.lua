@@ -47,12 +47,12 @@ keymap("n", "<C-Up>", function()
   fn.resize "+2"
 end)
 
+--- Fold tags (as 'at' is also occupied by Mini.nvim)
+keymap("n", "zk", "zfat")
+
 --- Copy to clipboard selected text or the whole file.
 keymap("x", "<Leader>y", '"+y')
 keymap("n", "<Leader>y", ":%y+<CR>")
-
---- Fold tags (as 'at' is also occupied by Mini.nvim)
-keymap("n", "zk", "zfat")
 
 --- Copy highlighted text with search to the clipboard.
 keymap("n", "<Space>/y", function()
@@ -77,6 +77,20 @@ end)
 keymap("n", "<Space>yP", function()
   fn.paste_regL_content { after = false }
 end)
+
+--- Paste from "0 register (last yank, unaffected by deletions)
+vim.keymap.set(
+  { "n", "x" },
+  "<A-p>",
+  '"0p',
+  { desc = "Paste from yank register" }
+)
+vim.keymap.set(
+  { "n", "x" },
+  "<A-P>",
+  '"0P',
+  { desc = "Paste before from yank register" }
+)
 
 --- Change the terminal bg's transparency from within Vim
 --- (valid only for Linux systems; maybe, just Ubuntu).
@@ -187,12 +201,6 @@ keymap("n", "<Leader>w", function()
     { title = "evn-settings" }
   )
 end, { noremap = true, silent = true })
-
-api.nvim_create_user_command("PyMove", function(opts)
-  local old_name = opts.fargs[1]
-  local new_name = opts.fargs[2]
-  require("user.pymove").move_module_or_package(old_name, new_name)
-end, { nargs = "+" })
 
 api.nvim_create_user_command("MasonReinstall", function()
   require("user.mason-reinstall").reinstall_from_logfile()

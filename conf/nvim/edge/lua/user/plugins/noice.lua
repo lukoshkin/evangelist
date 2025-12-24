@@ -7,6 +7,9 @@ return {
   },
   opts = {
     lsp = {
+      progress = {
+        enabled = false, -- disable LSP progress bars and spinners
+      },
       override = {
         ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
         ["vim.lsp.util.stylize_markdown"] = true,
@@ -26,6 +29,15 @@ return {
           event = "msg_show",
           kind = "",
           find = "written",
+        },
+        opts = { skip = true },
+      },
+      --- Completely filter out LSP progress messages
+      --- (TODO: check if it is not redundant)
+      {
+        filter = {
+          event = "lsp",
+          kind = "progress",
         },
         opts = { skip = true },
       },
