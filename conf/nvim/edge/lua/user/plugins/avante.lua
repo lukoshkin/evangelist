@@ -376,6 +376,13 @@ return {
       "OXY2DEV/markview.nvim",
       opts = {
         file_types = { "markdown", "Avante" },
+        html = { enable = true },
+        latex = { enable = true },
+        preview = {
+          enable = true,
+          hybrid_modes = { "n" },
+          max_buf_lines = 100,
+        },
       },
       ft = { "markdown", "Avante" },
     },

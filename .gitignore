@@ -1,3 +1,4 @@
+pymove/
 custom/*
 !custom/template.custom.*
 ai-traits
