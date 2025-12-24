@@ -20,14 +20,6 @@ end
 
 conform.setup {
   formatters = {
-    --- Using ruff instead
-    -- black = {
-    --   prepend_args = {
-    --     "--fast",
-    --     "--line-length=79",
-    --     "--preview",
-    --   },
-    -- },
     stylua = {
       prepend_args = {
         "--config-path=" .. config_path,
@@ -68,7 +60,7 @@ conform.setup {
 --- The motive not to do so is that formatters are loaded not on a key press.
 vim.keymap.set("", "<Leader>cf", function()
   conform.format {
-    lsp_fallback = true,
+    lsp_fallback = (vim.bo.filetype ~= "python"),
     async = true,
     timeout = 500,
   }

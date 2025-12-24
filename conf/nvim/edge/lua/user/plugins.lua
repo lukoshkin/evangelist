@@ -103,7 +103,7 @@ require("lazy").setup {
 
   --- CORE
   -- { "glacambre/firenvim", build = ":call firenvim#install(0)" },
-  { require "user.plugins.noice" },
+  -- { require "user.plugins.noice" },
   {
     "folke/snacks.nvim",
     priority = 1000,
@@ -517,25 +517,27 @@ require("lazy").setup {
       vim.g.doge_enable_mappings = false
     end,
   },
-  {
-    "rxi/json.lua",
-    build = function()
-      local build_dir = vim.fn.stdpath "data" .. "/lazy/json.lua/"
-      local json_lua = build_dir .. "lua/json/"
-      os.execute("mkdir -p " .. json_lua)
-      os.execute("cp " .. build_dir .. "json.lua " .. json_lua .. "init.lua")
-    end,
-  },
-  {
-    "lukoshkin/auenv.nvim",
-    ft = "python",
-    dependencies = "rxi/json.lua",
-    config = function()
-      if vim.env.CONDA_PREFIX ~= nil then
-        require("auenv").setup()
-      end
-    end,
-  },
+  --- Temporarily disable auenv.nvim since it is disruptive for the work
+  --- of LSP clients: breaks ruff, pylsp, basedpyright, and similar
+  -- {
+  --   "rxi/json.lua",
+  --   build = function()
+  --     local build_dir = vim.fn.stdpath "data" .. "/lazy/json.lua/"
+  --     local json_lua = build_dir .. "lua/json/"
+  --     os.execute("mkdir -p " .. json_lua)
+  --     os.execute("cp " .. build_dir .. "json.lua " .. json_lua .. "init.lua")
+  --   end,
+  -- },
+  -- {
+  --   "lukoshkin/auenv.nvim",
+  --   ft = "python",
+  --   dependencies = "rxi/json.lua",
+  --   config = function()
+  --     if vim.env.CONDA_PREFIX ~= nil then
+  --       require("auenv").setup()
+  --     end
+  --   end,
+  -- },
   {
     --- NOTE: Loading can be optimized with 'lazy'.
     "lukoshkin/bterm-repl.nvim",

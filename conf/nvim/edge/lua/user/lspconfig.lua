@@ -1,15 +1,18 @@
+local lsp = vim.lsp
+local api = vim.api
+
 --- NOTE: requires `neovim/nvim-lspconfig` plugin for default LSP configuration.
 --- Otherwise, one will have to manually specify at least the "cmd" field.
-local caps = vim.lsp.protocol.make_client_capabilities()
+local caps = lsp.protocol.make_client_capabilities()
 caps.general = caps.general or {}
 caps.general.positionEncodings = { "utf-16" }
 caps.textDocument = caps.textDocument or {}
 caps.textDocument.semanticTokens = caps.textDocument.semanticTokens or {}
 caps.textDocument.semanticTokens.multilineTokenSupport = true
-vim.lsp.config("*", { capabilities = caps })
+lsp.config("*", { capabilities = caps })
 
 --- Basedpyright for Python LSP (completion, navigation, rename, code actions)
-vim.lsp.config.basedpyright = {
+lsp.config.basedpyright = {
   settings = {
     basedpyright = {
       analysis = {
@@ -24,18 +27,9 @@ vim.lsp.config.basedpyright = {
   },
 }
 
---- Ruff LSP for diagnostics (reads config from pyproject.toml)
-vim.lsp.config.ruff = {
-  on_attach = function(client, bufnr)
-    -- Disable formatting - handled by conform.nvim
-    client.server_capabilities.documentFormattingProvider = false
-    client.server_capabilities.documentRangeFormattingProvider = false
-  end,
-}
-
 --- Comment out since not working with Rust currently.
 --- Add clippy linting (includes performance hints).
--- vim.lsp.config.rust_analyzer = {
+-- lsp.config.rust_analyzer = {
 --   settings = {
 --     ["rust-analyzer"] = {
 --       checkOnSave = {
@@ -52,7 +46,7 @@ vim.lsp.config.ruff = {
 --     },
 --   },
 -- }
-vim.lsp.config("lua_ls", {
+lsp.config("lua_ls", {
   on_init = function(client)
     if client.workspace_folders then
       local path = client.workspace_folders[1].name
@@ -95,7 +89,7 @@ vim.lsp.config("lua_ls", {
           -- your own configuration.
           -- See https://github.com/neovim/nvim-lspconfig/issues/3189
           -- library = {
-          --   vim.api.nvim_get_runtime_file('', true),
+          --   api.nvim_get_runtime_file('', true),
           -- }
         },
       })
@@ -104,7 +98,7 @@ vim.lsp.config("lua_ls", {
     Lua = {},
   },
 })
-vim.lsp.config("dockerls", {
+lsp.config("dockerls", {
   settings = {
     docker = {
       languageserver = {
@@ -117,7 +111,7 @@ vim.lsp.config("dockerls", {
 })
 
 local function on_attach(ev)
-  local client = vim.lsp.get_client_by_id(ev.data.client_id)
+  local client = lsp.get_client_by_id(ev.data.client_id)
   if client == nil then
     return
   end
@@ -128,20 +122,20 @@ local function on_attach(ev)
   end
   --- Currently, completion is configured by 'nvim-cmp'.
   -- if client.supports_method("textDocument/completion", ev.buf) then
-  --   vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
+  --   lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
   -- end
 end
 
-vim.api.nvim_create_autocmd("LspAttach", {
-  group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+api.nvim_create_autocmd("LspAttach", {
+  group = api.nvim_create_augroup("UserLspConfig", {}),
   callback = function(ev)
     on_attach(ev)
     -- Buffer local mappings.
     -- See `:help vim.lsp.*` for documentation on any of the below functions
     local buf_keymap = require("lib.utils").buf_keymap
-    buf_keymap(ev.buf, "n", "gD", vim.lsp.buf.declaration)
-    buf_keymap(ev.buf, "n", "gd", vim.lsp.buf.definition)
-    buf_keymap(ev.buf, "n", "K", vim.lsp.buf.hover)
+    buf_keymap(ev.buf, "n", "gD", lsp.buf.declaration)
+    buf_keymap(ev.buf, "n", "gd", lsp.buf.definition)
+    buf_keymap(ev.buf, "n", "K", lsp.buf.hover)
 
     --- 'ge' like (E)xplain (E)rror.
     buf_keymap(ev.buf, "n", "ge", vim.diagnostic.open_float)
@@ -183,27 +177,47 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
     --- Toggle inlay hints for current buffer
     buf_keymap(ev.buf, "n", "<Leader>ih", function()
-      vim.lsp.inlay_hint.enable(
-        not vim.lsp.inlay_hint.is_enabled { bufnr = ev.buf },
+      lsp.inlay_hint.enable(
+        not lsp.inlay_hint.is_enabled { bufnr = ev.buf },
         { bufnr = ev.buf }
       )
     end)
     --- NOTE: to format relying only on 'textwidth' use 'gw'.
   end,
 })
-vim.lsp.enable {
+
+api.nvim_create_autocmd("LspAttach", {
+  group = api.nvim_create_augroup(
+    "lsp_attach_disable_ruff_hover",
+    { clear = true }
+  ),
+  callback = function(args)
+    local client = lsp.get_client_by_id(args.data.client_id)
+    if client == nil then
+      return
+    end
+    if client.name == "ruff" then
+      client.server_capabilities.hoverProvider = false
+      client.server_capabilities.documentFormattingProvider = false
+      client.server_capabilities.documentRangeFormattingProvider = false
+    end
+  end,
+  desc = "LSP: Disable hover capability from Ruff",
+})
+
+lsp.enable {
   "bashls",
   "basedpyright",
   "clangd",
   "dockerls",
-  -- "eslint",  -- Not installed, enable if needed
-  -- "jsonls",  -- Not installed, enable if needed
   "lua_ls",
   "marksman",
   "ruff",
   "rust_analyzer",
   "taplo",
   "tflint",
-  -- "tsserver",  -- Not configured, enable if needed
   "yamlls",
+  -- "jsonls",  -- Not installed, enable if needed
+  -- "tsserver",  -- Not configured, enable if needed
+  -- "eslint",  -- Not installed, enable if needed
 }
