@@ -49,6 +49,18 @@ alias gs='git switch'
 alias glpr='git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset"'
 alias avante='nvim -c "lua vim.defer_fn(function()require(\"avante.api\").zen_mode()end, 100)"'
 
+gswt() {
+      if git diff --quiet; then
+          echo "No unstaged changes to stash"
+          return 1
+      fi
+
+      ## Temporarily commit staged changes and then restore
+      git commit --no-verify -m "TEMP_STAGED" --allow-empty -q
+      git stash push -m "${1:-unstaged changes}"
+      git reset --soft HEAD~1 -q
+  }
+
 gsm() {
   if git show-ref --quiet refs/heads/master; then
     git switch master
@@ -59,7 +71,7 @@ gsm() {
 }
 
 gsd() {
-  if git show-ref --quiet refs/heads/develop; then
+  if git show-ref --quiet refs/heads/develop refs/remotes/origin/develop; then
     git switch develop
     return
   fi

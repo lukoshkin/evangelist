@@ -47,8 +47,12 @@ keymap("n", "<C-Up>", function()
   fn.resize "+2"
 end)
 
+keymap("n", "<Space>z", function()
+  print(vim.fn.bufname())
+end)
+
 --- Fold tags (as 'at' is also occupied by Mini.nvim)
-keymap("n", "zk", "zfat")
+keymap("n", "zK", "zfat")
 
 --- Copy to clipboard selected text or the whole file.
 keymap("x", "<Leader>y", '"+y')
@@ -164,7 +168,7 @@ keymap("v", "<Space>p", function()
 end)
 
 --- Start gutui in FloatingTerm instance of the 'bterm' plugin.
-keymap("n", "<Leader>g", fn.gitui)
+-- keymap("n", "<Leader>g", fn.gitui)  -- I prefer neogit
 
 --- Toggle the diff mode for two aligned buffers.
 keymap("n", "<Leader>cv", misc.cmp_buffs_toggle)

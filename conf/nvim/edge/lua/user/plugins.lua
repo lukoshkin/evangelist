@@ -1,5 +1,4 @@
 local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
-local evn_path = vim.fn.getenv "EVANGELIST"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system {
     "git",
@@ -248,7 +247,7 @@ require("lazy").setup {
     dependencies = { "neovim/nvim-lspconfig" },
   },
   {
-    dir = evn_path .. "/pymove",
+    "lukoshkin/pymove.nvim",
     config = true,
   },
   {
@@ -414,18 +413,7 @@ require("lazy").setup {
   },
   { require "user.plugins.mcp" },
   { require "user.plugins.copilot" },
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate | :TSInstall! query",
-    dependencies = {
-      "nvim-treesitter/playground",
-      "nvim-treesitter/nvim-treesitter-textobjects",
-      "JoosepAlviste/nvim-ts-context-commentstring",
-    },
-    config = function()
-      require "user.plugins.treesitter"
-    end,
-  },
+  { require "user.plugins.treesitter" },
   {
     "mfussenegger/nvim-lint",
     event = {

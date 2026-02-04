@@ -198,6 +198,7 @@ install() {
       echo 'npm is not installed! Skipping..'
     } || {
       npm install -g neovim
+      npm install -g tree-sitter-cli
       pip3 install $pip_opts neovim
     }
     ## Go
