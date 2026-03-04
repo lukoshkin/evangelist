@@ -26,6 +26,17 @@ lsp.config.basedpyright = {
     },
   },
 }
+lsp.config.yamlls = {
+  settings = {
+    yaml = {
+      format = {
+        enable = true,
+        printWidth = 79,
+        proseWrap = "always", -- or "preserve" / "never"
+      },
+    },
+  },
+}
 
 --- Comment out since not working with Rust currently.
 --- Add clippy linting (includes performance hints).

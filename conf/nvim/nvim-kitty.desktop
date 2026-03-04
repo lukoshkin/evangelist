@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Neovim (Kitty tab)
+Comment=Edit files in Neovim (new tab if kitty is running)
+Exec=sh -lc 'kitty @ --to unix:@kitty new-tab --cwd=current -- nvim %F >/dev/null 2>&1 || kitty -e nvim %F'
+Terminal=false
+Type=Application
+MimeType=text/plain;text/x-python;text/x-script.python;application/json;application/yaml;text/markdown;text/x-toml;text/x-shellscript;text/x-c;text/x-c++;text/html;text/css;text/javascript;
+Categories=Utility;TextEditor;

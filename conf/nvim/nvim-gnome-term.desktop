@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Neovim (GNOME Terminal tab)
+Comment=Edit files in Neovim (new tab if GNOME Terminal is running)
+Exec=sh -lc 'gnome-terminal --tab -- nvim %F >/dev/null 2>&1 || gnome-terminal -- nvim %F'
+Terminal=false
+Type=Application
+MimeType=text/plain;text/x-python;text/x-script.python;application/json;application/yaml;text/markdown;text/x-toml;text/x-shellscript;text/x-c;text/x-c++;text/html;text/css;text/javascript;
+Categories=Utility;TextEditor;

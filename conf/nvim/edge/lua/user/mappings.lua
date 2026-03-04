@@ -48,7 +48,9 @@ keymap("n", "<C-Up>", function()
 end)
 
 keymap("n", "<Space>z", function()
-  print(vim.fn.bufname())
+  local name = vim.fn.bufname()
+  vim.fn.setreg("+", name)
+  print(name)
 end)
 
 --- Fold tags (as 'at' is also occupied by Mini.nvim)
@@ -134,6 +136,17 @@ keymap("n", "<Space>bb", "i<CR><Esc>")
 keymap("x", "<Space>b<Space>", ":call SplitBySep()<CR>")
 keymap("x", "<Space>bb", [[:call SplitBySep(getreg('/'))<CR>]])
 
+--- Re-split a `\`-continuation block to fit within textwidth.
+keymap("n", "<Space>b\\", fn.resplit_continuation)
+keymap("x", "<Space>b\\", function()
+  local l1 = vim.fn.line("v")
+  local l2 = vim.fn.line(".")
+  if l1 > l2 then
+    l1, l2 = l2, l1
+  end
+  fn.resplit_continuation({ line1 = l1, line2 = l2 })
+end)
+
 --- Paste last yanked text in place of selected one.
 keymap("v", "p", '"_dP')
 
@@ -210,4 +223,21 @@ api.nvim_create_user_command("MasonReinstall", function()
   require("user.mason-reinstall").reinstall_from_logfile()
 end, {
   desc = "Reinstall Mason packages that failed due to lock files",
+})
+
+--- Remove entry from quickfix list with dd.
+api.nvim_create_autocmd("FileType", {
+  pattern = "qf",
+  callback = function(ev)
+    vim.keymap.set("n", "dd", function()
+      local qflist = vim.fn.getqflist()
+      local lnum = vim.fn.line(".")
+      table.remove(qflist, lnum)
+      vim.fn.setqflist(qflist, "r")
+      local new_lnum = math.min(lnum, #qflist)
+      if new_lnum > 0 then
+        api.nvim_win_set_cursor(0, { new_lnum, 0 })
+      end
+    end, { buffer = ev.buf })
+  end,
 })

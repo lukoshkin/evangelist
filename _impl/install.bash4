@@ -141,6 +141,52 @@ install::vim_settings() {
 
     ## Copy new configs.
     cp -R conf/nvim "$XDG_CONFIG_HOME"
+
+    ## Install .desktop file for xdg-open integration (pick terminal backend).
+    mkdir -p "$XDG_DATA_HOME/applications"
+
+    KITTY_DESKTOP="$XDG_CONFIG_HOME/nvim/nvim-kitty.desktop"
+    GNOME_DESKTOP="$XDG_CONFIG_HOME/nvim/nvim-gnome-terminal.desktop"
+
+    echo "Choose Neovim launcher:"
+    select choice in "Kitty (new tab if running)" "GNOME Terminal (new tab if running)" "Cancel"; do
+      case "$choice" in
+      "Kitty (new tab if running)")
+        if [[ -f "$KITTY_DESKTOP" ]]; then
+          ln -sf "$KITTY_DESKTOP" "$XDG_DATA_HOME/applications/nvim.desktop"
+          break
+        else
+          echo "- [ERR] Missing: $KITTY_DESKTOP"
+        fi
+        ;;
+      "GNOME Terminal (new tab if running)")
+        if [[ -f "$GNOME_DESKTOP" ]]; then
+          ln -sf "$GNOME_DESKTOP" "$XDG_DATA_HOME/applications/nvim.desktop"
+          break
+        else
+          echo "- [ERR] Missing: $GNOME_DESKTOP"
+        fi
+        ;;
+      "Cancel")
+        echo "- [INFO] Cancelled."
+        exit 0
+        ;;
+      *)
+        echo "Invalid choice."
+        ;;
+      esac
+    done
+
+    # Set defaults (minimal set; add more if you want)
+    xdg-mime default nvim.desktop text/plain 2>/dev/null
+    xdg-mime default nvim.desktop text/markdown 2>/dev/null
+    xdg-mime default nvim.desktop application/json 2>/dev/null
+
+    if [[ $(xdg-mime query default text/plain 2>/dev/null) == nvim.desktop ]]; then
+      echo "- [OK] nvim.desktop as default for text/plain."
+    else
+      echo "- [WARN] Failed to set nvim.desktop as default for text/plain."
+    fi
     ;;&
 
   [23]?1)

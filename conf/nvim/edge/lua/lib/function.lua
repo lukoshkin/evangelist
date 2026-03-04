@@ -271,8 +271,8 @@ end
 
 function M.copy_selection_to_regL()
   local content = fn.getreg "l"
-  local start_pos = fn.getpos("v")
-  local end_pos = fn.getpos(".")
+  local start_pos = fn.getpos "v"
+  local end_pos = fn.getpos "."
   local start_line = start_pos[2]
   local end_line = end_pos[2]
 
@@ -310,6 +310,94 @@ end
 
 function M.clear_regL()
   fn.setreg("l", "")
+end
+
+--- Find the 1-indexed boundaries of a `\`-continuation block
+--- around the cursor.
+local function find_continuation_bounds()
+  local cur = api.nvim_win_get_cursor(0)[1]
+  local total = api.nvim_buf_line_count(0)
+
+  local first = cur
+  while first > 1 do
+    local prev = api.nvim_buf_get_lines(0, first - 2, first - 1, false)[1]
+    if prev:match "\\%s*$" then
+      first = first - 1
+    else
+      break
+    end
+  end
+
+  local last = first
+  while last < total do
+    local line = api.nvim_buf_get_lines(0, last - 1, last, false)[1]
+    if line:match "\\%s*$" then
+      last = last + 1
+    else
+      break
+    end
+  end
+
+  return first, last
+end
+
+--- Strip trailing ` \`, join into one line, re-wrap with `gw`,
+--- then re-append ` \` continuations.
+local function rewrap_block(first, last, maxwidth)
+  local last_line = api.nvim_buf_get_lines(0, last - 1, last, false)[1]
+  local trailing_cont = last_line:match "\\%s*$" ~= nil
+
+  -- Strip trailing " \"
+  vim.cmd(first .. "," .. last .. [[s/\s*\\\s*$//e]])
+
+  -- Join into a single line
+  if last > first then
+    vim.cmd(first .. "," .. last .. "j")
+  end
+
+  local count_after_join = api.nvim_buf_line_count(0)
+
+  -- Re-wrap at reduced textwidth (leaving room for " \")
+  vim.bo.textwidth = maxwidth - 2
+  api.nvim_win_set_cursor(0, { first, 0 })
+  vim.cmd "normal! gw$"
+
+  -- Determine the new extent of the block
+  local new_last = first + api.nvim_buf_line_count(0) - count_after_join
+
+  -- Append " \" to continuation lines
+  local cont_end = trailing_cont and new_last or (new_last - 1)
+  if cont_end >= first then
+    vim.cmd(first .. "," .. cont_end .. [[s/$/ \\/]])
+  end
+end
+
+--- Re-split a `\`-continuation block so every line fits within
+--- `textwidth` (falls back to 80). Accepts optional `opts.line1`
+--- and `opts.line2` (1-indexed) for a visual-selection range;
+--- otherwise auto-detects the block from the cursor position.
+function M.resplit_continuation(opts)
+  opts = opts or {}
+  local maxwidth = vim.bo.textwidth > 0 and vim.bo.textwidth or 80
+
+  local first, last
+  if opts.line1 then
+    first = opts.line1
+    last = opts.line2
+  else
+    first, last = find_continuation_bounds()
+  end
+
+  local saved_tw = vim.bo.textwidth
+  local saved_pos = api.nvim_win_get_cursor(0)
+
+  local ok, err = pcall(rewrap_block, first, last, maxwidth)
+
+  vim.bo.textwidth = saved_tw
+  pcall(api.nvim_win_set_cursor, 0, saved_pos)
+  if not ok then
+    error(err)
+  end
 end
 
 return M
