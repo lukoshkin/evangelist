@@ -7,7 +7,7 @@
 ## ####  if they might contain spaces.
 
 install::check_arguments() {
-  local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter'
+  local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter, git'
   local arg
 
   if [[ $# -ne 0 ]]; then
@@ -131,13 +131,15 @@ install::vim_settings() {
     rm -f "$XDG_CONFIG_HOME/nvim/init.lua"
     rm -rf "$XDG_CONFIG_HOME/nvim/plugin"
 
-    ## TODO: Let user decide what to remove.
-
-    ## Remove trace of the former plugin managers.
-    ## NOTE: maybe it is worth to ask user before removal.
-    rm -rf "$XDG_DATA_HOME/nvim/lazy"
+    ## Legacy plugin managers — always remove.
     rm -rf "$XDG_DATA_HOME/nvim/site/pack/packer"
     rm -rf "$XDG_DATA_HOME/nvim/plugged"
+
+    ## Only wipe Lazy/Mason data on --clean.
+    if $_CLEAN; then
+      rm -rf "$XDG_DATA_HOME/nvim/lazy"
+      rm -rf "$XDG_DATA_HOME/mason"
+    fi
 
     ## Copy new configs.
     cp -R conf/nvim "$XDG_CONFIG_HOME"
@@ -146,7 +148,7 @@ install::vim_settings() {
     mkdir -p "$XDG_DATA_HOME/applications"
 
     KITTY_DESKTOP="$XDG_CONFIG_HOME/nvim/nvim-kitty.desktop"
-    GNOME_DESKTOP="$XDG_CONFIG_HOME/nvim/nvim-gnome-terminal.desktop"
+    GNOME_DESKTOP="$XDG_CONFIG_HOME/nvim/nvim-gnome-term.desktop"
 
     echo "Choose Neovim launcher:"
     select choice in "Kitty (new tab if running)" "GNOME Terminal (new tab if running)" "Cancel"; do
@@ -154,6 +156,14 @@ install::vim_settings() {
       "Kitty (new tab if running)")
         if [[ -f "$KITTY_DESKTOP" ]]; then
           ln -sf "$KITTY_DESKTOP" "$XDG_DATA_HOME/applications/nvim.desktop"
+          ## Install kitty open-actions so that file:// links (e.g., from
+          ## Claude Code) open in Neovim in a new tab instead of spawning
+          ## a separate terminal window.
+          if [[ -f conf/kitty/open-actions.conf ]]; then
+            mkdir -p "$XDG_CONFIG_HOME/kitty"
+            cp conf/kitty/open-actions.conf "$XDG_CONFIG_HOME/kitty/"
+            echo "- [OK] kitty open-actions.conf installed."
+          fi
           break
         else
           echo "- [ERR] Missing: $KITTY_DESKTOP"
@@ -177,15 +187,18 @@ install::vim_settings() {
       esac
     done
 
-    # Set defaults (minimal set; add more if you want)
-    xdg-mime default nvim.desktop text/plain 2>/dev/null
-    xdg-mime default nvim.desktop text/markdown 2>/dev/null
-    xdg-mime default nvim.desktop application/json 2>/dev/null
+    if HAS xdg-mime; then
+      xdg-mime default nvim.desktop text/plain
+      xdg-mime default nvim.desktop text/markdown
+      xdg-mime default nvim.desktop application/json
 
-    if [[ $(xdg-mime query default text/plain 2>/dev/null) == nvim.desktop ]]; then
-      echo "- [OK] nvim.desktop as default for text/plain."
+      if [[ $(xdg-mime query default text/plain) == nvim.desktop ]]; then
+        echo "- [OK] nvim.desktop as default for text/plain."
+      else
+        echo "- [WARN] Failed to set nvim.desktop as default."
+      fi
     else
-      echo "- [WARN] Failed to set nvim.desktop as default for text/plain."
+      echo "- [INFO] xdg-mime not found, skipping MIME defaults."
     fi
     ;;&
 

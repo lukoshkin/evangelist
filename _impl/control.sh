@@ -29,9 +29,9 @@ control::help() {
 
   echo -e '\nCommands:\n'
   printf '  %-18s Show the installation status or readiness to install.\n' 'checkhealth'
-  printf '  %-18s Install one or all of the specified setups: bash zsh git vim tmux jupyter.\n' 'install'
+  printf '  %-18s Install one or all of the specified setups: bash zsh git vim tmux jupyter.\n' 'install [--clean]'
   printf '  %-18s Install with extensions if they are provided (beta).\n' 'install+'
-  printf '  %-18s Update the repository and installed configs (beta).\n' 'update'
+  printf '  %-18s Update the repository and installed configs.\n' 'update'
   printf '  %-18s Force update of the repository in case of merge conflicts.\n' 'reinstall'
   printf '  %-18s Roll back to the original settings.\n\n' 'uninstall'
 
@@ -109,6 +109,13 @@ control::checkhealth() {
 }
 
 control::install() {
+  ## Parse --clean flag before argument validation.
+  _CLEAN=false
+  if [[ "$*" == *--clean* ]]; then
+    _CLEAN=true
+    set -- "${@/--clean/}"
+  fi
+
   install::check_arguments "$@"
 
   mkdir -p "$XDG_DATA_HOME"
@@ -199,7 +206,7 @@ control::install() {
   fi
 }
 
-## Still in beta.
+## Update installed configs from the remote repository.
 control::update() {
   HAS git || {
     ECHO2 Missing git
@@ -304,13 +311,25 @@ control::update() {
   done
 
   if grep -qE '^n?vim' .update-list; then
-    for OBJ in $(sed -n '/nvim/p' <<<"$UPD"); do
-      local name=${OBJ#*/}  # lstrip 'conf/' from 'conf/nvim/conf/...'
-      name=${name//edge\//} # there is no edge dir in dest path
-      cp $OBJ "$XDG_CONFIG_HOME/$name"
-    done
-    echo 'Vim settings: run update command of your plugin manager.'
-    echo 'Vim settings: one may also need to update lsp-servers.'
+    local assembly
+    assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
+
+    ## Clear old config files before re-copying (prevents stale files).
+    ## Only affects $XDG_CONFIG_HOME/nvim (configs), not $XDG_DATA_HOME (plugin data).
+    rm -rf "$XDG_CONFIG_HOME/nvim"
+    cp -R conf/nvim "$XDG_CONFIG_HOME"
+
+    if [[ $assembly == neovim-lua ]]; then
+      cd "$XDG_CONFIG_HOME/nvim" &&
+        rm -rf lua &&
+        mv edge/{lua,init.lua} . &&
+        rm -rf init.vim edge &&
+        cd - >/dev/null ||
+        echo '- [ERR] Failed to restructure nvim-lua config.'
+    fi
+
+    echo '- [OK] Nvim configs updated.'
+    echo '- [INFO] Run :Lazy sync in Neovim to update plugins.'
   fi
 
   ECHO Successfully updated.
@@ -339,7 +358,7 @@ control::uninstall() {
     rm -f ~/.zshenv
   fi
 
-  rm -f ~/.condarc
+  grep -qE '^(bash|zsh)' .update-list && rm -f ~/.condarc
   rm -f ~/.tmux.conf
   if [[ -n "$XDG_CONFIG_HOME" ]]; then
     ## Unlikely there will be /nvim and /tmux dirs, nevertheless..
@@ -347,10 +366,38 @@ control::uninstall() {
     rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
   fi
 
+  rm -f "$XDG_DATA_HOME/applications/nvim.desktop"
+  if HAS xdg-mime; then
+    local current
+    current=$(xdg-mime query default text/plain)
+    if [[ "$current" == nvim.desktop ]]; then
+      local fallback
+      for fallback in org.gnome.TextEditor.desktop xed.desktop mousepad.desktop kate.desktop; do
+        if [[ -f "/usr/share/applications/$fallback" ]]; then
+          xdg-mime default "$fallback" text/plain
+          xdg-mime default "$fallback" text/markdown
+          xdg-mime default "$fallback" application/json
+          break
+        fi
+      done
+    fi
+  fi
+
+  if grep -qE '^n?vim' .update-list; then
+    rm -rf "$XDG_DATA_HOME/nvim"
+    rm -rf "$XDG_DATA_HOME/mason"
+  fi
+
+  if grep -q '^git' .update-list; then
+    git config --global --unset core.pager 2>/dev/null
+    git config --global --unset interactive.diffFilter 2>/dev/null
+  fi
+
+  local JUPCONFDIR=""
   if grep -q '^jupyter' .update-list; then
-    local JUPCONFDIR="$(jupyter --config-dir)"
-    rm "$JUPCONFDIR/nbconfig/notebook.json"
-    rm "$JUPCONFDIR/custom/custom.js"
+    JUPCONFDIR="$(jupyter --config-dir)"
+    rm -f "$JUPCONFDIR/nbconfig/notebook.json"
+    rm -f "$JUPCONFDIR/custom/custom.js"
   fi
 
   setopt nonomatch 2>/dev/null
@@ -370,7 +417,7 @@ control::uninstall() {
       ;;
 
     git*)
-      cp -R $OBJ ~/config
+      cp -R $OBJ ~/.config
       ;;
 
     nvim)
@@ -382,11 +429,11 @@ control::uninstall() {
       ;;
 
     custom.js)
-      cp $OBJ "$JUPCONFDIR/custom/custom.js"
+      [[ -n $JUPCONFDIR ]] && cp $OBJ "$JUPCONFDIR/custom/custom.js"
       ;;
 
     notebook.json)
-      cp $OBJ "$JUPCONFDIR/nbconfig/notebook.json"
+      [[ -n $JUPCONFDIR ]] && cp $OBJ "$JUPCONFDIR/nbconfig/notebook.json"
       ;;
     esac
   done

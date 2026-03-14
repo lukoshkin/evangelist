@@ -30,7 +30,7 @@ function M.install_from_file(file_path)
     return
   end
 
-  for line in lines do
+  for _, line in ipairs(lines) do
     local package_name = vim.trim(line)
     if package_name ~= "" then
       local ok, pkg = pcall(registry.get_package, package_name)
