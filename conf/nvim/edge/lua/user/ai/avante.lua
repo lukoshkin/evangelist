@@ -253,17 +253,7 @@ return {
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
   build = "make",
   dependencies = {
-    {
-      "ravitemer/mcphub.nvim",
-      event = "VeryLazy",
-      opts = {
-        extensions = {
-          avante = {
-            make_slash_commands = true, -- make /slash commands from MCP server prompts
-          },
-        },
-      },
-    },
+    "ravitemer/mcphub.nvim",
     "nvim-treesitter/nvim-treesitter",
     "folke/snacks.nvim",
     "nvim-lua/plenary.nvim",

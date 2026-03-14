@@ -23,17 +23,26 @@ local function lsp_clients()
     return client.name
   end, vim.lsp.get_clients { bufnr = 0 })
 
-  for _, linter in ipairs(require("lint").get_running()) do
-    if vim.tbl_contains(require("lint").linters_by_ft[ft], linter) then
-      if bufname ~= "" and not vim.tbl_contains(linters[bufname], linter) then
-        table.insert(linters[bufname], linter)
+  local ok_lint, lint = pcall(require, "lint")
+  if ok_lint then
+    for _, linter in ipairs(lint.get_running()) do
+      if vim.tbl_contains(lint.linters_by_ft[ft] or {}, linter) then
+        if
+          bufname ~= ""
+          and not vim.tbl_contains(linters[bufname], linter)
+        then
+          table.insert(linters[bufname], linter)
+        end
       end
     end
   end
-  vim.list_extend(client_names, linters[bufname])
+  vim.list_extend(client_names, linters[bufname] or {})
 
-  local formatters = require("conform").list_formatters_for_buffer(0)
-  vim.list_extend(client_names, formatters)
+  local ok_conform, conform = pcall(require, "conform")
+  if ok_conform then
+    local formatters = conform.list_formatters_for_buffer(0)
+    vim.list_extend(client_names, formatters)
+  end
 
   if next(client_names) then
     return "[" .. table.concat(unique(client_names), ", ") .. "]"
@@ -66,15 +75,15 @@ end
 
 return {
   "nvim-lualine/lualine.nvim",
+  event = "VeryLazy",
   dependencies = "nvim-tree/nvim-web-devicons",
   linters = linters,
   opts = {
     options = {
       globalstatus = true,
       theme = "nord",
-      -- component_separators = { left = '', right = ''},
-      -- section_separators = { left = '', right = ''},
-
+      -- component_separators = { left = '', right = ''},
+      -- section_separators = { left = '', right = ''},
       --- Default separators occupies too much space.
       component_separators = { left = "", right = "" },
       section_separators = { left = "", right = "" },
@@ -97,7 +106,11 @@ return {
       --- Never contracted.
       lualine_b = {
         "branch",
-        { conda_env, icon = "", color = { fg = "DarkOliveGreen3" } },
+        {
+          conda_env,
+          icon = "",
+          color = { fg = "DarkOliveGreen3" },
+        },
         "diff",
         "diagnostics",
       },
@@ -105,11 +118,13 @@ return {
       --- enough space for displaying a,b,y,z sections.
       lualine_c = {},
       lualine_x = {
-        --- Get only the cursor column.
-        { cursor_column, color = { gui = "bold", fg = "plum" } },
+        {
+          cursor_column,
+          color = { gui = "bold", fg = "plum" },
+        },
         {
           lsp_clients,
-          icon = " Tools:",
+          icon = " Tools:",
           color = { fg = "#87afff" },
           --- Other colors I like:
           -- color = { fg = 'MediumPurple1' },
@@ -121,9 +136,7 @@ return {
         -- 'fileformat',
       },
       --- This one repeats bufferline and winbar in some sense.
-      lualine_y = {
-        --   'filetype',
-      },
+      lualine_y = {},
       lualine_z = {
         "progress",
       },
@@ -135,13 +148,10 @@ return {
           "filename",
           color = {
             gui = "bold",
-            -- fg = 'LightSteelBlue',
             fg = "LightSlateGray",
           },
         },
       },
-      --- Don't display section 'x'.
-      --- Other sections are not displayed by default.
       lualine_x = {},
     },
   },

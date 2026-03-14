@@ -139,6 +139,13 @@ control::install() {
     echo Installed components: >>.update-list
   fi
 
+  ## Preserve assembly mode on re-install (same as control::reinstall).
+  if ! $_EXTEND; then
+    local assembly
+    assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
+    [[ $assembly =~ (extended|neovim-lua) ]] && _EXTEND=true
+  fi
+
   ## 'local msg' below not only does shadow the eponymous variable in
   ## control::reinstall function (if `install` is invoked from there), but
   ## also makes `msg` empty, if the latter had any value before the statement.

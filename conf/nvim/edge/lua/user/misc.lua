@@ -1,5 +1,4 @@
 local fn = require "lib.function"
-local notify = require "notify"
 local M = {}
 
 local function in_compare_mode(normal_windows)
@@ -38,11 +37,9 @@ local function cmp_two_bufs()
 
   vim.fn.win_gotoid(back_to_wid)
   --- Remove notifications wins.
-  if notify ~= nil then
-    --- Don't try to remove them before you have drawn them.
-    vim.defer_fn(function()
-      notify.dismiss()
-    end, 100)
+  local ok, notify = pcall(require, "notify")
+  if ok then
+    vim.defer_fn(function() notify.dismiss() end, 100)
   end
   --- After switching between wins, notifications about changing the root
   --- directory might appear (if the project.nvim option 'silent_chdir' is
@@ -58,7 +55,8 @@ local function stop_cmp_bufs()
 
   vim.fn.win_gotoid(back_to_wid)
 
-  if notify ~= nil then
+  local ok, notify = pcall(require, "notify")
+  if ok then
     vim.schedule(notify.dismiss)
   end
 end

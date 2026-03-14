@@ -116,7 +116,11 @@ return {
   dependencies = { "nvim-lua/plenary.nvim" },
   --- May require manual installation with "sudo"
   build = "npm install -g mcp-hub@latest",
+  event = "VeryLazy",
   opts = {
+    extensions = {
+      avante = { make_slash_commands = true },
+    },
     native_servers = {
       formatters = {
         name = "formatters",
