@@ -5,7 +5,7 @@ _evangelist() {
 
   cmds=(
       'checkhealth:Show the installation status or readiness to install.'
-      'install:Install one or all of the specified setups: bash zsh vim tmux jupyter.'
+      'install:Install one or all of the specified setups: bash zsh git vim tmux jupyter kitty systemd.'
       "save:Back up important folders specified in the '.xport-list.txt'."
       "load:Load archives previously saved at 'moving-over' directory."
       'update:Update the repository and installed configs.'
@@ -14,9 +14,9 @@ _evangelist() {
   )
 
   subcmds=(
-    'zsh+:includes all settings except for bash and jupyter.'
-    'bash+:includes all settings except for zsh and jupyter.'
-    'zsh' 'bash' 'git' 'vim' 'tmux' 'jupyter'
+    'zsh+:includes all settings except for bash, jupyter, and systemd.'
+    'bash+:includes all settings except for zsh, jupyter, and systemd.'
+    'zsh' 'bash' 'git' 'vim' 'tmux' 'jupyter' 'kitty' 'systemd'
   )
 
   # '-A pattern' - do not complete options matching 'pattern'
@@ -42,13 +42,13 @@ _evangelist() {
       ;;
 
     (remaining)
-      integer maxopts=6
-      # There are 5 options at max: bash zsh vim tmux jupyter.
+      integer maxopts=8
+      # There are 7 standalone options: bash zsh git vim tmux jupyter kitty systemd.
       # Plus, name of the command 'install'.
 
-      # If $line contains '+', the maximum number of options falls to 3.
-      # Plus, name of the command 'install'.
-      [[ "$line" = *'+'* ]] && maxopts=4
+      # If $line contains '+', the bundle covers git/vim/tmux/kitty, so only
+      # jupyter and systemd remain as standalone extras (3 args + 'install').
+      [[ "$line" = *'+'* ]] && maxopts=5
 
       if [[ ${#line[@]} -le $maxopts ]]
       then

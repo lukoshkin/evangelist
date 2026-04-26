@@ -7,7 +7,7 @@
 ## ####  if they might contain spaces.
 
 install::check_arguments() {
-  local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter, git'
+  local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter, git, kitty, systemd'
   local arg
 
   if [[ $# -ne 0 ]]; then
@@ -156,14 +156,6 @@ install::vim_settings() {
       "Kitty (new tab if running)")
         if [[ -f "$KITTY_DESKTOP" ]]; then
           ln -sf "$KITTY_DESKTOP" "$XDG_DATA_HOME/applications/nvim.desktop"
-          ## Install kitty open-actions so that file:// links (e.g., from
-          ## Claude Code) open in Neovim in a new tab instead of spawning
-          ## a separate terminal window.
-          if [[ -f conf/kitty/open-actions.conf ]]; then
-            mkdir -p "$XDG_CONFIG_HOME/kitty"
-            cp conf/kitty/open-actions.conf "$XDG_CONFIG_HOME/kitty/"
-            echo "- [OK] kitty open-actions.conf installed."
-          fi
           break
         else
           echo "- [ERR] Missing: $KITTY_DESKTOP"
@@ -478,6 +470,93 @@ install::zsh_settings() {
     cp "$HISTFILE" "$NEWHISTFILE"
 
   ECHO Successfully installed: ZSH configuration.
+}
+
+install::kitty_settings() {
+  ECHO Installing Kitty configuration..
+
+  ## Only install if the current terminal is kitty.
+  [[ "$TERM" == xterm-kitty ]] || {
+    ECHO2 "Not running in kitty terminal. Skipped."
+    return 1
+  }
+
+  utils::back_up_original_configs kitty \
+    d:"$XDG_CONFIG_HOME/kitty"
+
+  mkdir -p "$XDG_CONFIG_HOME/kitty"
+  cp conf/kitty/kitty.conf "$XDG_CONFIG_HOME/kitty/"
+  cp conf/kitty/open-actions.conf "$XDG_CONFIG_HOME/kitty/"
+
+  ECHO Successfully installed: Kitty configuration.
+}
+
+install::systemd_settings() {
+  ECHO Installing systemd OOM hardening..
+
+  ## Linux-only: relies on systemd-oomd + /etc/sysctl.d.
+  [[ $(uname) = Linux ]] || {
+    ECHO2 systemd OOM hardening is Linux-only. Skipped.
+    return 1
+  }
+  HAS systemctl || {
+    ECHO2 Missing systemctl. Aborted.
+    return 1
+  }
+
+  ## systemd-oomd is the userspace component that consumes our drop-ins.
+  ## On Ubuntu it lives in `systemd-oomd-defaults`; on Debian without it,
+  ## the drop-ins are inert (kernel sysctl part still applies).
+  local has_oomd=true
+  systemctl cat systemd-oomd.service &>/dev/null || has_oomd=false
+  $has_oomd || {
+    NOTE 210 'systemd-oomd.service is NOT present. Drop-ins will be installed but oomd-based kills will not happen.'
+    NOTE 210 'Ubuntu/Debian remediation:  sudo apt install systemd-oomd-defaults'
+  }
+
+  ## Capture any pre-existing originals. Distinct names avoid the
+  ## '10-oomd.conf' basename collision between the three slice drop-ins.
+  utils::back_up_original_configs systemd \
+    f:/etc/systemd/oomd.conf.d/override.conf:systemd-oomd-override.conf \
+    f:/etc/systemd/system/-.slice.d/10-oomd.conf:systemd-slice-10-oomd.conf \
+    f:/etc/systemd/system/user@.service.d/10-oomd.conf:systemd-user-10-oomd.conf \
+    f:/etc/systemd/system/system.slice.d/10-oomd.conf:systemd-systemslice-10-oomd.conf \
+    f:/etc/sysctl.d/99-swap.conf:sysctl-99-swap.conf
+
+  NOTE 210 'Writing drop-ins under /etc/ — sudo will prompt for your password.'
+
+  local SRC=conf/systemd/files
+  sudo install -D -m 0644 \
+    "$SRC/etc/systemd/oomd.conf.d/override.conf" \
+    /etc/systemd/oomd.conf.d/override.conf || return 1
+  sudo install -D -m 0644 \
+    "$SRC/etc/systemd/system/-.slice.d/10-oomd.conf" \
+    /etc/systemd/system/-.slice.d/10-oomd.conf || return 1
+  sudo install -D -m 0644 \
+    "$SRC/etc/systemd/system/user@.service.d/10-oomd.conf" \
+    /etc/systemd/system/user@.service.d/10-oomd.conf || return 1
+  sudo install -D -m 0644 \
+    "$SRC/etc/systemd/system/system.slice.d/10-oomd.conf" \
+    /etc/systemd/system/system.slice.d/10-oomd.conf || return 1
+  sudo install -D -m 0644 \
+    "$SRC/etc/sysctl.d/99-swap.conf" \
+    /etc/sysctl.d/99-swap.conf || return 1
+
+  sudo systemctl daemon-reload
+  if $has_oomd; then
+    sudo systemctl restart systemd-oomd ||
+      ECHO2 'systemd-oomd restart failed (drop-ins installed nonetheless).'
+  fi
+  sudo sysctl --system >/dev/null
+
+  ## Per-app .desktop overrides bias kill order: chrome/slack/spotify/telegram
+  ## up (kernel-OOM safety net), kitty down (oomd actively skips it). Runs as
+  ## the invoking user (no sudo) since it writes to ~/.local/share/applications.
+  if [[ -x conf/systemd/setup-app-priorities.sh ]]; then
+    bash conf/systemd/setup-app-priorities.sh || ECHO2 'app-priorities setup failed.'
+  fi
+
+  ECHO Successfully installed: systemd OOM hardening.
 }
 
 #####################################

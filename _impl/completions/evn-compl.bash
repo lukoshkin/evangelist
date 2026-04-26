@@ -3,7 +3,7 @@
 _evangelist() {
   opts=--version
   cmds='checkhealth install save load update reinstall uninstall'
-  subcmds='zsh bash git vim tmux jupyter'
+  subcmds='zsh bash git vim tmux jupyter kitty systemd'
 
   list=$cmds
 
@@ -26,13 +26,13 @@ _evangelist() {
 
   install)
     list=$subcmds
-    local -i maxopts=8
-    # There are 5 options at max: bash zsh git vim tmux jupyter.
+    local -i maxopts=10
+    # There are 8 standalone options: bash zsh git vim tmux jupyter kitty systemd.
     # Plus, command and program names (i.e., evangelist install ...).
 
-    # If $line contains '+', the maximum number of options falls to 3
-    # Plus, command and program names (i.e., evangelist install ...).
-    [[ ${COMP_WORDS[*]} = *'+'* ]] && maxopts=5
+    # If line contains '+', the bundle covers git/vim/tmux/kitty, so only
+    # jupyter and systemd remain as standalone extras (3 args max).
+    [[ ${COMP_WORDS[*]} = *'+'* ]] && maxopts=6
     [[ ${#COMP_WORDS[@]} -gt $maxopts ]] && return
     ;;
 

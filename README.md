@@ -46,7 +46,8 @@ and the setup script will become more universal and cross-platform.
 3. In your console, **run from the project directory**:
 
    - `./evangelist.sh install <configs>`  
-     where `<configs>` can be `bash`, `zsh`, `vim`, `tmux`, `jupyter`  
+     where `<configs>` can be `bash`, `zsh`, `vim`, `tmux`, `jupyter`,
+     `kitty`, `systemd`  
      (you can specify more than one argument)
 
    - To ensure the command history transfer, you may run instead:  
@@ -127,6 +128,18 @@ docker run --name <container_name> -e TERM=xterm-256color -ti <name_you_gave_in_
 - Interactive command history search (key-bindings: `jjk`, `<M-kk>`, `/`)
 - Jupyter empowered by Vim and basic set of notebook extensions
 - Minimal configuration for Tmux and several configuration levels for Vim/Neovim
+- **OOM hardening** for Linux laptops (`evn install systemd`) — ships
+  `systemd-oomd` drop-ins and a `sysctl` tweak so the kernel kills the
+  heaviest swap/pressure cgroup (typically chrome/slack/spotify/telegram)
+  **before** the UI freezes from a saturated swap. Funnels kills into
+  `user.slice` (system services protected) and writes per-app `.desktop`
+  overrides that mark common terminals (kitty, alacritty, wezterm, foot,
+  terminator, tilix, gnome-terminal) as `avoid` so the terminal survives
+  unless it is itself the runaway. Customise via
+  `custom/oom-priorities.list`. Verify with `oomctl`, roll back via
+  `evn uninstall`. Per-file effects, semantics of `avoid` vs `omit`,
+  the gnome-terminal D-Bus caveat, the diagnostic trail, and an optional
+  zram follow-up live in [conf/systemd/README.md](conf/systemd/README.md).
 
 <br>
 <br>

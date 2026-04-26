@@ -61,6 +61,15 @@ gswt() {
       git reset --soft HEAD~1 -q
   }
 
+gsti() {
+  if git diff --staged --quiet; then
+    echo "No staged changes to stash"
+    return 1
+  fi
+
+  git stash push --staged -m "${1:-staged changes}"
+}
+
 gsm() {
   if git show-ref --quiet refs/heads/master; then
     git switch master

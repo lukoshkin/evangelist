@@ -62,4 +62,15 @@ return {
   },
   { "pteroctopus/faster.nvim" },
   "tpope/vim-sleuth",
+  {
+    "mrjones2014/smart-splits.nvim",
+    lazy = false,
+    build = "./kitty/install-kittens.bash",
+    keys = {
+      { "<C-w><C-j>", function() require("smart-splits").move_cursor_down() end },
+      { "<C-w><C-k>", function() require("smart-splits").move_cursor_up() end },
+      { "<C-w><C-h>", function() require("smart-splits").move_cursor_left() end },
+      { "<C-w><C-l>", function() require("smart-splits").move_cursor_right() end },
+    },
+  },
 }
