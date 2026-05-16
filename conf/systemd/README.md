@@ -10,7 +10,7 @@ anywhere), so the kernel would thrash on swap I/O until the UI froze.
 
 | File                                                    | Effect                                                                                                                     |
 | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `/etc/systemd/oomd.conf.d/override.conf`                | Lowers oomd thresholds (swap 90→80%, pressure 60→50%, duration 30→20s) so it reacts before thrashing becomes irrecoverable |
+| `/etc/systemd/oomd.conf.d/override.conf`                | Tightens oomd thresholds (pressure 60→50%, duration 30→20s) so it reacts before thrashing becomes irrecoverable. Swap limit kept at upstream default 90% to avoid premature kills when swap legitimately fills up. |
 | `/etc/systemd/system/-.slice.d/10-oomd.conf`            | `ManagedOOMSwap=kill` on root slice → system-wide swap monitoring. Highest swap user gets killed (chrome/slack/spotify/telegram in practice) |
 | `/etc/systemd/system/user@.service.d/10-oomd.conf`      | `ManagedOOMMemoryPressure=kill` on user manager → kills the app slice under pressure before OOM even happens               |
 | `/etc/systemd/system/system.slice.d/10-oomd.conf`       | `ManagedOOMPreference=avoid` on `system.slice` → oomd skips system services (NetworkManager, dbus, …) and funnels kills into `user.slice` |
