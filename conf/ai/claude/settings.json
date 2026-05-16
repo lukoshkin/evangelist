@@ -1,0 +1,104 @@
+{
+  "cleanupPeriodDays": 7,
+  "env": {
+    "ENABLE_TOOL_SEARCH": "auto:3",
+    "BASH_DEFAULT_TIMEOUT_MS": "10000",
+    "BASH_MAX_TIMEOUT_MS": "60000",
+    "MCP_TIMEOUT": "60000",
+    "MCP_TOOL_TIMEOUT": "120000"
+  },
+  "permissions": {
+    "allow": [
+      "Read(.env.example)",
+      "Bash(uv run:*)",
+      "Bash(git status:*)",
+      "Bash(git add:*)",
+      "Bash(docker compose:*)",
+      "Bash(mkdir:*)",
+      "Bash(python3 ~/.claude/scripts/check_guard_clauses.py:*)",
+      "Bash(git diff --staged --stat:*)",
+      "Bash(git diff --staged:*)",
+      "Bash(git diff --stat:*)",
+      "Bash(git log --oneline:*)",
+      "Bash(git commit:*)",
+      "Bash(xclip -selection clipboard:*)",
+      "WebFetch(domain:github.com)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "mcp__context7__query-docs",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "mcp__plugin_serena_serena__activate_project",
+      "mcp__plugin_serena_serena__get_symbols_overview",
+      "mcp__plugin_serena_serena__find_symbol",
+      "mcp__plugin_serena_serena__find_referencing_symbols",
+      "mcp__plugin_serena_serena__list_dir",
+      "mcp__plugin_serena_serena__find_file",
+      "mcp__plugin_serena_serena__search_for_pattern",
+      "mcp__plugin_serena_serena__read_file",
+      "mcp__plugin_serena_serena__list_memories",
+      "mcp__plugin_serena_serena__read_memory",
+      "mcp__plugin_serena_serena__check_onboarding_performed",
+      "mcp__plugin_serena_serena__onboarding",
+      "mcp__plugin_serena_serena__get_current_config"
+    ],
+    "deny": [
+      "Write(/home/lukoshkin/.claude/scripts/**)",
+      "Bash(curl:*)",
+      "Bash(rm -rf:*)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(**/*credentials*)",
+      "Read(**/*.session)",
+      "Read(**/*.session-journal)",
+      "mcp__plugin_serena_serena__insert_before_symbol",
+      "mcp__plugin_serena_serena__insert_after_symbol",
+      "mcp__plugin_serena_serena__replace_content",
+      "mcp__plugin_serena_serena__replace_symbol_body",
+      "mcp__plugin_serena_serena__rename_symbol",
+      "mcp__plugin_serena_serena__create_text_file"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "root=$(git rev-parse --show-toplevel 2>/dev/null || echo \"$PWD\"); { [[ -f \"$root/ruff.toml\" || -f \"$root/.ruff.toml\" ]] || { [[ -f \"$root/pyproject.toml\" ]] && grep -q \"^\\[tool\\.ruff\" \"$root/pyproject.toml\"; }; } && { target=\".\"; [[ -d \"$root/src\" ]] && target=\"src\"; cd \"$root\" && uv tool run ruff check --fix \"$target\" && uv tool run ruff format \"$target\"; } || true",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
+  "enabledPlugins": {
+    "context7@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "serena@claude-plugins-official": false,
+    "claude-md-management@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "telegram@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true
+  },
+  "effortLevel": "xhigh",
+  "plansDirectory": "./docs/plans",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "editorMode": "vim",
+  "skipAutoPermissionPrompt": true,
+  "voiceEnabled": true
+}

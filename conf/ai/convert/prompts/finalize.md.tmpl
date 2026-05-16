@@ -1,0 +1,18 @@
+# Finalize the migrated config for @TOOL@
+
+A deterministic converter has just generated @TOOL@ configuration from
+the canonical Claude Code artifacts at `@CLAUDE_SRC@`.
+
+Your job — review and correct that generated output:
+
+1. Compare each generated skill/command/instructions file against its
+   source under `@CLAUDE_SRC@`. Fix anything that did not translate:
+   frontmatter keys, file placement, broken references.
+2. Confirm helper-script paths in the generated files resolve to real
+   files (they should point into `@CLAUDE_SRC@/scripts/`).
+3. Set up MCP servers — the converter intentionally skips these.
+   Configure them in @TOOL@'s MCP config in @TOOL@'s native format.
+4. Report what you changed and anything you could not resolve.
+
+Do not edit files under `@CLAUDE_SRC@` — that is the Claude Code source
+of truth.

@@ -1,0 +1,2 @@
+Run ruff/mypy checks with `uv run --only-group dev ...` - fix errors related to the changes made
+Find also places where you import within functions/methods or somewhere in the middle of the module. I'll consider them and say if they are justified (likely no, because we always prefer import at the top of the module and circular import errors are fixed by more rational packages and modules hierarchy within the repository)

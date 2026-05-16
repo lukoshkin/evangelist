@@ -1,0 +1,24 @@
+# Migrate the Claude Code config to @TOOL@
+
+The canonical Claude Code artifacts are at `@CLAUDE_SRC@` (skills,
+commands, helper scripts, CLAUDE.md). A deterministic converter exists
+at `@AI_DIR@/convert/` with a per-tool adapter
+`@AI_DIR@/convert/adapters/@TOOL@.py`.
+
+Your job:
+
+1. Read the @TOOL@ adapter and judge whether it is correct and current
+   against @TOOL@'s present-day config format and paths.
+2. If it is sound, run it: `cd @AI_DIR@ && python3 -m convert.convert
+   --tool @TOOL@`.
+3. If it is stale or wrong, **patch the adapter in place**
+   (`@AI_DIR@/convert/adapters/@TOOL@.py`) so it is correct, then run
+   it. The repair persists for every future run, including Mode 1.
+   Leave the edits in the working tree for the user to review and
+   commit — do not commit them yourself.
+4. Set up MCP servers for @TOOL@ from any MCP config the user points
+   you at; the converter does not handle MCP.
+5. Verify the result and report what you ran, patched, and set up.
+
+Do not edit files under `@CLAUDE_SRC@` — that is the Claude Code source
+of truth.

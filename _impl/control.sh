@@ -119,6 +119,22 @@ control::install() {
     set -- "${@/--clean/}"
   fi
 
+  ## Extract --mode/--tool (used only by the `ai` component) before the
+  ## component-argument munging below can swallow them. Mirrors --clean.
+  _AI_MODE=""
+  _AI_TOOL=""
+  local -a _rest=()
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    --mode) _AI_MODE="${2:-}"; shift 2 ;;
+    --mode=*) _AI_MODE="${1#*=}"; shift ;;
+    --tool) _AI_TOOL="${2:-}"; shift 2 ;;
+    --tool=*) _AI_TOOL="${1#*=}"; shift ;;
+    *) _rest+=("$1"); shift ;;
+    esac
+  done
+  set -- "${_rest[@]}"
+
   install::check_arguments "$@"
 
   mkdir -p "$XDG_DATA_HOME"
@@ -198,6 +214,7 @@ control::install() {
     git) install::git_settings ;;
     kitty) install::kitty_settings ;;
     systemd) install::systemd_settings ;;
+    ai) install::ai_settings ;;
     *)
       echo Impl.error: "<$_ARG>" should have thrown an error earlier.
       exit
@@ -331,6 +348,15 @@ control::update() {
   if grep -qE '^conf/systemd/(files/|launchers/|setup-app-priorities\.sh)' <<<"$UPD" \
     && grep -q '^systemd' .update-list; then
     install::systemd_settings
+  fi
+
+  if grep -qE '^conf/ai/' <<<"$UPD" && grep -q '^ai' .update-list; then
+    ECHO 'Refreshing AI-assistant config..'
+    local ai_state="${XDG_STATE_HOME:-$HOME/.local/state}/evangelist"
+    local ai_mode ai_tool
+    ai_mode=$(cat "$ai_state/ai-mode" 2>/dev/null || echo 1)
+    ai_tool=$(cat "$ai_state/ai-tool" 2>/dev/null || echo all)
+    bash "$EVANGELIST/conf/ai/install.sh" "$ai_mode" "$ai_tool"
   fi
 
   if grep -qE '^n?vim' .update-list; then
@@ -486,6 +512,25 @@ control::uninstall() {
       done
       $sysd_changed && systemctl --user daemon-reload 2>/dev/null
     fi
+  fi
+
+  if grep -q '^ai' .update-list; then
+    ECHO 'Removing AI-assistant config..'
+    local item tool manifest f
+    for item in commands skills scripts CLAUDE.md statusline.sh settings.json; do
+      [[ -L "$HOME/.claude/$item" ]] && rm -f "$HOME/.claude/$item"
+      [[ -e "$HOME/.claude/$item.pre-evangelist.bak" ]] &&
+        mv "$HOME/.claude/$item.pre-evangelist.bak" "$HOME/.claude/$item"
+    done
+    for tool in codex copilot cursor; do
+      manifest="$HOME/.$tool/.convert-manifest"
+      [[ -f "$manifest" ]] || continue
+      while IFS= read -r f; do
+        [[ -n "$f" ]] || continue
+        [[ -d "$f" ]] && rm -rf "$f" || rm -f "$f"
+      done <"$manifest"
+      rm -f "$manifest"
+    done
   fi
 
   setopt nonomatch 2>/dev/null

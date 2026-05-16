@@ -1,0 +1,14 @@
+## Only the symlinked Claude artifacts are tracked under claude/;
+## auth (.credentials.json), history, and runtime state stay ignored
+## by construction, even if something stray lands in the directory.
+claude/*
+!claude/commands
+!claude/skills
+!claude/scripts
+!claude/CLAUDE.md
+!claude/statusline.sh
+!claude/settings.json
+
+## converter caches
+convert/**/__pycache__/
+convert/tests/.pytest_cache/
