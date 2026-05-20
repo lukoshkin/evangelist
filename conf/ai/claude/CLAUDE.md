@@ -1,5 +1,12 @@
 # Global preferences
 
+## Communication
+
+Reply in the same app the request came from unless told otherwise — a question
+asked over Telegram is answered over Telegram, not left in the terminal
+transcript the sender never sees. Switch channels only when explicitly
+instructed.
+
 ## Plan Mode
 
 **CRITICAL: Always create a NEW file for each new plan.** Never overwrite existing

@@ -27,20 +27,7 @@
       "mcp__context7__get-library-docs",
       "mcp__context7__query-docs",
       "mcp__plugin_context7_context7__resolve-library-id",
-      "mcp__plugin_context7_context7__query-docs",
-      "mcp__plugin_serena_serena__activate_project",
-      "mcp__plugin_serena_serena__get_symbols_overview",
-      "mcp__plugin_serena_serena__find_symbol",
-      "mcp__plugin_serena_serena__find_referencing_symbols",
-      "mcp__plugin_serena_serena__list_dir",
-      "mcp__plugin_serena_serena__find_file",
-      "mcp__plugin_serena_serena__search_for_pattern",
-      "mcp__plugin_serena_serena__read_file",
-      "mcp__plugin_serena_serena__list_memories",
-      "mcp__plugin_serena_serena__read_memory",
-      "mcp__plugin_serena_serena__check_onboarding_performed",
-      "mcp__plugin_serena_serena__onboarding",
-      "mcp__plugin_serena_serena__get_current_config"
+      "mcp__plugin_context7_context7__query-docs"
     ],
     "deny": [
       "Write(/home/lukoshkin/.claude/scripts/**)",
@@ -51,13 +38,7 @@
       "Read(./secrets/**)",
       "Read(**/*credentials*)",
       "Read(**/*.session)",
-      "Read(**/*.session-journal)",
-      "mcp__plugin_serena_serena__insert_before_symbol",
-      "mcp__plugin_serena_serena__insert_after_symbol",
-      "mcp__plugin_serena_serena__replace_content",
-      "mcp__plugin_serena_serena__replace_symbol_body",
-      "mcp__plugin_serena_serena__rename_symbol",
-      "mcp__plugin_serena_serena__create_text_file"
+      "Read(**/*.session-journal)"
     ]
   },
   "enableAllProjectMcpServers": true,
@@ -83,7 +64,6 @@
     "feature-dev@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
-    "serena@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
