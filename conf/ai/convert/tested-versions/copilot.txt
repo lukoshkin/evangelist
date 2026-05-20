@@ -1,0 +1,3 @@
+tool: copilot
+tested-version: GitHub Copilot CLI 1.0.49
+status: verified

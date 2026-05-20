@@ -10,8 +10,12 @@ Cursor. See `docs/specs/2026-05-16-ai-assistant-portability-design.md`.
 
 - `--tool codex|copilot|cursor|all` — which assistant(s) to target.
 - `--mode 1|2` — `1` runs the converter, then emits per-tool finalization
-  prompts (the assistant QAs the output); `2` emits delegation prompts and
-  the assistant runs / self-heals the converter itself.
+  prompts (the assistant QAs the output, handles tool-native local config
+  the converter intentionally skips, and refreshes the tested-version
+  stamp); `2` emits delegation prompts with the current/recorded tool
+  version so the assistant can fast-path mechanical execution when the
+  versions are close, then run / self-heal the converter, handle
+  tool-native local config, and refresh the tested-version stamp.
 
 Omit either flag and you are prompted for it. Both choices are persisted
 under `$XDG_STATE_HOME/evangelist/` (`ai-tool`, `ai-mode`) and reused by

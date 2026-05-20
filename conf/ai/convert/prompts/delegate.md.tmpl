@@ -5,20 +5,36 @@ commands, helper scripts, CLAUDE.md). A deterministic converter exists
 at `@AI_DIR@/convert/` with a per-tool adapter
 `@AI_DIR@/convert/adapters/@TOOL@.py`.
 
+Current locally observed `@TOOL@` version: `@CURRENT_TOOL_VERSION@`
+Last recorded tested version: `@RECORDED_TESTED_VERSION@`
+Version stamp file: `@STAMP_PATH@`
+
 Your job:
 
 1. Read the @TOOL@ adapter and judge whether it is correct and current
    against @TOOL@'s present-day config format and paths.
-2. If it is sound, run it: `cd @AI_DIR@ && python3 -m convert.convert
-   --tool @TOOL@`.
-3. If it is stale or wrong, **patch the adapter in place**
+2. If the locally observed version is the same as, or approximately the
+   same as, the recorded tested version, you may take the fast path for
+   speed: run the mechanical converter/scripts first, then inspect the
+   result and patch only what drifted. If the versions are materially
+   different, inspect more carefully before trusting the scripts.
+3. If the adapter is sound, run it: `cd @AI_DIR@ && python3 -m
+   convert.convert --tool @TOOL@`.
+4. If it is stale or wrong, **patch the adapter in place**
    (`@AI_DIR@/convert/adapters/@TOOL@.py`) so it is correct, then run
    it. The repair persists for every future run, including Mode 1.
    Leave the edits in the working tree for the user to review and
    commit — do not commit them yourself.
-4. Set up MCP servers for @TOOL@ from any MCP config the user points
-   you at; the converter does not handle MCP.
-5. Verify the result and report what you ran, patched, and set up.
+5. Set up any non-converted, tool-native local config that the converter
+   skips (for example MCP servers and other assistant-specific user
+   settings). Follow any tool-specific guidance below when present.
+6. After the migration is verified, update `@STAMP_PATH@` so it records
+   the exact version string you successfully tested against. Preserve the
+   `tool:` line, set `tested-version:` to the validated version, and set
+   `status: verified`.
+7. Verify the result and report what you ran, patched, stamped, and set up.
+
+@TOOL_EXTRA_GUIDANCE@
 
 Do not edit files under `@CLAUDE_SRC@` — that is the Claude Code source
 of truth.

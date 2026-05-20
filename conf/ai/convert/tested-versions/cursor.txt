@@ -1,0 +1,3 @@
+tool: cursor
+tested-version: unverified
+status: pending

@@ -1,5 +1,6 @@
 """Adapter: Claude Code artifacts -> GitHub Copilot CLI."""
 
+import os
 from pathlib import Path
 
 from convert.common import rewrite_script_paths, slug
@@ -15,9 +16,17 @@ def _command_skill_body(cmd: Command) -> str:
     return f"---\nname: {slug(cmd.name)}\ndescription: {description}\n---\n{body}"
 
 
+def _copilot_root(home: Path) -> Path:
+    if copilot_home := os.environ.get("COPILOT_HOME"):
+        return Path(copilot_home).expanduser()
+
+    return home / ".copilot"
+
+
 def convert(sources: Sources, home: Path) -> Conversion:
-    conv = Conversion(tool="copilot", tool_root=home / ".copilot")
-    skills_dir = home / ".copilot" / "skills"
+    copilot_root = _copilot_root(home)
+    conv = Conversion(tool="copilot", tool_root=copilot_root)
+    skills_dir = copilot_root / "skills"
 
     for skill in sources.skills:
         dst = skills_dir / skill.name
@@ -29,11 +38,13 @@ def convert(sources: Sources, home: Path) -> Conversion:
         conv.files[skills_dir / slug(cmd.name) / "SKILL.md"] = _command_skill_body(cmd)
 
     if sources.instructions:
-        target = home / ".copilot" / "copilot-instructions.md"
+        target = copilot_root / "copilot-instructions.md"
         conv.files[target] = sources.instructions.read_text()
 
     conv.notes.append(
-        "MCP servers are not converted — configure them in "
-        "~/.copilot/mcp-config.json (verify the exact schema key)."
+        "Copilot CLI local config is not converted — merge footer/status "
+        f"settings in {copilot_root / 'settings.json'} and MCP servers in "
+        f"{copilot_root / 'mcp-config.json'} using a top-level "
+        "'mcpServers' object."
     )
     return conv

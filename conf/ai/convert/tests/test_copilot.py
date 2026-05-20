@@ -1,6 +1,7 @@
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from convert.adapters import copilot
 from convert.sources import Command, Skill, Sources
@@ -33,6 +34,23 @@ class TestCopilotAdapter(unittest.TestCase):
         self.assertIn(skill_md, conv.files)
         self.assertIn("name: git-commit", conv.files[skill_md])
         self.assertIn(home / ".copilot" / "copilot-instructions.md", conv.files)
+        self.assertTrue(any("settings.json" in note for note in conv.notes))
+        self.assertTrue(any("mcpServers" in note for note in conv.notes))
+
+    def test_honors_copilot_home(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            home = root / "home"
+            copilot_home = root / "custom-copilot"
+            with mock.patch.dict("os.environ", {"COPILOT_HOME": str(copilot_home)}):
+                conv = copilot.convert(_sources(root), home)
+
+        self.assertEqual(conv.tool_root, copilot_home)
+        self.assertIn(copilot_home / "skills" / "init-docs", conv.trees)
+        self.assertIn(copilot_home / "copilot-instructions.md", conv.files)
+        self.assertTrue(
+            any(str(copilot_home / "mcp-config.json") in note for note in conv.notes)
+        )
 
 
 if __name__ == "__main__":
