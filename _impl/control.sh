@@ -119,10 +119,12 @@ control::install() {
     set -- "${@/--clean/}"
   fi
 
-  ## Extract --mode/--tool (used only by the `ai` component) before the
-  ## component-argument munging below can swallow them. Mirrors --clean.
+  ## Extract --mode/--tool/--force (used only by the `ai` component)
+  ## before the component-argument munging below can swallow them.
+  ## Mirrors --clean.
   _AI_MODE=""
   _AI_TOOL=""
+  _AI_FORCE=false
   local -a _rest=()
   while [[ $# -gt 0 ]]; do
     case $1 in
@@ -130,6 +132,7 @@ control::install() {
     --mode=*) _AI_MODE="${1#*=}"; shift ;;
     --tool) _AI_TOOL="${2:-}"; shift 2 ;;
     --tool=*) _AI_TOOL="${1#*=}"; shift ;;
+    --force) _AI_FORCE=true; shift ;;
     *) _rest+=("$1"); shift ;;
     esac
   done

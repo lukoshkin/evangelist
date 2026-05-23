@@ -494,51 +494,60 @@ install::kitty_settings() {
 install::ai_settings() {
   ECHO Installing AI-assistant configuration..
 
-  local mode="$_AI_MODE" tool="$_AI_TOOL"
+  local mode="$_AI_MODE" tool="$_AI_TOOL" force="${_AI_FORCE:-false}"
 
   if [[ -z $tool ]]; then
     local tmsg choice
     tmsg='Which coding assistant to set up?\n'
-    tmsg+='  1) codex   2) copilot   3) cursor   4) all\n'
+    tmsg+='  1) claude   2) codex   3) copilot   4) cursor   5) all\n'
+    tmsg+='  (claude = symlink Claude artifacts only, no conversion)\n'
     NOTE 210 "$tmsg"
-    read -p '(1|2|3|4): ' choice
+    read -p '(1|2|3|4|5): ' choice
     case $choice in
-    1) tool=codex ;;
-    2) tool=copilot ;;
-    3) tool=cursor ;;
-    4) tool=all ;;
+    1) tool=claude ;;
+    2) tool=codex ;;
+    3) tool=copilot ;;
+    4) tool=cursor ;;
+    5) tool=all ;;
     *)
       ECHO2 "Invalid choice: '$choice'"
       return 1
       ;;
     esac
   fi
-  [[ $tool =~ ^(codex|copilot|cursor|all)$ ]] || {
-    ECHO2 "Invalid --tool: '$tool' (codex|copilot|cursor|all)"
+  [[ $tool =~ ^(claude|codex|copilot|cursor|all)$ ]] || {
+    ECHO2 "Invalid --tool: '$tool' (claude|codex|copilot|cursor|all)"
     return 1
   }
 
-  if [[ -z $mode ]]; then
-    local msg
-    msg='Choose the migration approach:\n'
-    msg+='  1) Scripted — run the converter now, then emit per-tool\n'
-    msg+='     finalization prompts for the target assistant to QA.\n'
-    msg+='  2) Agent-driven — emit per-tool delegation prompts; the\n'
-    msg+='     target assistant runs and self-heals the converter.\n'
-    NOTE 210 "$msg"
-    read -p '(1|2): ' mode
+  ## Conversion mode is irrelevant for tool=claude (no conversion runs).
+  if [[ $tool != claude ]]; then
+    if [[ -z $mode ]]; then
+      local msg
+      msg='Choose the migration approach:\n'
+      msg+='  1) Scripted — run the converter now, then emit per-tool\n'
+      msg+='     finalization prompts for the target assistant to QA.\n'
+      msg+='  2) Agent-driven — emit per-tool delegation prompts; the\n'
+      msg+='     target assistant runs and self-heals the converter.\n'
+      NOTE 210 "$msg"
+      read -p '(1|2): ' mode
+    fi
+    [[ $mode =~ ^[12]$ ]] || {
+      ECHO2 "Invalid --mode: '$mode' (expected 1 or 2)"
+      return 1
+    }
+  else
+    mode="${mode:-1}"
   fi
-  [[ $mode =~ ^[12]$ ]] || {
-    ECHO2 "Invalid --mode: '$mode' (expected 1 or 2)"
-    return 1
-  }
 
   local state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/evangelist"
   mkdir -p "$state_dir"
   echo "$mode" >"$state_dir/ai-mode"
   echo "$tool" >"$state_dir/ai-tool"
 
-  bash "$EVANGELIST/conf/ai/install.sh" "$mode" "$tool" || return 1
+  local -a install_args=("$mode" "$tool")
+  [[ $force == true ]] && install_args+=(--force)
+  bash "$EVANGELIST/conf/ai/install.sh" "${install_args[@]}" || return 1
 
   ECHO Successfully installed: AI-assistant configuration.
 }

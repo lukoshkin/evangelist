@@ -1,21 +1,53 @@
 #!/usr/bin/env bash
 ## conf/ai/install.sh — provision Claude Code config and convert it to
 ## the other assistants. Invoked by evangelist's `ai` component.
-## Usage: install.sh [MODE] [TOOL]
-##   MODE = 1 (scripted + finalize) | 2 (delegate)   — default 1
-##   TOOL = codex | copilot | cursor | all           — default all
+## Usage: install.sh [MODE] [TOOL] [--force]
+##   MODE  = 1 (scripted + finalize) | 2 (delegate)             — default 1
+##   TOOL  = claude | codex | copilot | cursor | all            — default all
+##           `claude` only symlinks Claude artifacts, skipping conversion.
+##   --force  Back up existing regular files at the symlink targets to
+##            <file>.pre-evangelist.bak. Without it, the script refuses
+##            to touch any user-owned file in ~/.claude and exits 1.
 
 set -euo pipefail
 
 AI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_SRC="$AI_DIR/claude"
 STAMP_DIR="$AI_DIR/convert/tested-versions"
-MODE="${1:-1}"
-TOOL="${2:-all}"
+
+FORCE=false
+_positional=()
+for _arg in "$@"; do
+  case $_arg in
+  --force | -f) FORCE=true ;;
+  *) _positional+=("$_arg") ;;
+  esac
+done
+MODE="${_positional[0]:-1}"
+TOOL="${_positional[1]:-all}"
 
 ## --- symlink the canonical Claude artifacts into ~/.claude ---
 mkdir -p "$HOME/.claude"
-for item in commands skills scripts CLAUDE.md statusline.sh settings.json; do
+
+CLAUDE_ITEMS=(commands skills scripts CLAUDE.md statusline.sh settings.json)
+_conflicts=()
+for item in "${CLAUDE_ITEMS[@]}"; do
+  src="$CLAUDE_SRC/$item"
+  dst="$HOME/.claude/$item"
+  [[ -e "$src" ]] || continue
+  [[ -e "$dst" && ! -L "$dst" ]] && _conflicts+=("$dst")
+done
+
+if ((${#_conflicts[@]})) && ! $FORCE; then
+  {
+    echo "Refusing to overwrite existing regular files in ~/.claude:"
+    printf '  %s\n' "${_conflicts[@]}"
+    echo "Re-run with --force to back them up as <file>.pre-evangelist.bak and symlink."
+  } >&2
+  exit 1
+fi
+
+for item in "${CLAUDE_ITEMS[@]}"; do
   src="$CLAUDE_SRC/$item"
   dst="$HOME/.claude/$item"
   [[ -e "$src" ]] || continue
@@ -25,6 +57,8 @@ for item in commands skills scripts CLAUDE.md statusline.sh settings.json; do
   ln -sfn "$src" "$dst"
 done
 echo "Linked Claude Code artifacts into ~/.claude"
+
+[[ "$TOOL" == claude ]] && exit 0
 
 ## --- other-tool conversion ---
 PROMPT_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/evangelist/ai-migration"

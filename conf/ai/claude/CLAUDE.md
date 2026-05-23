@@ -13,6 +13,25 @@ instructed.
 plan files - they may contain unversioned work that took hours to create. Use
 descriptive filenames like `docs/plans/<feature-name>.md`.
 
+## Documentation
+
+When a project maintains a living architecture documentation set (typically
+`docs/architecture/` with an aggregator `README.md` indexing topic-organized
+files), keep it in sync with the code as you work. Whenever you add or
+modify something that affects what those docs describe — load-bearing
+architectural decisions, public contracts, module boundaries, data-flow
+seams, persistence shape, design rationale — update the matching doc in the
+same change rather than leaving the docs to drift.
+
+Trivial work (typos, single-line bug patches, internal refactors that
+preserve every external contract) does not require a doc update. Meaningful
+structural changes do. If unsure whether a change qualifies, err on the
+side of updating the docs; a stale architecture doc is worse than a
+slightly over-eager one.
+
+If a project has no such doc set, do not invent one — work from the code
+and CLAUDE.md until the user asks for one.
+
 ## Subagent Workflow
 
 When dispatched as a subagent by `superpowers:subagent-driven-development` in a
