@@ -1,22 +1,37 @@
 #!/usr/bin/env bash
 
-## Claude Code statusline (single line): cwd · git branch · context bar.
-## Session cost is appended only on usage-based (API) billing.
+## Claude Code statusline (single line):
+##   cwd · git branch · context bar · $cost [· 5h% · 7d%]
 ##
-## Billing detection: Claude Code sends the `rate_limits` field only to
-## Claude.ai Pro/Max subscribers. Its absence => pay-per-token billing,
-## so cost is worth showing. (For the first message of a subscriber
-## session rate_limits is not yet populated, so cost may flash once at
-## $0.00 — harmless.)
+## `cost.total_cost_usd` is a client-side token-cost estimate, always
+## present. For subscribers it is informational (what the session would
+## cost on API billing) rather than an actual bill.
+##
+## `rate_limits` is sent only to Claude.ai Pro/Max subscribers, so the
+## 5h-session and 7d-all-models usage % render only for them. (For the
+## first subscriber message the inner fields may not be populated yet,
+## so both percentages flash 0% once — harmless.)
 
 input=$(cat)
 
-cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty')
-[ -z "$cwd" ] && cwd=$(pwd)
-pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
-cost=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
-subscriber=$(echo "$input" | jq -r 'has("rate_limits")')
+mapfile -t fields < <(
+  echo "$input" | jq -r '
+    .workspace.current_dir // .cwd // "",
+    (.context_window.used_percentage // 0 | floor),
+    (.cost.total_cost_usd // 0),
+    has("rate_limits"),
+    (.rate_limits.five_hour.used_percentage // 0 | floor),
+    (.rate_limits.seven_day.used_percentage // 0 | floor)
+  '
+)
+cwd=${fields[0]}
+pct=${fields[1]}
+cost=${fields[2]}
+subscriber=${fields[3]}
+five_hr=${fields[4]}
+seven_day=${fields[5]}
 
+[ -z "$cwd" ] && cwd=$(pwd)
 [ "$pct" -gt 100 ] 2>/dev/null && pct=100
 
 GREEN='\033[32m'
@@ -29,6 +44,13 @@ RESET='\033[0m'
 ## Segment colours mirror the agkozak PS1 palette
 PWD_COLOR='\033[1;38;5;226;44m'  # bold pure-yellow (256-color) on blue background
 BRANCH_COLOR='\033[31m'    # red
+
+## green <70%, yellow 70-89%, red 90%+
+pct_color() {
+  if [ "$1" -ge 90 ]; then printf '%s' "$RED"
+  elif [ "$1" -ge 70 ]; then printf '%s' "$YELLOW"
+  else printf '%s' "$GREEN"; fi
+}
 
 ## ~-collapsed path, mirrors the bash \w prompt segment
 disp_cwd="${cwd/#$HOME/\~}"
@@ -75,21 +97,28 @@ branch_symbols() {
 
 [ -n "$branch" ] && branch="${branch}$(branch_symbols)"
 
-## context bar colour: green <70%, yellow 70-89%, red 90%+
-if [ "$pct" -ge 90 ]; then bar_color="$RED"
-elif [ "$pct" -ge 70 ]; then bar_color="$YELLOW"
-else bar_color="$GREEN"; fi
-
+bar_color=$(pct_color "$pct")
 filled=$((pct / 10))
 empty=$((10 - filled))
 printf -v fill "%${filled}s"
 printf -v pad "%${empty}s"
 bar="${fill// /█}${pad// /░}"
 
+pipe=" ${DIM}|${RESET} "
+dot=" ${DIM}·${RESET} "
+cost_seg="${YELLOW}💰 $(printf '%.2f' "$cost")${RESET}"
+
 line="${PWD_COLOR} ${disp_cwd} ${RESET}"
-[ -n "$branch" ] && line="${line}  ${BRANCH_COLOR}🌿 ${branch}${RESET}"
-line="${line}  ${bar_color}${bar}${RESET} ${pct}% ctx"
-if [ "$subscriber" != "true" ]; then
-  line="${line} ${DIM}|${RESET} ${YELLOW}💰 $(printf '%.2f' "$cost")${RESET}"
+if [ -n "$branch" ]; then
+  line="${line}  ${BRANCH_COLOR}🌿 ${branch}${RESET}${pipe}${bar_color}${bar}${RESET} ${pct}% ctx"
+else
+  line="${line}  ${bar_color}${bar}${RESET} ${pct}% ctx"
+fi
+if [ "$subscriber" = "true" ]; then
+  five_hr_color=$(pct_color "$five_hr")
+  seven_day_color=$(pct_color "$seven_day")
+  line="${line}${pipe}${five_hr_color}${five_hr}%${RESET} ${DIM}(5h)${RESET}${dot}${seven_day_color}${seven_day}%${RESET} ${DIM}(7d)${RESET}${dot}${cost_seg}"
+else
+  line="${line}${pipe}${cost_seg}"
 fi
 printf '%b\n' "$line"
