@@ -1,10 +1,10 @@
-Review every quality violation in the changes you introduced this session and fix them. **Default scope:** only the lines you added — the `+` lines from `git diff` (staged and unstaged), plus the full contents of any untracked files you created. Pre-existing lines stay out of scope.
+Stricter variant of `/ensure_code_quality`: review every quality violation in the changes you introduced this session and fix them, with two extra teeth — the automated Python guard-clause checker runs in rule 8, and rule 6 (no in-function / mid-module imports) applies to `tests/` too, not just source. **Default scope:** only the lines you added — the `+` lines from `git diff` (staged and unstaged), plus the full contents of any untracked files you created. Pre-existing lines stay out of scope.
 
 **Extend mode (opt-in):** if the invocation includes `extend` (or `--full-files`) as an argument, broaden the scope to every line of the touched files (`git diff --name-only` + untracked), including flaws that predate your changes. Use this when the user wants the broader cleanup pass.
 
 Identify in-scope content from git, not from memory — memory drifts after a long session or a context summary. Edits stay confined to in-scope content; reading, though — rule 5 especially — may range across the whole codebase to spot existing abstractions.
 
-These checks are written with Python examples because most of this project is Python, but the underlying principles apply to every language. For touched files in other languages (TypeScript, shell, etc.), translate each rule into its idiomatic analog rather than skipping it — the per-rule notes below point out where the Python syntax most needs translation.
+These checks are written with Python examples because most of this project is Python, but the underlying principles apply to every language. For touched files in other languages (TypeScript, shell, etc.), translate each rule into its idiomatic analog rather than skipping it — the per-rule notes below point out where the Python syntax most needs translation. The rule for any language-specific tooling (like the guard-clause script at the end) is called out where it applies.
 
 Apply the checks in the order listed below. Blank-line discipline (rule 8) is intentionally the last *fix* step so that any other refactors (which often add or remove statements) settle first — fixing whitespace before the substantive checks just creates churn you'd have to redo. Rule 9 is verification and reporting only.
 
@@ -61,7 +61,7 @@ All imports belong at the top of the module. Do not place import statements insi
 
 **Other languages:** TS/JS — no `require()` or dynamic `import()` mid-file unless you are genuinely lazy-loading a heavy module behind a feature flag. Rust — `use` statements at the top of the module. Go enforces this at the language level; do not work around it with `init()` indirection.
 
-**Scope:** Apply this check to source code only (e.g. `src/`). Skip files under `tests/`, where mid-function imports occasionally serve fixture isolation or conditional construction. Use `/ensure_code_quality_plus` instead when you want this rule enforced on tests too.
+**Scope:** Apply this check to every touched file, **including `tests/`**. If a test file places imports mid-function to work around a fixture-construction issue or to isolate a heavy module, fix the fixture (or move the import to module top with a `pytest.importorskip` if the module is optional) rather than keep the deferred import.
 
 ## 7. Consistency with established patterns
 
@@ -75,7 +75,13 @@ When a multiline expression ends with a closing parenthesis/bracket on its own l
 
 Ruff (black-style formatter) handles the rest for Python — just avoid trailing commas, which force vertical spreading regardless of line length. For other languages, lean on the project's formatter (Prettier for TS/JS, gofmt, rustfmt) for whitespace beyond the guard-clause rule above.
 
-Apply the guard-clause / closing-bracket discipline by eye. Use `/ensure_code_quality_plus` instead when you want the automated Python guard-clause checker (`check_guard_clauses.py`) run for you.
+To detect guard-clause violations automatically (Python only), run:
+
+```bash
+python3 ~/.claude/scripts/check_guard_clauses.py <file1.py> [file2.py ...]
+```
+
+Fix every reported violation before proceeding. For non-Python files, apply the same guard-clause / closing-bracket discipline by eye — no script exists for those languages yet.
 
 ## 9. Verify, then report
 
