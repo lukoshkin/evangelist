@@ -1,3 +1,10 @@
+---
+name: ensure-code-quality
+description: Use when about to claim a code change is complete or ready to commit in the current session, when wrapping up a coding task with edits to Python (or other) source files, or when the user explicitly invokes `/ensure-code-quality` (optional `extend` argument broadens scope to full touched files instead of just the lines Claude added).
+---
+
+# Ensure Code Quality
+
 Review every quality violation in the changes you introduced this session and fix them. **Default scope:** only the lines you added — the `+` lines from `git diff` (staged and unstaged), plus the full contents of any untracked files you created. Pre-existing lines stay out of scope.
 
 **Extend mode (opt-in):** if the invocation includes `extend` (or `--full-files`) as an argument, broaden the scope to every line of the touched files (`git diff --name-only` + untracked), including flaws that predate your changes. Use this when the user wants the broader cleanup pass.

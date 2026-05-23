@@ -11,7 +11,7 @@ instructed.
 
 **CRITICAL: Always create a NEW file for each new plan.** Never overwrite existing
 plan files - they may contain unversioned work that took hours to create. Use
-descriptive filenames like `docs/plans/<feature-name>.md`.
+descriptive filenames like `docs/.../<feature-name>.md`.
 
 ## Documentation
 
@@ -32,11 +32,39 @@ slightly over-eager one.
 If a project has no such doc set, do not invent one — work from the code
 and CLAUDE.md until the user asks for one.
 
+## Roadmap tracking
+
+When a project maintains a `docs/ROADMAP.md` (or
+`docs/roadmap/README.md`), keep it current as you work:
+
+- **Starting a feature:** move the entry into `## Now`.
+- **Finishing a feature:** move it to `## Recently shipped` and trim
+  that tail to ~10 entries; older entries live in `changelog.md` /
+  `git log`.
+- **Out-of-scope ideas surfacing mid-discussion** — "that's a v1.2
+  thing", "we'll do that later", an extension beyond the current
+  spec — append to `## Later` with a one-line summary plus a link to
+  the source (spec doc, PR, transcript). Append silently; surface
+  the additions in the end-of-turn summary so the user can prune.
+- **Per-spec `v1.1` / `v1.2` / `Open items` sections stay inside the
+  spec doc.** ROADMAP.md just indexes them under
+  `## Per-feature deferred work`.
+- **Maintenance:** when entries under `## Later` no longer match the
+  current codebase or have shipped, remove them as part of the next
+  ROADMAP edit; don't let the file grow unboundedly.
+
+If a project has no ROADMAP.md, do not auto-create one — same rule
+as the architecture-doc convention.
+
+**On `/init` in a new repo**, ask whether to scaffold
+`docs/ROADMAP.md` and `docs/architecture/` (the latter via the
+`init-docs` skill). Don't create either without confirmation.
+
 ## Subagent Workflow
 
 When dispatched as a subagent by `superpowers:subagent-driven-development` in a
 **Python project**, run the project's code-quality skill (e.g.
-`ensure_code_quality` if the project's CLAUDE.md defines one) on every Python
+`ensure-code-quality` if the project's CLAUDE.md defines one) on every Python
 file you touched before reporting the task complete. If the project defines no
 such skill, run `ruff check` and `mypy` on the touched files. This applies to
 all subagent types (general-purpose, Explore, feature-dev, code-simplifier,
@@ -121,66 +149,11 @@ we use `.get` or check on None
 - Use `from typing import` only for `TypeVar`, `Protocol`, `Literal`, `TypeAlias`, etc.
 - `mypy` strict mode enabled (except for tests)
 
-## Commit Message Guidelines
+## Commit Messages
 
-Follow this exact style and format for all commit messages:
-
-**STRUCTURE:**
-
-1. **Title**: Brief, imperative mood description of the main change (50-72 chars)
-2. **Body**: Concise, organized, bullet-pointed changes using specific symbols
-
-**SYMBOLS:**
-
-- `+` = Improvements/new features
-- `-` = Removals/deletions of files or functionality
-- `c` = Changes like refactoring and chore tasks
-- `*` = Bug fixes (functional, non-functional, performance)
-- `▪` = Sub-bullets for detailed explanations
-
-**FORMATTING RULES:**
-
-1. Adjust verbosity based on the amount of changes made (a few lines changed = short commit)
-2. Group related changes under descriptive section headers when there are a lot of changes
-3. Start each bullet with the appropriate symbol, followed by a space
-4. Write in imperative mood (Add, Remove, Fix, Update, etc.)
-5. Mention specific files, functions, or settings when relevant
-6. Use '' for file paths, `` for code symbols, and "" for other quoted text
-7. Use proper indentation for sub-bullets
-
-**EXAMPLES:**
-
-Simple case:
-
-```
-Short title
-
-+ Add new feature with specific technical details
-- Remove deprecated functionality (reason why)
-c Refactor existing code for better performance
-* Fix bug in specific component
-  ▪ Add sub-detail about implementation
-  ▪ Explain technical rationale
-```
-
-Complex case:
-
-```
-Short title
-
-Section header:
-+ Add a specific pipeline:
-  ▪ The first feature that enables pipeline implementation.
-  ▪ The second feature.
-c Refactor 'ExistingModule':
-  c Change variable names for clarity.
-  + Simplify complex functions.
-  + Improve robustness.
-  - Remove redundant and duplicated code.
-
-Second section with stuff that related some other functionality:
-...
-```
+For commit-message style (House Style, symbols, grouping, examples), use the
+`/git_commit` command — it owns the full convention. Don't duplicate the rules
+here.
 
 ## AI assistant config sync
 
