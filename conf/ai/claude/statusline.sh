@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-## Claude Code statusline (single line):
-##   cwd · git branch · context bar · [5h% (↻…) · 7d% (↻…) ·] $cost
+## Claude Code statusline (two lines):
+##   row 1: cwd · git branch · context bar
+##   row 2: [5h% (↻…) · 7d% (↻…) ·] $cost
 ##
 ## `cost.total_cost_usd` is a client-side token-cost estimate, always
 ## present. For subscribers it is informational (what the session would
@@ -131,8 +132,8 @@ if [ "$subscriber" = "true" ]; then
   seven_day_at=$(fmt_reset "$seven_day_reset")
   five_hr_suffix=${five_hr_at:+ ${DIM}(↻${five_hr_at})${RESET}}
   seven_day_suffix=${seven_day_at:+ ${DIM}(↻${seven_day_at})${RESET}}
-  line="${line}${pipe}${DIM}5h${RESET} ${five_hr_color}${five_hr}%${RESET}${five_hr_suffix}${dot}${DIM}7d${RESET} ${seven_day_color}${seven_day}%${RESET}${seven_day_suffix}${dot}${cost_seg}"
+  line="${line}\n${DIM}5h${RESET} ${five_hr_color}${five_hr}%${RESET}${five_hr_suffix}${dot}${DIM}7d${RESET} ${seven_day_color}${seven_day}%${RESET}${seven_day_suffix}${dot}${cost_seg}"
 else
-  line="${line}${pipe}${cost_seg}"
+  line="${line}\n${cost_seg}"
 fi
 printf '%b\n' "$line"
