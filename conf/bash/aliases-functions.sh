@@ -345,6 +345,115 @@ vrmswp() {
   rm "$XDG_STATE_HOME/nvim/swap/"*$swp*
 }
 
+## archview — serve docs/architecture/ (from the nearest ancestor) over a
+## local HTTP server with a generated index page that renders the README.md
+## aggregator and links to the topic .html files. Topic files are exposed
+## via symlinks in a temp dir; the source directory is not mutated. Markdown
+## rendering tries `markdown`, `markdown-it-py`, `mistune`, then `pandoc`;
+## falls back to escaped raw <pre> if none are installed. Ctrl+C stops the
+## server and removes the temp dir. Port: $ARCHVIEW_PORT if set (errors if
+## busy); otherwise tries 8765 then asks the OS for any free port.
+archview() {
+  local dir port pid tmp project src
+  dir=$(pwd)
+  while [ "$dir" != "/" ] && [ ! -d "$dir/docs/architecture" ]; do
+    dir=$(dirname "$dir")
+  done
+  if [ ! -d "$dir/docs/architecture" ]; then
+    echo "archview: no docs/architecture/ found in $(pwd) or any ancestor" >&2
+    return 1
+  fi
+  src="$dir/docs/architecture"
+  if [ -n "${ARCHVIEW_PORT:-}" ]; then
+    port=$ARCHVIEW_PORT
+  else
+    port=8765
+    python3 -c "import socket; s=socket.socket(); s.bind(('127.0.0.1', $port)); s.close()" 2>/dev/null \
+      || port=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()')
+  fi
+  project=$(basename "$dir")
+  tmp=$(mktemp -d -t archview.XXXXXX)
+  find "$src" -maxdepth 1 -type f -name '*.html' -print0 \
+    | while IFS= read -r -d '' f; do ln -s "$f" "$tmp/"; done
+  _archview_render_index "$src" "$project" > "$tmp/index.html"
+  echo "archview: serving $src (via $tmp) on http://127.0.0.1:$port"
+  (cd "$tmp" && python3 -m http.server "$port" --bind 127.0.0.1) &
+  pid=$!
+  trap "kill $pid 2>/dev/null; command rm -rf '$tmp'; trap - INT TERM EXIT" INT TERM EXIT
+  sleep 0.5
+  if ! kill -0 $pid 2>/dev/null; then
+    echo "archview: server failed to start on port $port (already in use?)" >&2
+    return 1
+  fi
+  xdg-open "http://127.0.0.1:$port" 2>/dev/null
+  wait $pid
+}
+
+_archview_md_to_html() {
+  local md
+  md=$(cat)
+  if python3 -c "import markdown" 2>/dev/null; then
+    printf '%s' "$md" | python3 -c "import sys, markdown; sys.stdout.write(markdown.markdown(sys.stdin.read(), extensions=['tables', 'fenced_code']))"
+    return
+  fi
+  if python3 -c "import markdown_it" 2>/dev/null; then
+    printf '%s' "$md" | python3 -c "import sys; from markdown_it import MarkdownIt; sys.stdout.write(MarkdownIt('commonmark').enable('table').render(sys.stdin.read()))"
+    return
+  fi
+  if python3 -c "import mistune" 2>/dev/null; then
+    printf '%s' "$md" | python3 -c "import sys, mistune; sys.stdout.write(mistune.html(sys.stdin.read()))"
+    return
+  fi
+  if command -v pandoc >/dev/null; then
+    printf '%s' "$md" | pandoc -f markdown -t html
+    return
+  fi
+  printf '<p><em>(No Markdown library or pandoc found; showing raw README.)</em></p>\n<pre>'
+  printf '%s' "$md" | python3 -c "import sys, html; sys.stdout.write(html.escape(sys.stdin.read()))"
+  printf '</pre>\n'
+}
+
+_archview_render_index() {
+  local src=$1
+  local project=$2
+  local readme="$src/README.md"
+  local rendered=""
+  [ -f "$readme" ] && rendered=$(_archview_md_to_html < "$readme")
+  cat <<HEAD
+<!doctype html>
+<html><head>
+<meta charset="utf-8">
+<title>Architecture — $project</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 900px; margin: 2em auto; padding: 0 1em; color: #222; line-height: 1.5; }
+h1, h2 { border-bottom: 1px solid #ddd; padding-bottom: .3em; }
+table { border-collapse: collapse; }
+th, td { border: 1px solid #ddd; padding: .4em .8em; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; }
+pre { background: #f4f4f4; padding: 1em; overflow-x: auto; }
+a { color: #0366d6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.topics { list-style: none; padding: 0; }
+.topics li { margin: .3em 0; }
+.topics li::before { content: "📄 "; }
+</style>
+</head><body>
+<h1>Architecture — $project</h1>
+<section>$rendered</section>
+<h2>Topic files</h2>
+<ul class="topics">
+HEAD
+  find "$src" -maxdepth 1 -type f -name '*.html' -print0 | sort -z \
+    | while IFS= read -r -d '' f; do
+        name=$(basename "$f")
+        echo "  <li><a href=\"$name\">$name</a></li>"
+      done
+  cat <<'TAIL'
+</ul>
+</body></html>
+TAIL
+}
+
 ## https://stackoverflow.com/questions/1527049
 join_by() {
   local d=$1 f=$2

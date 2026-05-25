@@ -15,13 +15,33 @@ descriptive filenames like `docs/.../<feature-name>.md`.
 
 ## Documentation
 
-When a project maintains a living architecture documentation set (typically
-`docs/architecture/` with an aggregator `README.md` indexing topic-organized
-files), keep it in sync with the code as you work. Whenever you add or
-modify something that affects what those docs describe — load-bearing
-architectural decisions, public contracts, module boundaries, data-flow
-seams, persistence shape, design rationale — update the matching doc in the
-same change rather than leaving the docs to drift.
+When a project maintains a living user-facing documentation set about the
+app — typically `docs/architecture/` for design and `docs/app-usage/` for
+end-user behavior, each with an aggregator `README.md` indexing
+topic-organized `.html` files — keep it in sync with the code as you work.
+Whenever you add or modify something that affects what those docs describe
+— load-bearing architectural decisions, public contracts, module
+boundaries, data-flow seams, persistence shape, design rationale,
+observable app behavior — update the matching doc in the same change rather
+than leaving the docs to drift.
+
+**Format.** Topic files under user-facing app-doc roots (e.g.
+`docs/architecture/`, `docs/app-usage/`) are authored as `.html`, not
+Markdown — HTML supports tables with CSS, inline SVG, collapsible
+sections, and side-by-side panes, and stays readable past the ~100-line
+point where dense Markdown breaks down. Use self-contained inline CSS
+(no external stylesheets, no build step) so a single file is the unit of
+share. Aggregator `README.md` files stay Markdown so `init-docs` /
+`upd-docs` can parse the Key Files table. New topic files: `.html`;
+existing `.md` topic files stay as-is until a substantive update, then
+convert in the same change.
+
+The HTML rule does **not** extend to: plan files under `docs/plans/`,
+`docs/ROADMAP.md`, project or subdirectory `README.md` (GitHub renders
+those natively as landing pages — that convention wins), or files the
+harness requires in Markdown (`CLAUDE.md`, `AGENTS.md`, `SKILL.md`).
+Rationale:
+<https://claude.com/blog/using-claude-code-the-unreasonable-effectiveness-of-html>.
 
 Trivial work (typos, single-line bug patches, internal refactors that
 preserve every external contract) does not require a doc update. Meaningful
