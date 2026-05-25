@@ -1,6 +1,6 @@
 ---
 name: issue-file
-description: Use when asked to file/open/create a GitHub issue. Supports `/issue-file <description> [media]` (order arbitrary) for one-shot creation, or free-form requests like "write an issue for this", "log a bug", "open a ticket", "capture this for a fresh session".
+description: Use when asked to file/open/create a GitHub issue. Supports `/issue-file [--ground] <description> [media]` (order arbitrary) for one-shot creation, or free-form requests like "write an issue for this", "log a bug", "open a ticket", "capture this for a fresh session", "ground it now". Defaults to light mode (no current-session exploration — preserves the active context); `--ground` opts into full grounding in this session.
 ---
 
 # Filing GitHub Issues
@@ -8,18 +8,37 @@ description: Use when asked to file/open/create a GitHub issue. Supports `/issue
 ## Overview
 
 An issue is a **cold-start brief**: it must let a fresh session (no memory of
-this conversation) pick up the work and ship it. Ground every claim in the
-code, attach what you saw, write checkable acceptance criteria, and point at
-the resolution convention. The detailed close protocol lives in the sibling
-skill `issue-fix`.
+this conversation) pick up the work and ship it. Attach what you saw, write
+checkable acceptance criteria, and point at the resolution convention.
+Grounding depth depends on mode (see **Modes** below) — by default, filing
+preserves the current session's context and the fix session does the
+grounding; `--ground` spends this session's context to hand the fix session a
+verified head start. The detailed close protocol lives in the sibling skill
+`issue-fix`.
 
 ## When to Use
 
-- `/issue-file <desc> [media]` (or `/issue-file <media> <desc>` — order is
-  arbitrary). Treat any text + attachment combo as a one-shot create request.
+- `/issue-file [--ground] <desc> [media]` (token order arbitrary). Treat any
+  text + attachment combo as a one-shot create request.
 - "File / open / create an issue", "write an issue for this", "log a bug".
+- Phrases that imply `--ground`: "ground it now", "explore before filing",
+  "give the fix session a verified head start". Default otherwise is light
+  mode (see **Modes**).
 - One report covers several independent surfaces → **one issue each**. Ask only
   if combine-vs-split is genuinely ambiguous.
+
+## Modes
+
+Two modes trade current-session context against fix-session readiness:
+
+| Mode | When | Step 2 (Key Files) | Grounding → Verified facts |
+|---|---|---|---|
+| **Light** (default) | Mid-task — keep the active context clean; the fix happens in a fresh session anyway. | List 1–3 likely starting points from current context + the description; mark each `(guess)`. Don't open files. | Empty. Push every claim to Hypothesis with a way to confirm. |
+| `--ground` | Done with current work, or the fresh session benefits from a verified head start. | Open implicated files; cite `file.ext:line` with role. | Filled with what the code actually does. |
+
+Both modes still require: dupe check, label from `gh label list`, repro steps,
+screenshots committed under `.github/issue-assets/<NNN>/`, checkable
+acceptance criteria, cross-links, resolution pointer.
 
 ## Workflow
 
@@ -27,10 +46,12 @@ skill `issue-fix`.
    `gh issue list` only paginates recent). Identify any sibling issues to
    cross-link (`#NN — short reason`). `gh label list` for a label that exists
    (`bug` / `enhancement`); never invent one.
-2. **Explore the repo for Key Files.** Read the files implicated by the
-   description. Cite `file.ext:line`. The Key Files table is the single biggest
-   accelerator for a fresh-session pickup — fill it in even if the issue is
-   small.
+2. **Populate Key Files per mode** (see **Modes** above). Light: list 1–3
+   likely starting points from current context, mark each `(guess)`, leave
+   Grounding → Verified facts empty. `--ground`: open the implicated files,
+   cite `file.ext:line`, fill Grounding → Verified facts with what the code
+   does. Never leave the Key Files table blank — it's the single biggest
+   accelerator for a fresh-session pickup.
 3. **Extract session-bound details into the body.** Anything in this
    conversation that isn't in the code: reproduction steps, observed behavior,
    screenshots, logs, user-reported context. The fresh session won't have it
@@ -106,7 +127,8 @@ wrong line numbers).
 
 | Mistake | Fix |
 |---|---|
-| Restating the symptom only | Open the code, cite `file:line`. |
+| Restating the symptom only | `--ground`: open the code, cite `file:line`. Light: still name 1–3 likely starting points + a way to confirm in Hypothesis. |
+| Opening files in light mode | If filing mid-task to preserve context, defer grounding — pass `--ground` only when intentional. |
 | Overclaiming the root cause | Mark it a hypothesis; give a way to confirm. |
 | Dropping the user's screenshot | Save to `.github/issue-assets/<NNN>/`, commit, reference it. |
 | Inventing a label | Only use labels from `gh label list`. |
