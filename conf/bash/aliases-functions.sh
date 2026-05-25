@@ -377,9 +377,9 @@ archview() {
     | while IFS= read -r -d '' f; do ln -s "$f" "$tmp/"; done
   _archview_render_index "$src" "$project" > "$tmp/index.html"
   echo "archview: serving $src (via $tmp) on http://127.0.0.1:$port"
-  (cd "$tmp" && python3 -m http.server "$port" --bind 127.0.0.1) &
+  (cd "$tmp" && exec python3 -m http.server "$port" --bind 127.0.0.1) &
   pid=$!
-  trap "kill $pid 2>/dev/null; command rm -rf '$tmp'; trap - INT TERM EXIT" INT TERM EXIT
+  trap "kill $pid 2>/dev/null; command rm -rf '$tmp'; trap - INT TERM HUP EXIT" INT TERM HUP EXIT
   sleep 0.5
   if ! kill -0 $pid 2>/dev/null; then
     echo "archview: server failed to start on port $port (already in use?)" >&2
