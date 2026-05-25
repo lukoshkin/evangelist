@@ -54,31 +54,57 @@ and CLAUDE.md until the user asks for one.
 
 ## Roadmap tracking
 
-When a project maintains a `docs/ROADMAP.md` (or
-`docs/roadmap/README.md`), keep it current as you work:
+When a project maintains a roadmap, keep it current as you work.
+Two shapes are supported — pick by project size:
+
+- **Folder form (recommended once a project has phase history).**
+  `docs/roadmap/README.md` is the scannable forward-looking front
+  page (the four `##` sections below). `docs/roadmap/phases.md`
+  is the long-form, phase-by-phase technical narrative — the
+  cold-resume handoff log: what each phase built, where the code
+  lives, the decisions made along the way. Distinct from
+  `## Recently shipped` (curated trim of ~10) and `git log` (raw
+  commit history): `phases.md` is the curated story.
+- **Flat form (small or brand-new projects).** A single
+  `docs/ROADMAP.md` carrying just the four `##` sections. Promote
+  to the folder form once the phase-by-phase narrative would start
+  bloating the trailing-10 trim.
+
+Rules (apply to either shape):
 
 - **Starting a feature:** move the entry into `## Now`.
 - **Finishing a feature:** move it to `## Recently shipped` and trim
-  that tail to ~10 entries; older entries live in `changelog.md` /
-  `git log`.
+  that tail to ~10 entries; older entries fall off into `git log` /
+  `changelog.md`. **Folder form:** when a milestone fully ships,
+  append a narrative summary to `phases.md` before letting the
+  trim drop the entry, so the deep context survives.
 - **Out-of-scope ideas surfacing mid-discussion** — "that's a v1.2
   thing", "we'll do that later", an extension beyond the current
   spec — append to `## Later` with a one-line summary plus a link to
   the source (spec doc, PR, transcript). Append silently; surface
   the additions in the end-of-turn summary so the user can prune.
 - **Per-spec `v1.1` / `v1.2` / `Open items` sections stay inside the
-  spec doc.** ROADMAP.md just indexes them under
-  `## Per-feature deferred work`.
+  spec doc.** The roadmap's `## Per-feature deferred work` is a
+  table indexing those sections, not duplicating them.
 - **Maintenance:** when entries under `## Later` no longer match the
   current codebase or have shipped, remove them as part of the next
-  ROADMAP edit; don't let the file grow unboundedly.
+  roadmap edit; don't let the file grow unboundedly.
 
-If a project has no ROADMAP.md, do not auto-create one — same rule
+If a project has no roadmap, do not auto-create one — same rule
 as the architecture-doc convention.
 
-**On `/init` in a new repo**, ask whether to scaffold
-`docs/ROADMAP.md` and `docs/architecture/` (the latter via the
-`init-docs` skill). Don't create either without confirmation.
+**On `/init` in a new repo**, ask whether to scaffold the roadmap
+(folder form by default — fall back to flat `docs/ROADMAP.md` only
+if the user prefers it) and `docs/architecture/` (the latter via
+the `init-docs` skill). Don't create either without confirmation.
+
+The scaffolded `docs/roadmap/README.md` should ship with the four
+`##` sections empty under one-line descriptions of what each
+section means (so the structure is self-documenting). The
+scaffolded `docs/roadmap/phases.md` should ship as a short header
+explaining that it's the long-form, phase-by-phase handoff log
+for resuming the project cold — populated as milestones land, not
+all at once.
 
 ## Subagent Workflow
 
