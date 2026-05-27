@@ -2,10 +2,34 @@
 
 ## Communication
 
-Reply in the same app the request came from unless told otherwise — a question
-asked over Telegram is answered over Telegram, not left in the terminal
-transcript the sender never sees. Switch channels only when explicitly
-instructed.
+Reply through the channel the request came from. Each channel's readers
+only see that channel; routing your answer elsewhere is the same as not
+answering them — silent failure, no signal back.
+
+The reply channel is chosen **per inbound message**, by looking at THIS
+message's `<channel>` tag (or absence). Channel context does not persist
+across turns — earlier requests like "let's move to Telegram" or
+"answer in the terminal from now on" do not override a later message's
+own channel signal.
+
+- **No `<channel>` tag on the inbound message** → terminal Claude Code
+  session. Write text output normally; that's what the user reads in
+  the REPL. Do not use any reply tool.
+- **Inbound has `<channel source="...">`** → use that plugin's reply
+  tool (e.g. `mcp__plugin_telegram_telegram__reply`), passing the
+  inbound `chat_id` (or equivalent identifier) back. Terminal stdout is
+  invisible to that reader.
+- **Mid-task arrivals on a different channel** → treat as separate
+  conversations. Reply to the new message in its channel; continue any
+  existing task in its own channel. Do not merge transcripts.
+
+If you find yourself reaching for a reply tool because "we've been on
+channel X for a while", stop and re-check the latest inbound's
+`<channel>` tag. The tag (or its absence) is the authoritative source.
+
+Switch the *durable* channel only when explicitly instructed ("move
+this to Telegram from now on", "answer in the terminal from here on").
+Even then, individual later messages still route by their own tag.
 
 ## Plan Mode
 
@@ -198,7 +222,7 @@ we use `.get` or check on None
 ## Commit Messages
 
 For commit-message style (House Style, symbols, grouping, examples), use the
-`/git_commit` command — it owns the full convention. Don't duplicate the rules
+`git-commit` skill — it owns the full convention. Don't duplicate the rules
 here.
 
 ## AI assistant config sync
