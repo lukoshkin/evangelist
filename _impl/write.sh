@@ -47,14 +47,14 @@ HAS() {
 }
 
 HASLIB() {
-  dpkg-query -W $1 &>/dev/null
+  utils::is_linux && dpkg-query -W $1 &>/dev/null
 }
 
 PIPHAS() {
   ## In beta state.
   # conda list | grep -q "$1"
   # pip3 show "$1" 2> /dev/null
-  pip3 --disable-pip-version-check list 2>&1 | grep -qP "$1"
+  pip3 --disable-pip-version-check list 2>&1 | grep -qE "$1"
 }
 ##########################
 ## <----- MACROS <----- ##
@@ -75,7 +75,7 @@ write::dynamic_imports() {
   venv_creator="$venv_creator.sh"
 
   # Remove any existing autoenv source lines to prevent conflicts
-  sed -i '/source.*\/conf\/autoenv\/.*\.sh/d' $1
+  utils::sed_i '/source.*\/conf\/autoenv\/.*\.sh/d' $1
   echo "source \"\$EVANGELIST/conf/autoenv/$venv_creator\"" >>$1
 
   if ! grep -q 'source "$EVANGELIST/custom/custom\..*sh"' $1; then
@@ -120,7 +120,7 @@ write::instructions_after_install() {
         printf "\t${BOLD}${WHITE}chsh -s $(which $1)${RESET}\n\n"
       fi
 
-      if [[ $code -eq 1 ]]; then
+      if [[ $code -eq 1 ]] && utils::is_linux; then
         printf "GENERATE AND UPDATE LOCALES\n"
         printf "(You can choose other than 'en_US'),\n\n"
         printf "\t${BOLD}${WHITE}sudo locale-gen en_US.UTF-8$RESET\n"
@@ -164,13 +164,18 @@ write::instructions_after_removal() {
     printf "\n\n\t${BOLD}${WHITE}chsh -s $(which $shell)${RESET}\n\n"
     printf 'LOG OUT FROM THE CURRENT ACCOUNT. THEN, LOG IN BACK.\n'
   else
-    curr=$(update-alternatives --query vim | grep 'Value:' | cut -d ' ' -f2)
     orig=$(grep 'VIM-ALTERNATIVE' .update-list 2>/dev/null | cut -d: -f2)
+    if [[ -n $orig ]] && HAS update-alternatives; then
+      curr=$(update-alternatives --query vim | grep 'Value:' | cut -d ' ' -f2)
+      if [[ $curr != $orig ]]; then
+        msg="${BOLD}${WHITE}sudo update-alternatives --set vim ${orig}${RESET}"
+        printf 'RESTORE THE ORIGINAL VALUE OF THE VIM ALTERNATIVE.'
+        printf "
 
-    if [[ -n $orig ]] && [[ $curr != $orig ]]; then
-      msg="${BOLD}${WHITE}sudo update-alternatives --set vim ${orig}${RESET}"
-      printf 'RESTORE THE ORIGINAL VALUE OF THE VIM ALTERNATIVE.'
-      printf "\n\n\t$msg\n\n"
+	%s
+
+" "$msg"
+      fi
     fi
 
     ## The following instruction is only needed
@@ -229,7 +234,7 @@ _register_package() {
   ## `utils::v1_ge_v2` handles these cases (empty variables, to be exact).
   ## However, it slightly reduces exec. time and prevents error messages.
   if [[ -n $v2 ]] && HAS $package; then
-    v1=$(dpkg-query -W -f '${Version}\n' $package 2>/dev/null)
+    utils::is_linux && v1=$(dpkg-query -W -f '${Version}\n' $package 2>/dev/null)
     [[ -z $v1 ]] && v1=$(eval "$package --version 2> /dev/null")
     ## NOTE: `grep -E` doesn't work with non-capturing groups.
     v1=$(grep -oE '[0-9]+(\.[0-9]+)+' <<<$v1)
@@ -272,9 +277,9 @@ write::modulecheck() {
 
   shift
 
-  local required=()
-  local optional=()
-  local extended=()
+  local -a required=()
+  local -a optional=()
+  local -a extended=()
   local mode name package version pack_info
 
   while [[ -n $1 ]]; do
@@ -321,18 +326,27 @@ write::modulecheck() {
   [[ $ok -gt 0 ]] && echo -e "${color}Missing the following packages:$RESET"
 
   echo
-  _diagnostics required $RED "${required[@]}"
-  _diagnostics optional $YELLOW "${optional[@]}"
-  _diagnostics 'for extensions' $BLUE "${extended[@]}"
+  _diagnostics required "$RED" "${required[@]}"
+  _diagnostics optional "$YELLOW" "${optional[@]}"
+  _diagnostics 'for extensions' "$BLUE" "${extended[@]}"
   echo
 }
 
 write::how_to_install_conda() {
-  link=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-
-  if [[ $(uname) != Linux ]]; then
-    link='https://repo.anaconda.com/miniconda/<find-propper-link>'
-  fi
+  local arch link
+  case $(uname) in
+  Darwin)
+    case $(uname -m) in
+    arm64) arch=MacOSX-arm64 ;;
+    x86_64) arch=MacOSX-x86_64 ;;
+    *) arch='<find-proper-macos-arch>' ;;
+    esac
+    link="https://repo.anaconda.com/miniconda/Miniconda3-latest-$arch.sh"
+    ;;
+  *)
+    link=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    ;;
+  esac
 
   echo -e '\nTo install conda, you can copy-paste the following snippet:'
 

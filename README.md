@@ -41,17 +41,21 @@ and the setup script will become more universal and cross-platform.
    ```
 
 2. **Install at least minimal list of prerequisites**  
-   Run `./evangelist.sh checkhealth` for help.
+   Run `./evangelist.sh checkhealth` for help on Linux. On macOS, run
+   `./sudo.builder.macos.sh` first if Homebrew Bash and the common CLI
+   dependencies are not installed yet.
 
 3. In your console, **run from the project directory**:
 
-   - `./evangelist.sh install <configs>`  
+   - Linux / Bash 4+: `./evangelist.sh install <configs>`  
+     macOS: `./evangelist.macos.zsh install <configs>`  
      where `<configs>` can be `bash`, `zsh`, `vim`, `tmux`, `jupyter`,
-     `kitty`, `systemd`  
+     `kitty`, `systemd`, `ai`  
      (you can specify more than one argument)
 
    - To ensure the command history transfer, you may run instead:  
      `export HISTFILE; ./evangelist.sh install <shell> <other args>`  
+     On macOS, use `./evangelist.macos.zsh` in place of `./evangelist.sh`.  
      where `<shell>` is `bash` or `zsh`
 
 4. **Re-login in the shell.**

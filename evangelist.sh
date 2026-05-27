@@ -2,6 +2,15 @@
 
 ## Macros (ECHO, ECHO2, NOTE, HAS) are defined in _impl/write.sh
 
+
+if [[ -z ${BASH_VERSION:-} || ${BASH_VERSINFO[0]:-0} -lt 4 ]]; then
+  echo 'evangelist requires Bash 4 or newer.' >&2
+  if [[ $(uname) = Darwin ]]; then
+    echo 'On macOS, run ./evangelist.macos.zsh or install Homebrew Bash.' >&2
+  fi
+  exit 1
+fi
+
 ## Vim (8.1 and older) sources its rc file when running +PlugInstall.
 ## So, if dealing with Vim, we need to export the variables below.
 

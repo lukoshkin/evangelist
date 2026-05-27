@@ -78,11 +78,22 @@ control::checkhealth() {
 
   BASH_DEPS=(o:conda o:tree)
   ZSH_DEPS=(r:zsh r:git o:conda o:fzf o:tree)
+  VIM_DEPS=(
+    r:'nvim vim':neovim r:curl
+    o:'pip pip3':pip3 o:'node nodejs conda':npm
+    +:node:node:12.12 +:ninja:ninja +:rg:ripgrep +:cmake:cmake
+  )
+  GIT_DEPS=(r:git o:delta)
 
-  [[ $(uname) != Darwin ]] &&
+  if utils::is_macos; then
+    VIM_DEPS+=(o:pbcopy +:fd:fd +:xelatex:mactex +:cc:'Xcode Command Line Tools')
+    GIT_DEPS=(r:git o:delta:git-delta)
+  else
     ZSH_DEPS+=(o:transset:x11-apps)
+    VIM_DEPS+=(o:xclip +l:libxcb-xinerama0 +:fd-find:fd-find +:xelatex:texlive-xetex +:gcc:build-essential)
+  fi
 
-  [[ -z $LANG ]] &&
+  [[ -z $LANG ]] && utils::is_linux &&
     {
       BASH_DEPS+=(o:locale-gen:locales)
       ZSH_DEPS+=(r:locale-gen:locales)
@@ -90,23 +101,15 @@ control::checkhealth() {
 
   write::modulecheck BASH "${BASH_DEPS[@]}"
   write::modulecheck ZSH "${ZSH_DEPS[@]}"
-  write::modulecheck VIM \
-    r:'nvim vim':neovim r:curl \
-    o:'pip pip3':pip3 o:'nodejs conda':npm o:xclip \
-    +:node::12.12 +l:libxcb-xinerama0 \
-    +:ninja:ninja-build +:rg:ripgrep +l:fd-find:fd-find \
-    +:xelatex:texlive-xetex +:gcc:build-essential +:cmake:cmake
+  write::modulecheck VIM "${VIM_DEPS[@]}"
   ## Many plugins require node (particularly CoC).
-  ## `nvim-treesitter` wants gcc compiler, `telescope-fzf-native` ─ CMake.
-  ## 'xclip' is to enable Vim's clipboard. 'xinerama0' is needed for
-  ## slime-ipython setup. 'telescope.nvim' exploits rg and fd.
-  ## 'ninja' to build Lua LSP, xelatex ─ for 'markdown-preview.nvim' plugin.
+  ## `nvim-treesitter` wants gcc compiler, `telescope-fzf-native` wants CMake.
+  ## Clipboard, fd, and LaTeX package names differ between Linux and macOS.
   write::modulecheck JUPYTER r:'pip pip3':pip3 r:git
   write::modulecheck TMUX r:tmux
-  write::modulecheck GIT r:git o:delta
+  write::modulecheck GIT "${GIT_DEPS[@]}"
   write::modulecheck KITTY o:kitty
-  [[ $(uname) = Linux ]] &&
-    write::modulecheck SYSTEMD r:systemctl r:sudo o:oomctl
+  utils::is_linux && write::modulecheck SYSTEMD r:systemctl r:sudo o:oomctl
 
   HAS conda || write::how_to_install_conda
 }
@@ -348,7 +351,8 @@ control::update() {
   ## Only re-apply when actual install inputs changed. README, apply.sh,
   ## setup-zram.sh edits are doc-only / manual-path-only and shouldn't
   ## trigger a sudo prompt and an oomd restart.
-  if grep -qE '^conf/systemd/(files/|launchers/|setup-app-priorities\.sh)' <<<"$UPD" \
+  if utils::is_linux \
+    && grep -qE '^conf/systemd/(files/|launchers/|setup-app-priorities\.sh)' <<<"$UPD" \
     && grep -q '^systemd' .update-list; then
     install::systemd_settings
   fi
@@ -418,8 +422,10 @@ control::uninstall() {
     rm -f "$XDG_CONFIG_HOME/tmux/.tmux.conf"
   fi
 
-  rm -f "$XDG_DATA_HOME/applications/nvim.desktop"
-  if HAS xdg-mime; then
+  if utils::is_linux; then
+    rm -f "$XDG_DATA_HOME/applications/nvim.desktop"
+  fi
+  if utils::is_linux && HAS xdg-mime; then
     local current
     current=$(xdg-mime query default text/plain)
     if [[ "$current" == nvim.desktop ]]; then
@@ -456,7 +462,7 @@ control::uninstall() {
     rm -rf "$XDG_CONFIG_HOME/kitty"
   fi
 
-  if grep -q '^systemd' .update-list; then
+  if utils::is_linux && grep -q '^systemd' .update-list; then
     ECHO Reverting systemd OOM hardening..
     NOTE 210 'Removing drop-ins under /etc/ — sudo will prompt for your password.'
     sudo rm -f \

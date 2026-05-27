@@ -8,6 +8,7 @@ declare -A DIRS=(
 )
 
 keys::save() {
+  command -v dconf >/dev/null 2>&1 || return 0
   [[ -z $1 || $1 = '/' ]] && prefix= || prefix="$1/"
 
   for key in "${!DIRS[@]}"; do
@@ -18,6 +19,7 @@ keys::save() {
 }
 
 keys::load() {
+  command -v dconf >/dev/null 2>&1 || return 0
   local keys_dir=${1:-.}
   echo "Looking for keys in $keys_dir"
 

@@ -57,9 +57,36 @@ utils::back_up_original_configs() {
   fi
 }
 
+utils::is_linux() {
+  [[ $(uname) = Linux ]]
+}
+
+utils::is_macos() {
+  [[ $(uname) = Darwin ]]
+}
+
+utils::sed_i() {
+  if utils::is_macos; then
+    sed -i '' "$@"
+  else
+    sed -i "$@"
+  fi
+}
+
+
+utils::insert_before() {
+  local pattern=$1 line=$2 file=$3 tmp
+  tmp=$(mktemp "${TMPDIR:-/tmp}/evangelist.XXXXXX") || return 1
+  awk -v pattern="$pattern" -v line="$line" '$0 ~ pattern { print line } { print }' "$file" >"$tmp" &&
+    cat "$tmp" >"$file"
+  local status=$?
+  rm -f "$tmp"
+  return $status
+}
+
 utils::update_status() {
   for p in "${_PARAMS[@]}"; do
-    sed -i "s;\(^$p:\)[01];\11;" .update-list
+    utils::sed_i "s;\(^$p:\)[01];\11;" .update-list
   done
 }
 
@@ -116,11 +143,11 @@ utils::v1_ge_v2() {
 
   local shear
   declare -a version1 version2
-  if [[ $(readlink /proc/$$/exe) = *bash ]]; then
+  if [[ -n ${BASH_VERSION:-} ]]; then
     IFS=$sep read -ra version1 <<<"${verstr1//v/}"
     IFS=$sep read -ra version2 <<<"${verstr2//v/}"
     shear=0
-  elif [[ $(readlink /proc/$$/exe) = *zsh ]]; then
+  elif [[ -n ${ZSH_VERSION:-} ]]; then
     IFS=$sep read -rA version1 <<<"${verstr1//v/}"
     IFS=$sep read -rA version2 <<<"${verstr2//v/}"
     shear=1
@@ -166,7 +193,7 @@ utils::resolve_vim_alternatives() {
   if alternatives=$(update-alternatives --query vim 2>/dev/null); then
     if ! grep -q 'VIM-ALTERNATIVE' .update-list; then
       value=$(grep 'Value:' <<<"$alternatives" | cut -d ' ' -f2)
-      sed -i "/^Installed/i VIM-ALTERNATIVE:$value" .update-list
+      utils::insert_before '^Installed' "VIM-ALTERNATIVE:$value" .update-list
     fi
 
     ## 1st condition = there is no way to get value with update-alternatives.

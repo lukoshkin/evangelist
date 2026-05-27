@@ -88,7 +88,7 @@ install::vim_settings() {
     ;;&
 
   [23]??)
-    if ! HAS nodejs; then
+    if ! HAS node && ! HAS nodejs; then
       echo Checking nodejs..
       ## NOTE: hard-coded minimal version of Node.
       conda install -yc conda-forge "nodejs>=12.12" &>/dev/null &&
@@ -122,7 +122,7 @@ install::vim_settings() {
     utils::back_up_original_configs $_VIM d:"$XDG_CONFIG_HOME/nvim"
     if grep -q '^vim' .update-list; then
       _SHELL_RESET=true
-      sed -i '/^vim/d' .update-list
+      utils::sed_i '/^vim/d' .update-list
     fi
     ;;&
 
@@ -144,53 +144,55 @@ install::vim_settings() {
     ## Copy new configs.
     cp -R conf/nvim "$XDG_CONFIG_HOME"
 
-    ## Install .desktop file for xdg-open integration (pick terminal backend).
-    mkdir -p "$XDG_DATA_HOME/applications"
+    if utils::is_linux; then
+      ## Install .desktop file for xdg-open integration (pick terminal backend).
+      mkdir -p "$XDG_DATA_HOME/applications"
 
-    KITTY_DESKTOP="$XDG_CONFIG_HOME/nvim/nvim-kitty.desktop"
-    GNOME_DESKTOP="$XDG_CONFIG_HOME/nvim/nvim-gnome-term.desktop"
+      KITTY_DESKTOP="$XDG_CONFIG_HOME/nvim/nvim-kitty.desktop"
+      GNOME_DESKTOP="$XDG_CONFIG_HOME/nvim/nvim-gnome-term.desktop"
 
-    echo "Choose Neovim launcher:"
-    select choice in "Kitty (new tab if running)" "GNOME Terminal (new tab if running)" "Cancel"; do
-      case "$choice" in
-      "Kitty (new tab if running)")
-        if [[ -f "$KITTY_DESKTOP" ]]; then
-          ln -sf "$KITTY_DESKTOP" "$XDG_DATA_HOME/applications/nvim.desktop"
-          break
+      echo "Choose Neovim launcher:"
+      select choice in "Kitty (new tab if running)" "GNOME Terminal (new tab if running)" "Cancel"; do
+        case "$choice" in
+        "Kitty (new tab if running)")
+          if [[ -f "$KITTY_DESKTOP" ]]; then
+            ln -sf "$KITTY_DESKTOP" "$XDG_DATA_HOME/applications/nvim.desktop"
+            break
+          else
+            echo "- [ERR] Missing: $KITTY_DESKTOP"
+          fi
+          ;;
+        "GNOME Terminal (new tab if running)")
+          if [[ -f "$GNOME_DESKTOP" ]]; then
+            ln -sf "$GNOME_DESKTOP" "$XDG_DATA_HOME/applications/nvim.desktop"
+            break
+          else
+            echo "- [ERR] Missing: $GNOME_DESKTOP"
+          fi
+          ;;
+        "Cancel")
+          echo "- [INFO] Cancelled."
+          exit 0
+          ;;
+        *)
+          echo "Invalid choice."
+          ;;
+        esac
+      done
+
+      if HAS xdg-mime; then
+        xdg-mime default nvim.desktop text/plain
+        xdg-mime default nvim.desktop text/markdown
+        xdg-mime default nvim.desktop application/json
+
+        if [[ $(xdg-mime query default text/plain) == nvim.desktop ]]; then
+          echo "- [OK] nvim.desktop as default for text/plain."
         else
-          echo "- [ERR] Missing: $KITTY_DESKTOP"
+          echo "- [WARN] Failed to set nvim.desktop as default."
         fi
-        ;;
-      "GNOME Terminal (new tab if running)")
-        if [[ -f "$GNOME_DESKTOP" ]]; then
-          ln -sf "$GNOME_DESKTOP" "$XDG_DATA_HOME/applications/nvim.desktop"
-          break
-        else
-          echo "- [ERR] Missing: $GNOME_DESKTOP"
-        fi
-        ;;
-      "Cancel")
-        echo "- [INFO] Cancelled."
-        exit 0
-        ;;
-      *)
-        echo "Invalid choice."
-        ;;
-      esac
-    done
-
-    if HAS xdg-mime; then
-      xdg-mime default nvim.desktop text/plain
-      xdg-mime default nvim.desktop text/markdown
-      xdg-mime default nvim.desktop application/json
-
-      if [[ $(xdg-mime query default text/plain) == nvim.desktop ]]; then
-        echo "- [OK] nvim.desktop as default for text/plain."
       else
-        echo "- [WARN] Failed to set nvim.desktop as default."
+        echo "- [INFO] xdg-mime not found, skipping MIME defaults."
       fi
-    else
-      echo "- [INFO] xdg-mime not found, skipping MIME defaults."
     fi
     ;;&
 
@@ -715,15 +717,15 @@ install::vim_settings::set_assembly() {
 
   if $_EXTEND; then
     if [[ $_CODE = ??0 ]]; then
-      sed -i 's;^" ;;' "$XDG_CONFIG_HOME/nvim/init.vim"
-      sed -i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
+      utils::sed_i 's;^" ;;' "$XDG_CONFIG_HOME/nvim/init.vim"
+      utils::sed_i 's;source .*ycm\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
       ## CoC is chosen to be a default code-completion engine ("old" Vim),
       ## YCM is commented out, therefore.
 
       if ! HAS node || ! utils::v1_ge_v2 "$(node --version)" 12.12; then
         ## `&` in the following line means "use the whole text matched".
         ## (That is, we change lines to commented out lines.)
-        sed -i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
+        utils::sed_i 's;source .*coc\.vim;" &;' "$XDG_CONFIG_HOME/nvim/init.vim"
       fi
       set_assembly=extended
     else
@@ -733,7 +735,7 @@ install::vim_settings::set_assembly() {
 
   assembly=$(grep 'VIM ASSEMBLY:' .update-list | cut -d ':' -f2)
   if [[ $set_assembly != "$assembly" ]]; then
-    sed -i "/^Installed/i VIM ASSEMBLY:$set_assembly" .update-list
-    [[ -n $assembly ]] && sed -i "/VIM ASSEMBLY:$assembly/d" .update-list
+    utils::insert_before '^Installed' "VIM ASSEMBLY:$set_assembly" .update-list
+    [[ -n $assembly ]] && utils::sed_i "/VIM ASSEMBLY:$assembly/d" .update-list
   fi
 }
