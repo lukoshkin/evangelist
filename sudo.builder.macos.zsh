@@ -5,24 +5,70 @@ set -e
 ## - auto (non-interactive, all packages)
 
 ask_user() {
-  local yes_or_no_question=$1
+  local yes_or_no_question=$1 default_answer=${2:-y} prompt
 
-  REPLY=y
+  case $default_answer in
+  y | Y) prompt='[Yn]'; REPLY=y ;;
+  n | N) prompt='[yN]'; REPLY=n ;;
+  *) print "Invalid default answer: $default_answer"; return 1 ;;
+  esac
+
   if [[ $_MODE = user ]]; then
-    read -k1 "REPLY?$yes_or_no_question [Yn] "
+    read -k1 "REPLY?$yes_or_no_question $prompt "
     if [[ $REPLY =~ '[yYnN]' ]]; then
-      print
+      print -u2
     elif [[ -z $REPLY ]]; then
-      REPLY=y
-      print
+      REPLY=$default_answer
+      print -u2
     else
-      print "
+      print -u2 "
 Invalid input: $REPLY
 Please, type 'y' or 'n'"
-      ask_user "$yes_or_no_question"
+      ask_user "$yes_or_no_question" "$default_answer"
     fi
   fi
 }
+
+select_packages() {
+  local package default_answer
+  local -a selected=()
+
+  for package in "$@"; do
+    [[ -n $package ]] || continue
+    default_answer=y
+    [[ $package = gitui ]] && default_answer=n
+    ask_user "Install $package?" "$default_answer"
+    [[ $REPLY =~ '[yY]' ]] && selected+=("$package")
+  done
+
+  printf '%s\n' $selected
+}
+
+select_default_packages() {
+  local package
+  local -a selected=()
+
+  for package in "$@"; do
+    [[ -n $package ]] || continue
+    [[ $package = gitui ]] && continue
+    selected+=("$package")
+  done
+
+  printf '%s\n' $selected
+}
+
+display_packages() {
+  local package
+
+  for package in "$@"; do
+    if [[ $package = gitui ]]; then
+      printf '  %s (default: no)\n' "$package"
+    else
+      printf '  %s\n' "$package"
+    fi
+  done
+}
+
 
 _require_macos() {
   if [[ $(uname) != Darwin ]]; then
@@ -110,7 +156,23 @@ _install_miniconda() {
 }
 
 _install_python_deps() {
-  python3 -m pip install -U -r pip.requirements.txt
+  local venv_dir="${XDG_DATA_HOME:-$HOME/.local/share}/evangelist/python"
+  local bin_dir="$HOME/.local/bin"
+
+  python3 -m venv "$venv_dir"
+  "$venv_dir/bin/python" -m pip install -U pip
+  "$venv_dir/bin/python" -m pip install -U -r pip.requirements.txt
+
+  mkdir -p "$bin_dir"
+  local tool
+  for tool in ipython uv; do
+    if [[ -x "$venv_dir/bin/$tool" ]]; then
+      ln -sf "$venv_dir/bin/$tool" "$bin_dir/$tool"
+    fi
+  done
+
+  print "Python dependencies installed in $venv_dir."
+  print "Neovim Python host: $venv_dir/bin/python"
 }
 
 install() {
@@ -151,12 +213,31 @@ Valid modes are 'user', 'auto'"
     wget
   )
 
-  print 'The following Homebrew packages will be installed:'
-  printf '  %s\n' $brew_packages
+  print 'Homebrew is required to install system packages:'
+  display_packages $brew_packages
 
-  ask_user 'Would you like to install them?'
-  if [[ $REPLY =~ '[yY]' ]]; then
-    _install_with_brew $brew_packages
+  local -a selected_packages
+  if [[ $_MODE = user ]]; then
+    ask_user 'Install the default package set?'
+    if [[ $REPLY =~ '[yY]' ]]; then
+      selected_packages=("${(@f)$(select_default_packages $brew_packages)}")
+    else
+      ask_user 'Choose packages one by one?' n
+      if [[ $REPLY =~ '[yY]' ]]; then
+        selected_packages=("${(@f)$(select_packages $brew_packages)}")
+      else
+        selected_packages=()
+      fi
+    fi
+  else
+    print 'Installing default package set.'
+    selected_packages=("${(@f)$(select_default_packages $brew_packages)}")
+  fi
+
+  if (( ${#selected_packages[@]} )); then
+    _install_with_brew $selected_packages
+  else
+    print 'No Homebrew packages selected.'
   fi
 
   ask_user 'Install zsh?'

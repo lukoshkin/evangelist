@@ -30,22 +30,68 @@ _install_with_apt() {
 }
 
 ask_user() {
-  local yes_or_no_question=$1
+  local yes_or_no_question=$1 default_answer=${2:-y} prompt
 
-  REPLY='y'
+  case $default_answer in
+  y | Y) prompt='[Yn]'; REPLY='y' ;;
+  n | N) prompt='[yN]'; REPLY='n' ;;
+  *) echo "Invalid default answer: $default_answer"; return 1 ;;
+  esac
+
   if [[ $_MODE = user ]]; then
-    read -rn1 -p "$yes_or_no_question [Yn] "
+    read -rn1 -p "$yes_or_no_question $prompt "
     if [[ $REPLY =~ [yYnN] ]]; then
-      echo
+      echo >&2
     elif [[ -z $REPLY ]]; then
-      REPLY='y'
-      echo
+      REPLY=$default_answer
+      echo >&2
     else
-      echo -e "\nInvalid input: $REPLY\nPlease, type 'y' or 'n'"
-      ask_user "$yes_or_no_question"
+      >&2 echo -e "
+Invalid input: $REPLY
+Please, type 'y' or 'n'"
+      ask_user "$yes_or_no_question" "$default_answer"
     fi
   fi
 }
+
+select_packages() {
+  local package default_answer selected=()
+
+  for package in "$@"; do
+    [[ -n $package ]] || continue
+    default_answer=y
+    [[ $package = gitui ]] && default_answer=n
+    ask_user "Install $package?" "$default_answer"
+    [[ $REPLY =~ [yY] ]] && selected+=("$package")
+  done
+
+  printf '%s\n' "${selected[@]}"
+}
+
+select_default_packages() {
+  local package selected=()
+
+  for package in "$@"; do
+    [[ -n $package ]] || continue
+    [[ $package = gitui ]] && continue
+    selected+=("$package")
+  done
+
+  printf '%s\n' "${selected[@]}"
+}
+
+display_packages() {
+  local package
+
+  for package in "$@"; do
+    if [[ $package = gitui ]]; then
+      printf '  %s (default: no)\n' "$package"
+    else
+      printf '  %s\n' "$package"
+    fi
+  done
+}
+
 
 install() {
   local sudo_env _sudo=sudo pip_opts=-U
@@ -66,22 +112,38 @@ install() {
     _sudo=
   fi
 
-  local apt_packages
-  apt_packages=$(sed -e 's;\(.*\)\(#.*\);\1;' apt.requirements.txt)
-  # read -ra apt_packages -d '\n' <<< "$apt_packages"
-  ## Returns exit status 1
+  local apt_packages selected_packages
+  declare -a apt_package_array
+  mapfile -t apt_package_array < <(
+    sed -e 's;\(.*\)\(#.*\);\1;' apt.requirements.txt |
+      awk '{$1=$1}; NF {print}'
+  )
 
-  declare -a tmp_array
-  apt_packages=$(awk '{$1=$1};1' <<<"$apt_packages")
-  mapfile -t tmp_array < <(awk '{$1=$1};1' <<<"$apt_packages")
-  apt_packages="${tmp_array[*]}"
+  echo 'The root privileges are required to install system packages:'
+  display_packages "${apt_package_array[@]}"
 
-  echo 'The root privileges are required to install the following packages:'
-  echo "$apt_packages"
+  if [[ $_MODE = user ]]; then
+    ask_user 'Install the default package set?'
+    if [[ $REPLY =~ [yY] ]]; then
+      mapfile -t selected_packages < <(select_default_packages "${apt_package_array[@]}")
+    else
+      ask_user 'Choose packages one by one?' n
+      if [[ $REPLY =~ [yY] ]]; then
+        mapfile -t selected_packages < <(select_packages "${apt_package_array[@]}")
+      else
+        selected_packages=()
+      fi
+    fi
+  else
+    echo 'Installing default package set.'
+    mapfile -t selected_packages < <(select_default_packages "${apt_package_array[@]}")
+  fi
 
-  ask_user 'Would you like to install them?'
-  if [[ $REPLY =~ [yY] ]]; then
+  apt_packages="${selected_packages[*]}"
+  if [[ -n $apt_packages ]]; then
     _install_with_apt "$apt_packages"
+  else
+    echo 'No apt packages selected.'
   fi
 
   ask_user 'Install zsh (a more user friendly shell)?'
@@ -221,7 +283,7 @@ install() {
       mkdir -p "$folder" && mv ru.utf-8.spl "$folder"
   fi
 
-  ask_user 'Set up gutui (fancy git add-ons: UI for git in CLI)?'
+  ask_user 'Set up gitui (fancy git add-ons: UI for git in CLI)?' n
   if [[ $_MODE != docker && $REPLY =~ [yY] ]]; then
     local tag
     tag=$(_get_latest_tag extrawurst/gitui)
