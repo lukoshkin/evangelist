@@ -151,7 +151,7 @@ install() {
     _install_with_apt zsh
   fi
 
-  ask_user 'Install miniconda to create Python virtual envs?'
+  ask_user 'Install miniconda to create Python virtual envs?' n
   if [[ $_MODE != docker && $REPLY =~ [yY] ]]; then
     curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
     bash miniconda.sh -ubp "$HOME/miniconda"

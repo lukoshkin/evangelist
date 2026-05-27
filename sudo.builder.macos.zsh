@@ -240,12 +240,7 @@ Valid modes are 'user', 'auto'"
     print 'No Homebrew packages selected.'
   fi
 
-  ask_user 'Install zsh?'
-  if [[ $REPLY =~ '[yY]' ]]; then
-    _install_with_brew zsh
-  fi
-
-  ask_user 'Install miniconda to create Python virtual envs?'
+  ask_user 'Install miniconda to create Python virtual envs?' n
   if [[ $REPLY =~ '[yY]' ]]; then
     _install_miniconda
   fi

@@ -21,7 +21,12 @@ fi
 ## `evangelist` or its wrapper function.
 
 evangelist() {
-  "$EVANGELIST/evangelist.sh" "$@"
+  local launcher="$EVANGELIST/evangelist.sh"
+  if [[ $(uname) = Darwin && -x "$EVANGELIST/evangelist.macos.zsh" ]]; then
+    launcher="$EVANGELIST/evangelist.macos.zsh"
+  fi
+
+  "$launcher" "$@"
 }
 
 evn() {
