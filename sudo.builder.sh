@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-## Ubuntu dependency installer. Use sudo.builder.macos.sh on macOS.
+## Ubuntu dependency installer. Use sudo.builder.macos.zsh on macOS.
 ## Available modes:
 ## - user (interactive installation)
 ## - docker (non-interactive, not all packages, implies root privileges)

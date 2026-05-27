@@ -20,5 +20,5 @@ for bash_path in $bash_candidates; do
 done
 
 print -u2 'Homebrew Bash 4+ is required to run evangelist on macOS.'
-print -u2 'Run ./sudo.builder.macos.sh first, or install Bash with: brew install bash'
+print -u2 'Run ./sudo.builder.macos.zsh first, or install Bash with: brew install bash'
 exit 1

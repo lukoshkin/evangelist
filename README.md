@@ -42,7 +42,7 @@ and the setup script will become more universal and cross-platform.
 
 2. **Install at least minimal list of prerequisites**  
    Run `./evangelist.sh checkhealth` for help on Linux. On macOS, run
-   `./sudo.builder.macos.sh` first if Homebrew Bash and the common CLI
+   `./sudo.builder.macos.zsh` first if Homebrew Bash and the common CLI
    dependencies are not installed yet.
 
 3. In your console, **run from the project directory**:
