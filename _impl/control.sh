@@ -29,7 +29,7 @@ control::help() {
 
   echo -e '\nCommands:\n'
   printf '  %-18s Show the installation status or readiness to install.\n' 'checkhealth'
-  printf '  %-18s Install one or all of the specified setups: bash zsh git vim tmux jupyter kitty systemd.\n' 'install [--clean]'
+  printf '  %-18s Install one or all of the specified setups: bash zsh git vim tmux jupyter kitty hammerspoon systemd.\n' 'install [--clean]'
   printf '  %-18s Install with extensions if they are provided (beta).\n' 'install+'
   printf '  %-18s Update the repository and installed configs.\n' 'update'
   printf '  %-18s Force update of the repository in case of merge conflicts.\n' 'reinstall'
@@ -109,6 +109,7 @@ control::checkhealth() {
   write::modulecheck TMUX r:tmux
   write::modulecheck GIT "${GIT_DEPS[@]}"
   write::modulecheck KITTY o:kitty
+  utils::is_macos && write::modulecheck HAMMERSPOON o:hs:hammerspoon
   utils::is_linux && write::modulecheck SYSTEMD r:systemctl r:sudo o:oomctl
 
   HAS conda || write::how_to_install_conda
@@ -219,6 +220,7 @@ control::install() {
     zsh) install::zsh_settings ;;
     git) install::git_settings ;;
     kitty) install::kitty_settings ;;
+    hammerspoon) install::hammerspoon_settings ;;
     systemd) install::systemd_settings ;;
     ai) install::ai_settings ;;
     *)
@@ -340,6 +342,9 @@ control::update() {
       if [[ $OBJ =~ kitty/ ]] && grep -q '^kitty' .update-list; then
         mkdir -p "$XDG_CONFIG_HOME/kitty"
         cp $OBJ "$XDG_CONFIG_HOME/kitty/"
+      elif [[ $OBJ =~ hammerspoon/ ]] && grep -q '^hammerspoon' .update-list; then
+        mkdir -p "$HOME/.hammerspoon"
+        cp $OBJ "$HOME/.hammerspoon/"
       elif [[ $OBJ =~ zsh/ ]] && grep -q '^zsh' .update-list; then
         ZDOTDIR=$(zsh -c 'echo $ZDOTDIR')
         cp $OBJ "$ZDOTDIR"
@@ -462,6 +467,10 @@ control::uninstall() {
     rm -rf "$XDG_CONFIG_HOME/kitty"
   fi
 
+  if grep -q '^hammerspoon' .update-list; then
+    rm -rf "$HOME/.hammerspoon"
+  fi
+
   if utils::is_linux && grep -q '^systemd' .update-list; then
     ECHO Reverting systemd OOM hardening..
     NOTE 210 'Removing drop-ins under /etc/ — sudo will prompt for your password.'
@@ -572,6 +581,10 @@ control::uninstall() {
 
     kitty)
       cp -R $OBJ "$XDG_CONFIG_HOME"
+      ;;
+
+    .hammerspoon)
+      cp -R $OBJ ~
       ;;
 
     custom.js)

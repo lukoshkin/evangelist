@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Discover Claude Code artifacts in the canonical source tree."""
 
 import re

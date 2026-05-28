@@ -1,0 +1,50 @@
+2026-05-27 Hammerspoon macOS global hotkeys
+
+Summary
+- Installed Hammerspoon with Homebrew.
+- Added a global hotkey config at ~/.hammerspoon/init.lua.
+- Kept Kitty and other terminal apps excluded so the previously configured Cmd -> Meta mappings still pass through there.
+- Added Hammerspoon to macOS login items so the hotkeys come back after restart.
+
+Installed with
+- brew install --cask hammerspoon
+
+Configured file
+- ~/.hammerspoon/init.lua
+
+Configured shortcuts outside terminal apps
+- cmd+h   -> left half of current screen
+- cmd+j   -> bottom half of current screen
+- cmd+k   -> top half of current screen
+- cmd+l   -> right half of current screen
+- cmd+f   -> maximize window
+- cmd+b   -> restore the previous window size
+- shift+cmd+h -> move focused window to monitor on the left
+- shift+cmd+j -> move focused window to monitor below
+- shift+cmd+k -> move focused window to monitor above
+- shift+cmd+l -> move focused window to monitor on the right
+- shift+cmd+s -> interactive screenshot saved to Desktop
+
+Terminal apps explicitly bypassed
+- kitty
+- Terminal.app
+- iTerm2
+
+Notes
+- The Hammerspoon config uses an event tap instead of plain global hotkeys so terminal apps can still receive the original keypresses.
+- macOS requires Accessibility permission for Hammerspoon to move windows and intercept these shortcuts.
+- macOS may also request Screen Recording permission for screenshot-related behavior.
+- `shift+cmd+h/j/k/l` and `shift+cmd+s` are handled globally even inside terminal apps.
+- `cmd+f` and `cmd+b` are handled globally even inside terminal apps.
+- Matching `shift+cmd+h/j/k/l` mappings were removed from Kitty so Hammerspoon owns those chords.
+
+Applied on this machine
+- Launched Hammerspoon after writing the config.
+- Added Hammerspoon to the current macOS login items.
+- Opened the Accessibility and Screen Recording privacy panes so the remaining permissions can be approved.
+- Restarted Hammerspoon after changing the ownership of `shift+cmd+h/j/k/l`.
+- Reloaded Kitty after removing conflicting `shift+cmd+h/j/k/l` terminal mappings.
+- Corrected the maximize toggle from `alt+f` to `cmd+f`.
+- Restarted Hammerspoon after the `cmd+f` change.
+- Split maximize/restore into `cmd+f` and `cmd+b`.
+- Restarted Hammerspoon after the `cmd+b` change.

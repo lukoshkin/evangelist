@@ -50,7 +50,7 @@ and the setup script will become more universal and cross-platform.
    - Linux / Bash 4+: `./evangelist.sh install <configs>`  
      macOS: `./evangelist.macos.zsh install <configs>`  
      where `<configs>` can be `bash`, `zsh`, `vim`, `tmux`, `jupyter`,
-     `kitty`, `systemd`, `ai`  
+     `kitty`, `hammerspoon`, `systemd`, `ai`  
      (you can specify more than one argument)
 
    - To ensure the command history transfer, you may run instead:  
@@ -553,8 +553,11 @@ the ones defined by **_evangelist_**.
   To use shortcuts involving `Meta` key on macOS, you need to check out
   the Meta key option in iTerm2 preferences. Also, you may need to make
   sure that there are no overlapping Meta key bindings with the ones
-  the system uses. In Neovim, you can try alternative bindings
-  involding command key (`<D-...>` instead of `<A-...>` and `<M-...>`).
+  the system uses. If you use kitty, evangelist ships macOS-only mappings
+  that make common `<Cmd-...>` chords send `Meta` sequences after
+  `./evangelist.sh install kitty`. In Neovim, you can also try
+  alternative bindings involving command key (`<D-...>` instead of
+  `<A-...>` and `<M-...>`).
 
 - **Tmux outputs errors on startup**
 

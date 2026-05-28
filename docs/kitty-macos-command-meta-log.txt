@@ -1,0 +1,69 @@
+2026-05-27 Kitty macOS Command-to-Meta mapping
+
+Summary
+- Added macOS-only Kitty overrides so common Command chords emit Meta/Alt sequences.
+- Installed the updated Kitty config into ~/.config/kitty/.
+- Reloaded the running Kitty process so the mappings took effect immediately.
+
+Repository changes
+- conf/kitty/kitty.conf
+  - Added: globinclude os/${KITTY_OS}.conf
+  - Removed the Linux-specific listen_on value from the shared config.
+
+- conf/kitty/os/macos.conf
+  - Added macOS-only mappings for:
+    cmd+h/j/k/l
+    shift+cmd+h/j/k/l
+    cmd+m/n/p/r/s/t/w
+    shift+cmd+n/p
+    cmd+enter
+    cmd+[ and cmd+]
+    cmd+'
+    cmd+plus / shift+cmd+equal
+    cmd+minus
+  - Added a macOS-valid Kitty remote-control socket:
+    listen_on unix:/tmp/kitty
+
+- conf/kitty/os/linux.conf
+  - Added Linux-specific remote-control socket:
+    listen_on unix:@kitty
+
+- conf/kitty/os/bsd.conf
+  - Added BSD-specific remote-control socket:
+    listen_on unix:/tmp/kitty
+
+- _impl/install.bash4
+  - Changed Kitty installation to copy the whole conf/kitty/ tree so OS-specific files are installed too.
+
+- README.md
+  - Documented that evangelist ships Kitty macOS Command mappings after running:
+    ./evangelist.sh install kitty
+
+Applied on this machine
+- Installed with:
+  TERM=xterm-kitty ./evangelist.macos.zsh install kitty
+- Reloaded Kitty with:
+  kill -SIGUSR1 93825
+
+Notes
+- This maps selected Command chords used by evangelist; it does not globally transform every Command keypress into Meta.
+- Common macOS paste behavior (for example cmd+v) was intentionally left untouched.
+
+2026-05-28 Kitty macOS Option/Alt handling for external keyboard
+
+Summary
+- Tried enabling Kitty's native macOS Option/Alt handling for both Alt keys.
+- Reverted it after it caused a regression on the internal keyboard and did not fix the external USB keyboard.
+
+Repository changes
+- conf/kitty/os/macos.conf
+  - Added temporarily, then removed:
+    macos_option_as_alt both
+
+Applied on this machine
+- Updated then reverted:
+  ~/.config/kitty/os/macos.conf
+
+Notes
+- The Kitty-wide Option-as-Alt setting was too broad for this machine.
+- The remaining fix should be per-device in macOS Modifier Keys or in the external keyboard's own Mac/Win hardware mode, not as a global Kitty override.

@@ -45,7 +45,15 @@ alias fd='find . -type d -name'
 alias ff='find . -type f -name'
 alias grep='grep --color'
 alias rexgrep="grep -rIn --exclude-dir='.?*'"
-alias o='xdg-open'
+
+_has_external_command() {
+  if [[ -n $BASH_VERSION ]]; then
+    type -P "$1" &>/dev/null
+    return
+  fi
+
+  whence -p "$1" &>/dev/null
+}
 
 alias gl='git log'
 alias gd='git diff'
@@ -53,6 +61,10 @@ alias gds='git diff --staged'
 alias gs='git switch'
 alias glpr='git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset"'
 alias avante='nvim -c "lua vim.defer_fn(function()require(\"avante.api\").zen_mode()end, 100)"'
+
+o() {
+  command xdg-open "$@"
+}
 
 gswt() {
       if git diff --quiet; then
@@ -172,7 +184,7 @@ st() { # git STatus or STorage
       echo "You are in the home directory."
       return 1
     fi
-    eval "du -hm --max-depth=1 $1" | sort -n -r
+    command du -hm --max-depth=1 "${@:-.}" | sort -h -r
   fi
 }
 
@@ -274,7 +286,7 @@ dtree() {
 }
 
 tree() {
-  if ! command -v tree &>/dev/null; then
+  if ! _has_external_command tree; then
     dtree "$1"
     return
   fi
@@ -390,7 +402,7 @@ archview() {
     echo "archview: server failed to start on port $port (already in use?)" >&2
     return 1
   fi
-  xdg-open "http://127.0.0.1:$port" 2>/dev/null
+  o "http://127.0.0.1:$port" 2>/dev/null
   wait $pid
 }
 
@@ -472,6 +484,9 @@ join_by() {
   grep -q '^source .*slime\.vim' "$XDG_CONFIG_HOME/nvim/init.vim" &&
   grep -q '^source .*ipython\.vim' "$XDG_CONFIG_HOME/nvim/init.vim") \
   &>/dev/null && source "$EVANGELIST/conf/tmux/templates.sh"
+
+[[ $(uname) = Darwin && -f "$EVANGELIST/conf/bash/aliases-functions.macos.sh" ]] \
+  && source "$EVANGELIST/conf/bash/aliases-functions.macos.sh"
 
 ## Save to use from the interactive shell?
 # unset _shell

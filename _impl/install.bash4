@@ -7,7 +7,7 @@
 ## ####  if they might contain spaces.
 
 install::check_arguments() {
-  local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter, git, kitty, systemd, ai'
+  local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter, git, kitty, hammerspoon, systemd, ai'
   local arg
 
   if [[ $# -ne 0 ]]; then
@@ -487,10 +487,32 @@ install::kitty_settings() {
     d:"$XDG_CONFIG_HOME/kitty"
 
   mkdir -p "$XDG_CONFIG_HOME/kitty"
-  cp conf/kitty/kitty.conf "$XDG_CONFIG_HOME/kitty/"
-  cp conf/kitty/open-actions.conf "$XDG_CONFIG_HOME/kitty/"
+  cp -R conf/kitty/* "$XDG_CONFIG_HOME/kitty/"
 
   ECHO Successfully installed: Kitty configuration.
+}
+
+install::hammerspoon_settings() {
+  ECHO Installing Hammerspoon configuration..
+
+  utils::is_macos || {
+    ECHO2 'Hammerspoon configuration is intended for macOS only.'
+    return 1
+  }
+
+  HAS hs || {
+    ECHO2 'Hammerspoon is not installed. Install it with: brew install --cask hammerspoon'
+    return 1
+  }
+
+  utils::back_up_original_configs hammerspoon \
+    d:"$HOME/.hammerspoon:.hammerspoon"
+
+  mkdir -p "$HOME/.hammerspoon"
+  cp -R conf/hammerspoon/* "$HOME/.hammerspoon/"
+
+  ECHO Successfully installed: Hammerspoon configuration.
+  NOTE 210 'Launch Hammerspoon and grant Accessibility / Screen Recording permissions if macOS prompts.'
 }
 
 install::ai_settings() {
