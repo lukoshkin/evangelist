@@ -62,6 +62,10 @@ return {
           "r-cr-o:hor20",
         }
         vim.api.nvim_set_hl(0, "Cursor", {
+          --- Block (background) color only. In a terminal nvim cannot color
+          --- the glyph under the cursor — that's the terminal's
+          --- 'cursor_text_color' (see conf/kitty/kitty.conf). 'fg' here would
+          --- only take effect in a GUI build (neovide), so it's omitted.
           fg = nil,
           bg = "gray14",
         })
