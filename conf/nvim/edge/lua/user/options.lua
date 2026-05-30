@@ -1,6 +1,7 @@
 vim.g.maplocalleader = " "
 --- Syntax highlighting for embedded code (e.g., in vim.cmd[[]])
 vim.g.vimsyn_embed = "lP"
+vim.g.loaded_ruby_provider = 0 --- No Ruby plugins; keep :checkhealth clean.
 vim.g.winbar_first_sep = " 〉"
 
 local options = {

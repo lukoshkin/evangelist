@@ -22,7 +22,6 @@ RUN cd $HOME/.config/evangelist \
     && rm -rf /var/lib/apt/lists/* \
     && locale-gen en_US.UTF-8 \
     && npm install -g neovim \
-    && gem install neovim \
     && chown -R $USER:$USER "$HOME"
 
 USER $USER

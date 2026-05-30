@@ -32,6 +32,7 @@ control::help() {
   printf '  %-18s Install one or all of the specified setups: bash zsh git vim tmux jupyter kitty hammerspoon systemd.\n' 'install [--clean]'
   printf '  %-18s Install with extensions if they are provided (beta).\n' 'install+'
   printf '  %-18s Update the repository and installed configs.\n' 'update'
+  printf '  %-18s Deploy local (uncommitted) config changes without pulling.\n' 'update --local'
   printf '  %-18s Force update of the repository in case of merge conflicts.\n' 'reinstall'
   printf '  %-18s Roll back to the original settings.\n\n' 'uninstall'
 
@@ -254,36 +255,57 @@ control::update() {
     exit
   }
 
-  [[ $1 != SKIP ]] && ECHO Checking for updates..
+  local LOCAL=false
+  [[ $1 == --local || $1 == -l ]] && { LOCAL=true; shift; }
 
-  git fetch -q
   local BRANCH UPD
   BRANCH=$(git rev-parse --abbrev-ref HEAD)
-  UPD=$(git diff --name-only ..origin/"$BRANCH")
-  [[ -z "$UPD" ]] && {
-    ECHO Up to date.
-    exit
-  }
 
-  SRC=(evangelist.sh _impl)
+  if $LOCAL; then
+    ## Deploy local edits (uncommitted and/or committed-but-unpushed) to the
+    ## running system without touching the remote. Diff the working tree
+    ## against the last-known origin ref so the per-component logic below
+    ## redeploys exactly what changed. Fall back to HEAD when no origin ref
+    ## exists (offline first clone, detached HEAD).
+    local base=HEAD
+    git rev-parse --verify -q "origin/$BRANCH" >/dev/null &&
+      base="origin/$BRANCH"
+    ECHO "Deploying local changes (vs $base).."
+    UPD=$(git diff --name-only "$base")
+    [[ -z "$UPD" ]] && {
+      ECHO 'No local changes to deploy.'
+      exit
+    }
+  else
+    [[ $1 != SKIP ]] && ECHO Checking for updates..
 
-  ## TODO: Add hook to handle updates that cannot be resolved
-  ##       by the following code in the 'if'-statement.
-  ## E.g.: If the structure of '.update-list' changes during development,
-  ##       one must rewrite the file if it was generated
-  ##       with old installation scripts.
-  if [[ $1 != SKIP ]] && utils::str_has_any "$UPD" "${SRC[@]}"; then
-    ECHO Self-updating..
+    git fetch -q
+    UPD=$(git diff --name-only ..origin/"$BRANCH")
+    [[ -z "$UPD" ]] && {
+      ECHO Up to date.
+      exit
+    }
 
-    git checkout "origin/$BRANCH" -- "${SRC[@]}"
+    SRC=(evangelist.sh _impl)
 
-    $SHELL "$0" update SKIP
-    exit
+    ## TODO: Add hook to handle updates that cannot be resolved
+    ##       by the following code in the 'if'-statement.
+    ## E.g.: If the structure of '.update-list' changes during development,
+    ##       one must rewrite the file if it was generated
+    ##       with old installation scripts.
+    if [[ $1 != SKIP ]] && utils::str_has_any "$UPD" "${SRC[@]}"; then
+      ECHO Self-updating..
+
+      git checkout "origin/$BRANCH" -- "${SRC[@]}"
+
+      $SHELL "$0" update SKIP
+      exit
+    fi
+
+    ECHO 'Updating installed components if any..'
+    write::commit_messages "$BRANCH"
+    git merge "origin/$BRANCH" || exit 1
   fi
-
-  ECHO 'Updating installed components if any..'
-  write::commit_messages "$BRANCH"
-  git merge "origin/$BRANCH" || exit 1
 
   ## TODO: Rewrite 'case + if' to 'if + case' ? too cumbersome now
   for OBJ in $(sed '/nvim/d' <<<"$UPD"); do
@@ -339,9 +361,13 @@ control::update() {
       ;;
 
     *)
-      if [[ $OBJ =~ kitty/ ]] && grep -q '^kitty' .update-list; then
-        mkdir -p "$XDG_CONFIG_HOME/kitty"
-        cp $OBJ "$XDG_CONFIG_HOME/kitty/"
+      if [[ $OBJ =~ ^conf/kitty/ ]] && grep -q '^kitty' .update-list; then
+        ## Preserve the tree under conf/kitty/ (e.g. os/linux.conf) instead
+        ## of flattening every file into the kitty root, matching how
+        ## install::kitty_settings deploys with `cp -R`.
+        rel=${OBJ#conf/kitty/}
+        mkdir -p "$XDG_CONFIG_HOME/kitty/$(dirname "$rel")"
+        cp "$OBJ" "$XDG_CONFIG_HOME/kitty/$rel"
       elif [[ $OBJ =~ hammerspoon/ ]] && grep -q '^hammerspoon' .update-list; then
         mkdir -p "$HOME/.hammerspoon"
         cp $OBJ "$HOME/.hammerspoon/"

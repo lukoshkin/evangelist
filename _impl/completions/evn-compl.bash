@@ -24,6 +24,11 @@ _evangelist() {
     return
     ;;
 
+  update)
+    list='--local'
+    [[ ${#COMP_WORDS[@]} -gt 3 ]] && return
+    ;;
+
   install)
     list=$subcmds
     local -i maxopts=10

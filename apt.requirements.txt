@@ -17,7 +17,6 @@ tmux
 wget
 curl
 fzf
-ruby-full
 fd-find
 ripgrep
 tree

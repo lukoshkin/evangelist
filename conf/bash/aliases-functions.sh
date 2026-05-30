@@ -115,6 +115,16 @@ gpub() {
 # alias v="vim +'e #<1'"
 # alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
 v() {
+  if [[ $# -eq 1 && -d $1 ]]; then
+    ## On a directory, open nvim-tree rooted at it instead of a blank
+    ## buffer (netrw is disabled). 'current_window' makes the tree fill
+    ## the window rather than splitting off a side panel next to an empty
+    ## buffer. The subshell keeps the caller's CWD unchanged; nvim-tree's
+    ## root follows nvim's CWD.
+    (cd "$1" && vim -c "lua require('nvim-tree.api').tree.open({ current_window = true })")
+    return
+  fi
+
   if [[ $# -gt 0 ]]; then
     vim "$@"
     return

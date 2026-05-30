@@ -25,6 +25,12 @@ return {
       markdown = { "markdownlint" }, -- 'write-good' should be installed manually
     }
 
+    --- nvim-lint ships defaults for many filetypes whose linters aren't in
+    --- Mason's registry (inko, janet, ruby, clj-kondo, ...). Drop them so
+    --- mason-nvim-lint only sees the linters we actually use and stops
+    --- warning about the rest.
+    lint.linters_by_ft = {}
+
     --- Filter out linters whose binaries are not installed.
     --- Mason (VeryLazy) may not have installed them yet on
     --- first buffer open.

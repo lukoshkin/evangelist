@@ -207,7 +207,6 @@ Valid modes are 'user', 'auto'"
     pkg-config
     python
     ripgrep
-    ruby
     tmux
     tree
     wget
