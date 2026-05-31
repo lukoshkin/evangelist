@@ -49,6 +49,49 @@ Notes
 - This maps selected Command chords used by evangelist; it does not globally transform every Command keypress into Meta.
 - Common macOS paste behavior (for example cmd+v) was intentionally left untouched.
 
+2026-05-30 Kitty macOS Shift+Backspace forward delete
+
+Summary
+- Added a Kitty binding so `shift+backspace` sends the terminal Delete sequence.
+- Added a matching macOS zsh binding so that sequence deletes the character ahead of the cursor on the command line.
+
+Repository changes
+- conf/kitty/os/macos.conf
+  - Added:
+    map shift+backspace send_text all \x1b[3~
+
+- conf/zsh/macos.zsh
+  - Added:
+    bindkey -M viins '^[[3~' delete-char
+
+Applied on this machine
+- Updated:
+  ~/.config/kitty/os/macos.conf
+
+Notes
+- Existing Kitty windows need a config reload, and existing shells need a new zsh session before the new `bindkey` takes effect.
+
+2026-05-31 Kitty macOS cleanup of broken remaps
+
+Summary
+- Removed the non-working `cmd+h/j/k/l` Kitty Meta mappings from the repo and live Kitty config.
+- Kept the remaining Kitty mappings unchanged, including `shift+backspace` forward delete.
+
+Repository changes
+- conf/kitty/os/macos.conf
+  - Removed:
+    map cmd+h send_text normal,application \x1bh
+    map cmd+j send_text normal,application \x1bj
+    map cmd+k send_text normal,application \x1bk
+    map cmd+l send_text normal,application \x1bl
+
+Applied on this machine
+- Updated:
+  ~/.config/kitty/os/macos.conf
+
+Notes
+- Custom macOS key-repeat overrides were also removed from `NSGlobalDomain`, returning repeat-rate control to the system defaults.
+
 2026-05-28 Kitty macOS Option/Alt handling for external keyboard
 
 Summary

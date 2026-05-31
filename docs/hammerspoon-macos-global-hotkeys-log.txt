@@ -19,11 +19,12 @@ Configured shortcuts outside terminal apps
 - cmd+l   -> right half of current screen
 - cmd+f   -> maximize window
 - cmd+b   -> restore the previous window size
+- cmd+d   -> toggle desktop visibility by hiding and restoring visible apps
 - shift+cmd+h -> move focused window to monitor on the left
 - shift+cmd+j -> move focused window to monitor below
 - shift+cmd+k -> move focused window to monitor above
 - shift+cmd+l -> move focused window to monitor on the right
-- shift+cmd+s -> interactive screenshot saved to Desktop
+- shift+cmd+s -> interactive screenshot copied to clipboard
 
 Terminal apps explicitly bypassed
 - kitty
@@ -48,3 +49,13 @@ Applied on this machine
 - Restarted Hammerspoon after the `cmd+f` change.
 - Split maximize/restore into `cmd+f` and `cmd+b`.
 - Restarted Hammerspoon after the `cmd+b` change.
+- Switched `shift+cmd+s` from saving on Desktop to copying the interactive screenshot to the clipboard.
+- Added `cmd+d` as a desktop toggle that hides visible apps (except Finder and Hammerspoon) and restores those same apps on the next press.
+- Added a short debounce so one keypress cannot immediately flip the desktop toggle back while the hide pass is still finishing.
+- Rebound `shift+cmd+h/j/k/l` as direct Hammerspoon hotkeys instead of relying only on the event tap, so monitor moves keep working even when the event-tap path is flaky.
+- Added browser-scoped `option+c`, `option+v`, and `option+w` aliases that emit the native `cmd+c`, `cmd+v`, and `cmd+w` shortcuts while a supported browser is frontmost.
+- Moved those browser aliases into the main event-tap path so they do not depend on a separate app-watcher hotkey toggle.
+- Removed the non-working `cmd+h/j/k/l`, `cmd+f`, `cmd+b`, and browser `option+c/v/w` remaps from both the repo config and the live Hammerspoon config, leaving only the working screenshot, monitor-move, and desktop-toggle bindings.
+- Re-added `cmd+h/j/k/l` one by one for testing, this time as direct Hammerspoon hotkeys that place the focused window into the left, bottom, top, and right halves of the current screen.
+- Re-added `cmd+f` and `cmd+b` one by one for testing, this time as direct Hammerspoon hotkeys for maximize and restore using the remembered previous window frame.
+- Tried global `option+c`, `option+v`, and `option+w` hotkeys that emit the native `cmd+c`, `cmd+v`, and `cmd+w` shortcuts everywhere, but removed them again after confirming this Mac currently blocks synthetic keystrokes from automation.

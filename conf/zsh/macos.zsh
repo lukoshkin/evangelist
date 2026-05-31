@@ -18,6 +18,7 @@ alias zshrc="vim $EVANGELIST/custom/custom.zsh"
 bindkey -v
 bindkey -M viins 'jj' vi-cmd-mode
 bindkey -M viins '^?' backward-delete-char
+bindkey -M viins '^[[3~' delete-char
 bindkey -M vicmd 'k' history-substring-search-up
 bindkey -M vicmd 'j' history-substring-search-down
 bindkey -M vicmd '/' history-interactive-fuzzy-search
