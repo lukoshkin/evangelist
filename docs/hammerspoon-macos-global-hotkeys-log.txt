@@ -13,18 +13,21 @@ Configured file
 - ~/.hammerspoon/init.lua
 
 Configured shortcuts outside terminal apps
-- cmd+h   -> left half of current screen
-- cmd+j   -> bottom half of current screen
-- cmd+k   -> top half of current screen
-- cmd+l   -> right half of current screen
-- cmd+f   -> maximize window
-- cmd+b   -> restore the previous window size
-- cmd+d   -> toggle desktop visibility by hiding and restoring visible apps
-- shift+cmd+h -> move focused window to monitor on the left
-- shift+cmd+j -> move focused window to monitor below
-- shift+cmd+k -> move focused window to monitor above
-- shift+cmd+l -> move focused window to monitor on the right
-- shift+cmd+s -> interactive screenshot copied to clipboard
+- cmd+h        -> left half of current screen
+- cmd+l        -> right half of current screen
+- ctrl+cmd+j   -> bottom half of current screen
+- ctrl+cmd+k   -> top half of current screen
+- ctrl+cmd+f   -> maximize window
+- ctrl+cmd+b   -> restore the previous window size
+- cmd+d        -> toggle desktop visibility by hiding and restoring visible apps
+- shift+cmd+h  -> move focused window to monitor on the left
+- shift+cmd+j  -> move focused window to monitor below
+- shift+cmd+k  -> move focused window to monitor above
+- shift+cmd+l  -> move focused window to monitor on the right
+- shift+cmd+s  -> interactive screenshot copied to clipboard
+
+System-wide key remaps (Hammerspoon eventtap)
+- shift+backspace -> forward delete
 
 Terminal apps explicitly bypassed
 - kitty
@@ -36,7 +39,7 @@ Notes
 - macOS requires Accessibility permission for Hammerspoon to move windows and intercept these shortcuts.
 - macOS may also request Screen Recording permission for screenshot-related behavior.
 - `shift+cmd+h/j/k/l` and `shift+cmd+s` are handled globally even inside terminal apps.
-- `cmd+f` and `cmd+b` are handled globally even inside terminal apps.
+- `option+cmd+f/b` and `ctrl+cmd+f/b` are handled globally even inside terminal apps.
 - Matching `shift+cmd+h/j/k/l` mappings were removed from Kitty so Hammerspoon owns those chords.
 
 Applied on this machine
@@ -58,4 +61,10 @@ Applied on this machine
 - Removed the non-working `cmd+h/j/k/l`, `cmd+f`, `cmd+b`, and browser `option+c/v/w` remaps from both the repo config and the live Hammerspoon config, leaving only the working screenshot, monitor-move, and desktop-toggle bindings.
 - Re-added `cmd+h/j/k/l` one by one for testing, this time as direct Hammerspoon hotkeys that place the focused window into the left, bottom, top, and right halves of the current screen.
 - Re-added `cmd+f` and `cmd+b` one by one for testing, this time as direct Hammerspoon hotkeys for maximize and restore using the remembered previous window frame.
+- Bound maximize and restore on both `option+cmd+f/b` and `ctrl+cmd+f/b` so app-native search and bold shortcuts keep their default behavior while this Mac's modifier mapping remains inconsistent.
 - Tried global `option+c`, `option+v`, and `option+w` hotkeys that emit the native `cmd+c`, `cmd+v`, and `cmd+w` shortcuts everywhere, but removed them again after confirming this Mac currently blocks synthetic keystrokes from automation.
+- Changed the bottom/top half-screen shortcuts from `cmd+j/k` to `option+cmd+j/k` so terminal `cmd+j/k` can keep accepting zsh history suggestions while desktop window placement still has dedicated bottom/top keys.
+- Replaced that `option+cmd+j/k` pair with `ctrl+cmd+j/k` after the vertical split bindings still failed to trigger reliably.
+- Freed `cmd+j/k` for kitty terminal use (zsh history prefix search): added `map cmd+j/k send_text \x1bj/k` to kitty's macos.conf, reassigned kitty's "Clear to Start" menu shortcut away from `cmd+k` via `defaults write net.kovidgoyal.kitty NSUserKeyEquivalents`, and updated zsh viins bindings so `^[j/k` do history search in both insert and command modes.
+- Confirmed `option+cmd+f/b` cannot be used for maximize/restore: `option+cmd+f` triggers macOS native full-screen (hides Dock and menu bar entirely), and `option+cmd+b` stopped responding when both were bound. `ctrl+cmd+f/b` remain the correct bindings.
+- Added system-wide shift+backspace → forward delete via Hammerspoon eventtap. Required deploying init.lua to ~/.hammerspoon/ (evangelist uses cp, not symlinks) and granting Input Monitoring permission to Hammerspoon.

@@ -6,6 +6,8 @@ alias -g .....=../../../..
 alias -g ......=../../../../..
 alias ls='ls -G'
 
+command -v nvim &>/dev/null && alias vim=nvim
+
 alias _zshrc="vim $ZDOTDIR/.zshrc"
 alias zshrc="vim $EVANGELIST/custom/custom.zsh"
 ## To list all active aliases, run `alias`
@@ -58,8 +60,8 @@ function insert-space-cmd-mode() {
 
 zle -N insert-space-cmd-mode
 
-bindkey -M viins '^[k' insert-space-cmd-mode
-bindkey -M viins '^[j' insert-space-cmd-mode
+bindkey -M viins '^[k' up-line-or-beginning-search
+bindkey -M viins '^[j' down-line-or-beginning-search
 bindkey -M vicmd '^[k' up-line-or-beginning-search
 bindkey -M vicmd '^[j' down-line-or-beginning-search
 

@@ -127,13 +127,30 @@ local function restore_window()
   previous_frames[window_id] = nil
 end
 
+-- shift+backspace → forward delete, system-wide
+local shift_backspace_remap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
+  local flags = event:getFlags()
+  if hs.keycodes.map[event:getKeyCode()] == "delete"
+    and flags.shift
+    and not flags.cmd
+    and not flags.alt
+    and not flags.ctrl
+  then
+    hs.eventtap.keyStroke({}, "forwarddelete", 0)
+    return true
+  end
+  return false
+end)
+
+shift_backspace_remap:start()
+
 hs.hotkey.bind({ "cmd", "shift" }, "s", interactive_screenshot)
 hs.hotkey.bind({ "cmd" }, "h", function() place_in_half("h") end)
-hs.hotkey.bind({ "cmd" }, "j", function() place_in_half("j") end)
-hs.hotkey.bind({ "cmd" }, "k", function() place_in_half("k") end)
 hs.hotkey.bind({ "cmd" }, "l", function() place_in_half("l") end)
-hs.hotkey.bind({ "cmd" }, "f", maximize_window)
-hs.hotkey.bind({ "cmd" }, "b", restore_window)
+hs.hotkey.bind({ "cmd", "ctrl" }, "j", function() place_in_half("j") end)
+hs.hotkey.bind({ "cmd", "ctrl" }, "k", function() place_in_half("k") end)
+hs.hotkey.bind({ "cmd", "ctrl" }, "f", maximize_window)
+hs.hotkey.bind({ "cmd", "ctrl" }, "b", restore_window)
 hs.hotkey.bind({ "cmd", "shift" }, "h", function() move_to_screen_direction("h") end)
 hs.hotkey.bind({ "cmd", "shift" }, "j", function() move_to_screen_direction("j") end)
 hs.hotkey.bind({ "cmd", "shift" }, "k", function() move_to_screen_direction("k") end)
