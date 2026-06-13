@@ -1,5 +1,6 @@
 return {
   "yetone/avante.nvim",
+  enabled = false,
   -- version = "0.0.27",
   version = false, -- nightly build
   event = "VeryLazy",

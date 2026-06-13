@@ -119,7 +119,7 @@ return {
   event = "VeryLazy",
   opts = {
     extensions = {
-      avante = { make_slash_commands = true },
+      -- avante = { make_slash_commands = true },
     },
     native_servers = {
       formatters = {

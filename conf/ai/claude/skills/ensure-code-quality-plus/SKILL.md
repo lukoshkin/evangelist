@@ -1,19 +1,23 @@
 ---
-name: ensure-code-quality
-description: Use when about to claim a code change is complete or ready to commit in the current session, when wrapping up a coding task with edits to Python (or other) source files, or when the user explicitly invokes `/ensure-code-quality` (optional `extend` argument broadens scope to full touched files instead of just the lines Claude added).
+name: ensure-code-quality-plus
+description: >-
+  Stricter variant of `/ensure-code-quality`: review every quality violation in
+  the changes you introduced this session and fix them, with two extra teeth —
+  the automated Python guard-clause checker runs in rule 8, and rule 6 (no
+  in-function / mid-module imports) applies to `tests/` too, not just source.
+  **Default scope:** only the lines you added — the `+` lines from `git diff`
+  (staged and unstaged), plus the full contents of any untracked files you
+  created. Pre-existing lines stay out of scope.
 ---
-
-# Ensure Code Quality
-
-Review every quality violation in the changes you introduced this session and fix them. **Default scope:** only the lines you added — the `+` lines from `git diff` (staged and unstaged), plus the full contents of any untracked files you created. Pre-existing lines stay out of scope.
+Stricter variant of `/ensure-code-quality`: review every quality violation in the changes you introduced this session and fix them, with two extra teeth — the automated Python guard-clause checker runs in rule 8, and rule 6 (no in-function / mid-module imports) applies to `tests/` too, not just source. **Default scope:** only the lines you added — the `+` lines from `git diff` (staged and unstaged), plus the full contents of any untracked files you created. Pre-existing lines stay out of scope.
 
 **Extend mode (opt-in):** if the invocation includes `extend` (or `--full-files`) as an argument, broaden the scope to every line of the touched files (`git diff --name-only` + untracked), including flaws that predate your changes. Use this when the user wants the broader cleanup pass.
 
 Identify in-scope content from git, not from memory — memory drifts after a long session or a context summary. Edits stay confined to in-scope content; reading, though — rule 5 especially — may range across the whole codebase to spot existing abstractions.
 
-These checks are written with Python examples because most of this project is Python, but the underlying principles apply to every language. For touched files in other languages (TypeScript, shell, etc.), translate each rule into its idiomatic analog rather than skipping it — the per-rule notes below point out where the Python syntax most needs translation.
+These checks are written with Python examples because most of this project is Python, but the underlying principles apply to every language. For touched files in other languages (TypeScript, shell, etc.), translate each rule into its idiomatic analog rather than skipping it — the per-rule notes below point out where the Python syntax most needs translation. The rule for any language-specific tooling (like the guard-clause script at the end) is called out where it applies.
 
-Apply the checks in the order listed below. Rule 8 is verification and reporting only.
+Apply the checks in the order listed below. Blank-line discipline (rule 8) is intentionally the last *fix* step so that any other refactors (which often add or remove statements) settle first — fixing whitespace before the substantive checks just creates churn you'd have to redo. Rule 9 is verification and reporting only.
 
 ## 1. No speculative .get() on dicts
 
@@ -68,14 +72,30 @@ All imports belong at the top of the module. Do not place import statements insi
 
 **Other languages:** TS/JS — no `require()` or dynamic `import()` mid-file unless you are genuinely lazy-loading a heavy module behind a feature flag. Rust — `use` statements at the top of the module. Go enforces this at the language level; do not work around it with `init()` indirection.
 
-**Scope:** Apply this check to source code only (e.g. `src/`). Skip files under `tests/`, where mid-function imports occasionally serve fixture isolation or conditional construction. Use `/ensure_code_quality_plus` instead when you want this rule enforced on tests too.
+**Scope:** Apply this check to every touched file, **including `tests/`**. If a test file places imports mid-function to work around a fixture-construction issue or to isolate a heavy module, fix the fixture (or move the import to module top with a `pytest.importorskip` if the module is optional) rather than keep the deferred import.
 
 ## 7. Consistency with established patterns
 
 Follow conventions already present in the project: if surrounding code uses a particular caching strategy, validation style, or control-flow pattern and it fits the new context, adopt the same approach. Do not introduce a one-off alternative without a clear reason.
 
+## 8. Blank-line discipline
 
-## 8. Verify, then report
+Use blank lines to separate logical groups, not individual statements. A guard clause ending in return/raise/continue gets a blank line after it to visually detach it from the main flow. Consecutive statements that belong to the same logical unit (e.g. variable setup followed by the call that uses it) stay together.
+
+When a multiline expression ends with a closing parenthesis/bracket on its own line, do not add a blank line after it — the hanging closer already provides enough visual separation, whether the next line belongs to the same logical unit or a new one.
+
+Ruff (black-style formatter) handles the rest for Python — just avoid trailing commas, which force vertical spreading regardless of line length. For other languages, lean on the project's formatter (Prettier for TS/JS, gofmt, rustfmt) for whitespace beyond the guard-clause rule above.
+
+To detect guard-clause violations automatically (Python only), run:
+
+```bash
+python3 /home/lukoshkin/.config/evangelist/conf/ai/claude/scripts/check_guard_clauses.py <file1.py> [file2.py ...]
+```
+
+Fix every reported violation before proceeding. For non-Python files, apply the same guard-clause / closing-bracket discipline by eye — no script exists for those languages yet.
+
+## 9. Verify, then report
+
 Once all fixes are in, confirm they did not break anything. If the project defines a `code_checks` skill (or equivalent), use it — it already encodes the correct invocation. Otherwise:
 
 **Formatting and lint (Python: ruff).** Run ruff in an ephemeral env via `uvx`, scoped to the source tree — pass the touched files directly, or the enclosing source folder (e.g. `src/`). Never run it at the repo root: that drags in `node_modules/`, build artifacts, and vendored code, an unnecessary blast radius.
