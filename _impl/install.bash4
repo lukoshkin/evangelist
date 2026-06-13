@@ -489,11 +489,14 @@ install::kitty_settings() {
   mkdir -p "$XDG_CONFIG_HOME/kitty"
   cp -R conf/kitty/* "$XDG_CONFIG_HOME/kitty/"
 
-  ## Free cmd+k from kitty's "Clear to Start" menu shortcut so the kitty config
-  ## mapping (map cmd+k send_text \x1bk) can intercept it before macOS menus do.
   if utils::is_macos; then
-    defaults write net.kovidgoyal.kitty NSUserKeyEquivalents \
-      '{"Clear to Start" = "@^$k";}'
+    if ! defaults read net.kovidgoyal.kitty NSUserKeyEquivalents 2>/dev/null \
+         | grep -q '"Clear to Start".*"@\^'; then
+      NOTE 'Reassigning kitty "Clear to Start" menu shortcut from cmd+k to' \
+           'ctrl+shift+cmd+k so cmd+k is free for zsh history prefix search.'
+      defaults write net.kovidgoyal.kitty NSUserKeyEquivalents \
+        '{"Clear to Start" = "@^$k";}'
+    fi
   fi
 
   ECHO Successfully installed: Kitty configuration.

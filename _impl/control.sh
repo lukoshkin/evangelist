@@ -294,12 +294,19 @@ control::update() {
     ##       one must rewrite the file if it was generated
     ##       with old installation scripts.
     if [[ $1 != SKIP ]] && utils::str_has_any "$UPD" "${SRC[@]}"; then
-      ECHO Self-updating..
+      local local_ahead
+      local_ahead=$(git diff --name-only "origin/$BRANCH..HEAD" -- "${SRC[@]}" 2>/dev/null)
 
-      git checkout "origin/$BRANCH" -- "${SRC[@]}"
+      if [[ -n "$local_ahead" ]]; then
+        NOTE 'Local branch has unpushed commits to core scripts; skipping self-update checkout.'
+      else
+        ECHO Self-updating..
 
-      $SHELL "$0" update SKIP
-      exit
+        git checkout "origin/$BRANCH" -- "${SRC[@]}"
+
+        $BASH "$0" update SKIP
+        exit
+      fi
     fi
 
     ECHO 'Updating installed components if any..'
@@ -317,8 +324,10 @@ control::update() {
 
     bashrc)
       if grep -q '^bash' .update-list; then
-        sed "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/r $OBJ
-            d }" ~/.bashrc >/tmp/evangelist-bashrc
+        sed "/>SED-UPDATE/,/<SED-UPDATE/{
+            />SED-UPDATE/r $OBJ
+            d
+          }" ~/.bashrc >/tmp/evangelist-bashrc
         mv /tmp/evangelist-bashrc ~/.bashrc
       fi
       ;;
@@ -332,8 +341,10 @@ control::update() {
 
     zshenv)
       if grep -q '^zsh' .update-list; then
-        sed "/>SED-UPDATE/,/<SED-UPDATE/{ />SED-UPDATE/r $OBJ
-            d }" ~/.zshenv >/tmp/evangelist-zshenv
+        sed "/>SED-UPDATE/,/<SED-UPDATE/{
+            />SED-UPDATE/r $OBJ
+            d
+          }" ~/.zshenv >/tmp/evangelist-zshenv
         mv /tmp/evangelist-zshenv ~/.zshenv
       fi
       ;;
