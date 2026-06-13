@@ -5,7 +5,7 @@ local half_screen_units = {
   h = hs.layout.left50,
   j = { 0, 0.5, 1, 0.5 },
   k = { 0, 0, 1, 0.5 },
-  l = hs.layout.right50
+  l = hs.layout.right50,
 }
 
 local function focused_window()
@@ -14,13 +14,13 @@ local function focused_window()
     return nil
   end
 
- return win
+  return win
 end
 
 local function move_to_screen_direction(key)
- local win = focused_window()
- if not win then
-   return
+  local win = focused_window()
+  if not win then
+    return
   end
 
   if key == "h" then
@@ -44,13 +44,13 @@ local function place_in_half(key)
 end
 
 local function interactive_screenshot()
- hs.task.new("/usr/sbin/screencapture", nil, { "-i", "-c" }):start()
+  hs.task.new("/usr/sbin/screencapture", nil, { "-i", "-c" }):start()
 end
 
 local function reveal_desktop()
- local now = hs.timer.secondsSinceEpoch()
- if now - last_desktop_toggle_at < 1 then
-   return
+  local now = hs.timer.secondsSinceEpoch()
+  if now - last_desktop_toggle_at < 1 then
+    return
   end
   last_desktop_toggle_at = now
 
@@ -67,10 +67,12 @@ local function reveal_desktop()
 
   for _, app in ipairs(hs.application.runningApplications()) do
     local bundle_id = app:bundleID()
-    if bundle_id ~= "com.apple.finder"
+    if
+      bundle_id ~= "com.apple.finder"
       and bundle_id ~= "org.hammerspoon.Hammerspoon"
       and not app:isHidden()
-      and app:kind() == 1 then
+      and app:kind() == 1
+    then
       hidden_desktop_apps[app:pid()] = true
       app:hide()
     end
@@ -128,31 +130,51 @@ local function restore_window()
 end
 
 -- shift+backspace → forward delete, system-wide
-local shift_backspace_remap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
-  local flags = event:getFlags()
-  if hs.keycodes.map[event:getKeyCode()] == "delete"
-    and flags.shift
-    and not flags.cmd
-    and not flags.alt
-    and not flags.ctrl
-  then
-    hs.eventtap.keyStroke({}, "forwarddelete", 0)
-    return true
+local shift_backspace_remap = hs.eventtap.new(
+  { hs.eventtap.event.types.keyDown },
+  function(event)
+    local flags = event:getFlags()
+    if
+      hs.keycodes.map[event:getKeyCode()] == "delete"
+      and flags.shift
+      and not flags.cmd
+      and not flags.alt
+      and not flags.ctrl
+    then
+      hs.eventtap.keyStroke({}, "forwarddelete", 0)
+      return true
+    end
+    return false
   end
-  return false
-end)
+)
 
 shift_backspace_remap:start()
 
 hs.hotkey.bind({ "cmd", "shift" }, "s", interactive_screenshot)
-hs.hotkey.bind({ "cmd" }, "h", function() place_in_half("h") end)
-hs.hotkey.bind({ "cmd" }, "l", function() place_in_half("l") end)
-hs.hotkey.bind({ "cmd", "ctrl" }, "j", function() place_in_half("j") end)
-hs.hotkey.bind({ "cmd", "ctrl" }, "k", function() place_in_half("k") end)
+hs.hotkey.bind({ "cmd", "ctrl" }, "h", function() place_in_half "h" end)
+hs.hotkey.bind({ "cmd", "ctrl" }, "l", function() place_in_half "l" end)
+hs.hotkey.bind({ "cmd", "ctrl" }, "j", function() place_in_half "j" end)
+hs.hotkey.bind({ "cmd", "ctrl" }, "k", function() place_in_half "k" end)
 hs.hotkey.bind({ "cmd", "ctrl" }, "f", maximize_window)
 hs.hotkey.bind({ "cmd", "ctrl" }, "b", restore_window)
-hs.hotkey.bind({ "cmd", "shift" }, "h", function() move_to_screen_direction("h") end)
-hs.hotkey.bind({ "cmd", "shift" }, "j", function() move_to_screen_direction("j") end)
-hs.hotkey.bind({ "cmd", "shift" }, "k", function() move_to_screen_direction("k") end)
-hs.hotkey.bind({ "cmd", "shift" }, "l", function() move_to_screen_direction("l") end)
+hs.hotkey.bind(
+  { "cmd", "shift" },
+  "h",
+  function() move_to_screen_direction "h" end
+)
+hs.hotkey.bind(
+  { "cmd", "shift" },
+  "j",
+  function() move_to_screen_direction "j" end
+)
+hs.hotkey.bind(
+  { "cmd", "shift" },
+  "k",
+  function() move_to_screen_direction "k" end
+)
+hs.hotkey.bind(
+  { "cmd", "shift" },
+  "l",
+  function() move_to_screen_direction "l" end
+)
 hs.hotkey.bind({ "cmd" }, "d", reveal_desktop)

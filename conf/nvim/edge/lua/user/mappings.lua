@@ -22,6 +22,12 @@ keymap("n", "<A-k>", "<S-o><Esc>")
 keymap("n", "<A-h>", "i<Space><Esc>")
 keymap("n", "<A-l>", "a<Space><Esc>")
 
+--- Macos equivalents
+keymap("n", "<D-j>", "o<Esc>")
+keymap("n", "<D-k>", "<S-o><Esc>")
+keymap("n", "<D-h>", "i<Space><Esc>")
+keymap("n", "<D-l>", "a<Space><Esc>")
+
 keymap("n", "<S-A-j>", "o<Esc>k")
 keymap("n", "<S-A-k>", "<S-o><Esc>j")
 keymap("n", "<S-A-h>", "i<Space><Esc>l")
@@ -34,18 +40,10 @@ keymap("n", "<C-k>", ":m-2<CR>==")
 keymap("v", "<C-j>", ":m'>+<CR>gv=gv")
 keymap("v", "<C-k>", ":m-2<CR>gv=gv")
 
-keymap("n", "<C-Left>", function()
-  fn.resize("-2", { vertical = true })
-end)
-keymap("n", "<C-Right>", function()
-  fn.resize("+2", { vertical = true })
-end)
-keymap("n", "<C-Down>", function()
-  fn.resize "-2"
-end)
-keymap("n", "<C-Up>", function()
-  fn.resize "+2"
-end)
+keymap("n", "<C-Left>", function() fn.resize("-2", { vertical = true }) end)
+keymap("n", "<C-Right>", function() fn.resize("+2", { vertical = true }) end)
+keymap("n", "<C-Down>", function() fn.resize "-2" end)
+keymap("n", "<C-Up>", function() fn.resize "+2" end)
 
 keymap("n", "<Space>z", function()
   local name = vim.fn.bufname()
@@ -77,12 +75,12 @@ keymap("n", "<Space>yy", fn.copy_line_to_regL)
 keymap("n", "<Space>y<Space>", fn.add_newline_to_regL)
 keymap("x", "<Space>y", fn.copy_selection_to_regL)
 keymap("n", "<Space>y8", fn.move_regL_content_to_clipboard)
-keymap("n", "<Space>yp", function()
-  fn.paste_regL_content { after = true }
-end)
-keymap("n", "<Space>yP", function()
-  fn.paste_regL_content { after = false }
-end)
+keymap("n", "<Space>yp", function() fn.paste_regL_content { after = true } end)
+keymap(
+  "n",
+  "<Space>yP",
+  function() fn.paste_regL_content { after = false } end
+)
 
 --- Paste from "0 register (last yank, unaffected by deletions)
 vim.keymap.set(
@@ -139,12 +137,12 @@ keymap("x", "<Space>bb", [[:call SplitBySep(getreg('/'))<CR>]])
 --- Re-split a `\`-continuation block to fit within textwidth.
 keymap("n", "<Space>b\\", fn.resplit_continuation)
 keymap("x", "<Space>b\\", function()
-  local l1 = vim.fn.line("v")
-  local l2 = vim.fn.line(".")
+  local l1 = vim.fn.line "v"
+  local l2 = vim.fn.line "."
   if l1 > l2 then
     l1, l2 = l2, l1
   end
-  fn.resplit_continuation({ line1 = l1, line2 = l2 })
+  fn.resplit_continuation { line1 = l1, line2 = l2 }
 end)
 
 --- Paste last yanked text in place of selected one.
@@ -170,15 +168,23 @@ keymap("n", "<Space>t", ":tabnew %<CR>")
 --- 1. symbol under the cursor
 --- 2. the whole line
 --- 3. the visually selected text
-keymap("n", "<Space>p", function()
-  fn.left_right_paste('yiwO<Esc>p$a=}""")<Esc>', '^iprint(f"""{<Esc>')
-end)
-keymap("n", "<Space>P", function()
-  fn.left_right_paste('$a=}""")<Esc>', '^iprint(f"""{<Esc>')
-end)
-keymap("v", "<Space>p", function()
-  fn.left_right_paste('yO<Esc>p$a=}""")<Esc>', '^iprint(f"""{<Esc>')
-end)
+keymap(
+  "n",
+  "<Space>p",
+  function()
+    fn.left_right_paste('yiwO<Esc>p$a=}""")<Esc>', '^iprint(f"""{<Esc>')
+  end
+)
+keymap(
+  "n",
+  "<Space>P",
+  function() fn.left_right_paste('$a=}""")<Esc>', '^iprint(f"""{<Esc>') end
+)
+keymap(
+  "v",
+  "<Space>p",
+  function() fn.left_right_paste('yO<Esc>p$a=}""")<Esc>', '^iprint(f"""{<Esc>') end
+)
 
 --- Start gutui in FloatingTerm instance of the 'bterm' plugin.
 -- keymap("n", "<Leader>g", fn.gitui)  -- I prefer neogit
@@ -219,11 +225,13 @@ keymap("n", "<Leader>w", function()
   )
 end, { noremap = true, silent = true })
 
-api.nvim_create_user_command("MasonReinstall", function()
-  require("user.mason-reinstall").reinstall_from_logfile()
-end, {
-  desc = "Reinstall Mason packages that failed due to lock files",
-})
+api.nvim_create_user_command(
+  "MasonReinstall",
+  function() require("user.mason-reinstall").reinstall_from_logfile() end,
+  {
+    desc = "Reinstall Mason packages that failed due to lock files",
+  }
+)
 
 --- Remove entry from quickfix list with dd.
 api.nvim_create_autocmd("FileType", {
@@ -231,7 +239,7 @@ api.nvim_create_autocmd("FileType", {
   callback = function(ev)
     vim.keymap.set("n", "dd", function()
       local qflist = vim.fn.getqflist()
-      local lnum = vim.fn.line(".")
+      local lnum = vim.fn.line "."
       table.remove(qflist, lnum)
       vim.fn.setqflist(qflist, "r")
       local new_lnum = math.min(lnum, #qflist)
