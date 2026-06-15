@@ -5,6 +5,22 @@ LLMM_PORT=${LLMM_PORT:-11111}
 LLMM_MODEL=${LLMM_MODEL:-'unsloth/Qwen3-Coder-Next-GGUF:UD-Q3_K_M'}
 LLMM_LOG_MAX_MIB=${LLMM_LOG_MAX_MIB:-50}   # rotate the server log past this size
 
+# Lean launch: strip Claude Code to a minimal, weak-model-friendly session
+# (no MCP, trimmed tools, --bare, a slim replacement system prompt, and a context
+# window the size of the real local window so auto-compaction fires in time).
+# Lean is on by default; `llmm --full` opts out per launch, `llmm --lean` forces it.
+LLMM_LEAN=${LLMM_LEAN:-1}
+# Path to a minimal MCP config json to re-admit under lean (e.g. just context7).
+# Empty = no MCP servers in lean mode.
+LLMM_MCP_CONFIG=${LLMM_MCP_CONFIG:-}
+# Path to a replacement system prompt for lean mode. Empty = the shipped
+# prompts/lean-coder.md (tuned for Qwen-class coder models).
+LLMM_SYSTEM_PROMPT=${LLMM_SYSTEM_PROMPT:-}
+# Auto-compact threshold, percent of the window (lean only). 80 => compact near 80%.
+LLMM_COMPACT_PCT=${LLMM_COMPACT_PCT:-80}
+# Per-launch window override is `llmm --ctx N`; the persistent default lives in
+# LLMM_PROFILES below (default.ctx_size). Raise it on machines with more RAM.
+
 # The Claude-facing alias is derived from the model automatically
 # (e.g. Qwen3-Coder-Next-UD-Q3_K_M) — no separate setting.
 

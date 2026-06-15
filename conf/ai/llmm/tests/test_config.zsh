@@ -79,3 +79,7 @@ _test_llmm_dispatch() {
   unset LLMM_LEAN
 }
 _test_llmm_dispatch
+
+# Shipped defaults parse under no_unset and define the lean knobs.
+assert_eq "$( source "$LLMM_ROOT/config.default.zsh"; print -r -- "${LLMM_LEAN}" )" 1 "default LLMM_LEAN=1"
+assert_eq "$( source "$LLMM_ROOT/config.default.zsh"; print -r -- "${LLMM_COMPACT_PCT}" )" 80 "default LLMM_COMPACT_PCT=80"
