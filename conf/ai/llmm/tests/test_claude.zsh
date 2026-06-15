@@ -22,6 +22,7 @@ assert_contains "$out" "ARG --strict-mcp-config" "lean passes --strict-mcp-confi
 assert_contains "$out" "ARG --tools" "lean passes --tools"
 assert_contains "$out" "ARG Bash" "lean keeps Bash"
 assert_contains "$out" "ARG TodoWrite" "lean keeps TodoWrite"
+assert_contains "$out" "ARG ExitPlanMode" "lean keeps ExitPlanMode for plan mode"
 assert_contains "$out" "ARG --system-prompt-file" "lean replaces system prompt via file"
 assert_not_contains "$out" "ARG --mcp-config" "lean omits --mcp-config when LLMM_MCP_CONFIG unset"
 assert_not_contains "$out" "ARG Task" "lean drops Task/subagents"

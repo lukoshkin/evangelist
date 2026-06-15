@@ -7,7 +7,7 @@
 #          real local window so auto-compaction triggers before the server overflows.
 
 # Built-in tools kept in lean mode (the irreducible coding core).
-typeset -ga CLAUDE_LEAN_TOOLS=(Bash Read Edit Write Grep Glob TodoWrite)
+typeset -ga CLAUDE_LEAN_TOOLS=(Bash Read Edit Write Grep Glob TodoWrite ExitPlanMode)
 
 # claude::lean_prompt -> path to the lean system-prompt file (override or repo default).
 # Dies if the resolved file is missing (bad override / broken install).
