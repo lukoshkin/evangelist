@@ -84,8 +84,10 @@ build_llamacpp() {
   if $REBUILD; then rm -rf "$src/build"; fi
   local flags; flags="$(cmake_backend_flags "$BACKEND")"
   say "configuring (backend=$BACKEND)"
+  # HTTPS model download (--hf-repo) is built in when OpenSSL is present;
+  # the old -DLLAMA_CURL flag is deprecated and ignored by current llama.cpp.
   # shellcheck disable=SC2086
-  cmake -S "$src" -B "$src/build" -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=ON $flags
+  cmake -S "$src" -B "$src/build" -DCMAKE_BUILD_TYPE=Release $flags
   say "building (this can take several minutes)"
   cmake --build "$src/build" --config Release -j --target llama-server
   # Install the server + shared libs into the XDG bin dir.
