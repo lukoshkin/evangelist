@@ -38,3 +38,25 @@ assert_eq "$LLMM_PORT" 99999 "env beats file"
 assert_eq "$LLMM_MODEL" from-file "file fills unset"
 unset LLMM_PORT LLMM_MODEL
 rm -f "$tmpcfg"
+
+# Dispatcher routing: stub the heavy functions, assert the right one is called.
+# Wrapped in a function (not a subshell) so assert_* update the harness counters,
+# and so the dispatcher's `setopt err_return …` is localized via local_options.
+_test_llmm_dispatch() {
+  emulate -L zsh
+  setopt local_options
+  export LLMM_ROOT="$LLMM_ROOT"
+  # Source dispatcher in "library mode" so it defines llmm::* without running main.
+  LLMM_NO_MAIN=1 source "$LLMM_ROOT/llmm"
+
+  # Stub side-effecting deps.
+  server::ensure() { print "ensure:$1:$2:$3:$4"; }
+  claude::launch() { print "launch:$1:$2"; }
+  models::pick()   { print "/picked/model-Q3_K_M.gguf"; }
+  config::load()   { :; }
+  LLMM_PORT=11111 LLMM_MODEL=/m.gguf LLMM_ALIAS=al
+
+  assert_contains "$(llmm::route help 2>&1)" "usage" "route help"
+  assert_rc 2 "$(llmm::route bogus >/dev/null 2>&1; echo $?)" "unknown subcommand rc"
+}
+_test_llmm_dispatch

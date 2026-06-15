@@ -1,0 +1,100 @@
+#!/usr/bin/env zsh
+# llmm — local-LLM server manager + Claude Code launcher.
+emulate -L zsh
+# Strict options live in llmm::main (the actual run), not at top level, so sourcing
+# this file in library mode (LLMM_NO_MAIN=1, e.g. tests) keeps clean defaults.
+# We deliberately do NOT use err_return: lib functions use non-zero return as data
+# (server::meta_get -> "absent", server::is_healthy -> "not healthy"), and
+# err_return would abort callers like status::report on those expected non-zeros.
+# Error handling is explicit instead (|| exit 1, || ui::die).
+
+# Resolve our real path (follows the PATH symlink back to the repo) and load libs.
+: ${LLMM_ROOT:="${0:A:h}"}
+for _u in ui config models server status claude; do
+  source "$LLMM_ROOT/lib/$_u.zsh"
+done
+
+llmm::usage() {
+  cat >&2 <<'EOF'
+usage: llmm [command] [flags]
+
+  (no command)        start default model, launch Claude Code
+  pick                pick a model, then start + launch
+  [pick] --minimal    use the minimal profile (small ctx, no warmup)
+  pull <repo[:quant]> download a model into the dedicated store
+  status | stat | stats   show server + hardware stats
+  logs [-f] [--tail N]    tail the server log (default --tail 100)
+  config              open the config in $EDITOR
+  kill                stop the running server
+  help                show this help
+EOF
+}
+
+llmm::start_path() {  # <profile> [extra claude args...]
+  local profile="$1"; shift
+  local model="$LLMM_MODEL" alias="$LLMM_ALIAS"
+  if [[ -n "${LLMM_PICK:-}" ]]; then
+    model="$(models::pick)" || exit 1
+    alias="${model:t:r}"
+  fi
+  if [[ -n "${SERVE_ONLY:-}" ]]; then
+    server::ensure "$profile" "$model" "$alias" "$LLMM_PORT" || exit 1
+    ui::info "SERVE_ONLY set — not launching claude"; exec tail -f /dev/null
+  fi
+  server::ensure "$profile" "$model" "$alias" "$LLMM_PORT" || exit 1
+  claude::launch "$alias" "$LLMM_PORT" "$@"
+}
+
+llmm::cmd_logs() {
+  local follow=0 tail_n=100
+  while (( $# )); do
+    case "$1" in
+      -f|--follow) follow=1; shift ;;
+      --tail) tail_n="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+  local lf="$(server::logfile "$LLMM_PORT")"
+  [[ -f "$lf" ]] || ui::die "no log at $lf"
+  if (( follow )); then tail -n "$tail_n" -f "$lf"; else tail -n "$tail_n" "$lf"; fi
+}
+
+llmm::cmd_config() {
+  config::seed
+  local ed="${EDITOR:-${VISUAL:-nvim}}"
+  exec "$ed" "$(config::file)"
+}
+
+# llmm::route <command> [args...] — pure routing; returns rc 2 on unknown command.
+llmm::route() {
+  local cmd="${1:-}"; [[ $# -gt 0 ]] && shift
+  # --minimal may appear as the command's flag on start paths.
+  local profile=default
+  local -a rest=()
+  local a
+  for a in "$@"; do
+    [[ "$a" == --minimal ]] && profile=minimal || rest+=("$a")
+  done
+
+  case "$cmd" in
+    ''|start)      llmm::start_path "$profile" "${rest[@]}" ;;
+    pick)          LLMM_PICK=1 llmm::start_path "$profile" "${rest[@]}" ;;
+    pull)          models::pull "${rest[1]:-}" ;;
+    status|stat|stats) status::report ;;
+    logs)          llmm::cmd_logs "${rest[@]}" ;;
+    config)        llmm::cmd_config ;;
+    kill)          server::kill "$LLMM_PORT" ;;
+    help|-h|--help) llmm::usage ;;
+    *)             ui::err "unknown command: $cmd"; llmm::usage; return 2 ;;
+  esac
+}
+
+llmm::main() {
+  emulate -L zsh
+  setopt no_unset pipe_fail
+  config::load
+  : ${LLMM_PORT:=11111}
+  llmm::route "$@"
+}
+
+[[ -n "${LLMM_NO_MAIN:-}" ]] || llmm::main "$@"
