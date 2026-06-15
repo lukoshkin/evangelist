@@ -84,9 +84,13 @@ menu).
   `LLMM_SYSTEM_PROMPT` (replacement prompt path; empty = shipped
   `prompts/lean-coder.md`), and `LLMM_COMPACT_PCT` (auto-compact threshold %,
   default 80). The effective context window is `--ctx N` > the active profile's
-  `ctx_size`; Claude Code is told that same window so auto-compaction triggers
-  before the local server overflows (it otherwise assumes 200K for custom
-  endpoints).
+  `ctx_size`; lean tells Claude Code that same window (via
+  `CLAUDE_CODE_MAX_CONTEXT_TOKENS` + `CLAUDE_CODE_AUTO_COMPACT_WINDOW`) and
+  disables its 1M-context classification (`CLAUDE_CODE_DISABLE_1M_CONTEXT`) so it
+  doesn't size the window from the model's nominal 256K/1M. Without this Claude
+  Code tags the endpoint `[1m]` and picks a ~100K auto-compact window that
+  overflows the local server. With it, `/context` reads the real window (e.g.
+  64K) and compaction fires at `LLMM_COMPACT_PCT`% of it (~52K at 80%).
 - Models: `$XDG_DATA_HOME/llmm/models` (`HF_HOME`); the built server lives
   under `$XDG_DATA_HOME/llmm/bin`.
 - Runtime state: `$XDG_STATE_HOME/llmm/{run,log}` — per-port `.meta` +
@@ -109,6 +113,8 @@ A local model's context window is small (≈32–64K on a 48 GB Mac for
 Qwen3-Coder-Next), but Claude Code's fixed overhead — built-in tools (~24K), MCP
 tool schemas (~17K), system prompt (~3–4K), memory (~4.5K), skills (~4K) — can eat
 ~50K of it before any work begins. Compaction only reclaims conversation tokens,
-not this fixed overhead, so the fix is to cut the overhead: lean mode recovers
-roughly 35–40K, leaving the window for actual code. Note 32K is the safe ctx floor
-on 48 GB; raise `default.ctx_size` (or use `--ctx`) on machines with more RAM.
+not this fixed overhead, so the fix is to cut the overhead: lean mode drops the
+fixed cost to **~1.8K** measured (system prompt ~0.6K, tools ~1.2K, no MCP /
+memory / skills), leaving essentially the whole window for actual code. Note 32K
+is the safe ctx floor on 48 GB; raise `default.ctx_size` (or use `--ctx`) on
+machines with more RAM.

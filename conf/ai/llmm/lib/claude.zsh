@@ -48,6 +48,8 @@ claude::launch() {
     prompt="$(claude::lean_prompt)" || exit 1
     pct="$(claude::compact_pct)" || exit 1
     cenv+=(
+      CLAUDE_CODE_DISABLE_1M_CONTEXT=1
+      CLAUDE_CODE_MAX_CONTEXT_TOKENS="$ctx"
       CLAUDE_CODE_AUTO_COMPACT_WINDOW="$ctx"
       CLAUDE_AUTOCOMPACT_PCT_OVERRIDE="$pct"
     )
