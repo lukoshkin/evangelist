@@ -7,7 +7,7 @@
 ## ####  if they might contain spaces.
 
 install::check_arguments() {
-  local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter, git, kitty, hammerspoon, systemd, ai'
+  local allowed='bash+/zsh+, bash/zsh, nvim/vim, tmux, jupyter, git, kitty, hammerspoon, systemd, ai, llmm'
   local arg
 
   if [[ $# -ne 0 ]]; then
@@ -584,6 +584,17 @@ install::ai_settings() {
   bash "$EVANGELIST/conf/ai/install.sh" "${install_args[@]}" || return 1
 
   ECHO Successfully installed: AI-assistant configuration.
+}
+
+install::llmm_settings() {
+  ECHO Installing llmm local-LLM manager..
+
+  ## macOS + Linux; builds llama.cpp from source via the canonical installer.
+  local -a args=()
+  [[ "${_AI_FORCE:-false}" == true ]] && args+=(--force)
+  bash "$EVANGELIST/conf/ai/llmm/install.sh" "${args[@]}" || return 1
+
+  ECHO Successfully installed: llmm.
 }
 
 install::systemd_settings() {

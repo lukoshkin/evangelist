@@ -3,7 +3,7 @@
 _evangelist() {
   opts=--version
   cmds='checkhealth install save load update reinstall uninstall'
-  subcmds='zsh bash git vim tmux jupyter kitty systemd'
+  subcmds='zsh bash git vim tmux jupyter kitty systemd ai llmm'
 
   list=$cmds
 
@@ -31,8 +31,8 @@ _evangelist() {
 
   install)
     list=$subcmds
-    local -i maxopts=10
-    # There are 8 standalone options: bash zsh git vim tmux jupyter kitty systemd.
+    local -i maxopts=12
+    # There are 10 standalone options: bash zsh git vim tmux jupyter kitty systemd ai llmm.
     # Plus, command and program names (i.e., evangelist install ...).
 
     # If line contains '+', the bundle covers git/vim/tmux/kitty, so only

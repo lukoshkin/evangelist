@@ -29,7 +29,7 @@ control::help() {
 
   echo -e '\nCommands:\n'
   printf '  %-18s Show the installation status or readiness to install.\n' 'checkhealth'
-  printf '  %-18s Install one or all of the specified setups: bash zsh git vim tmux jupyter kitty hammerspoon systemd.\n' 'install [--clean]'
+  printf '  %-18s Install one or all of the specified setups: bash zsh git vim tmux jupyter kitty hammerspoon systemd ai llmm.\n' 'install [--clean]'
   printf '  %-18s Install with extensions if they are provided (beta).\n' 'install+'
   printf '  %-18s Update the repository and installed configs.\n' 'update'
   printf '  %-18s Deploy local (uncommitted) config changes without pulling.\n' 'update --local'
@@ -112,6 +112,7 @@ control::checkhealth() {
   write::modulecheck KITTY o:kitty
   utils::is_macos && write::modulecheck HAMMERSPOON o:hs:hammerspoon
   utils::is_linux && write::modulecheck SYSTEMD r:systemctl r:sudo o:oomctl
+  write::modulecheck LLMM o:cmake o:llama-server o:fzf o:uv
 
   HAS conda || write::how_to_install_conda
 }
@@ -224,6 +225,7 @@ control::install() {
     hammerspoon) install::hammerspoon_settings ;;
     systemd) install::systemd_settings ;;
     ai) install::ai_settings ;;
+    llmm) install::llmm_settings ;;
     *)
       echo Impl.error: "<$_ARG>" should have thrown an error earlier.
       exit
@@ -399,13 +401,20 @@ control::update() {
     install::systemd_settings
   fi
 
-  if grep -qE '^conf/ai/' <<<"$UPD" && grep -q '^ai' .update-list; then
+  if grep -qE '^conf/ai/' <<<"$UPD" \
+    && grep -vE '^conf/ai/llmm/' <<<"$UPD" | grep -qE '^conf/ai/' \
+    && grep -q '^ai' .update-list; then
     ECHO 'Refreshing AI-assistant config..'
     local ai_state="${XDG_STATE_HOME:-$HOME/.local/state}/evangelist"
     local ai_mode ai_tool
     ai_mode=$(cat "$ai_state/ai-mode" 2>/dev/null || echo 1)
     ai_tool=$(cat "$ai_state/ai-tool" 2>/dev/null || echo all)
     bash "$EVANGELIST/conf/ai/install.sh" "$ai_mode" "$ai_tool"
+  fi
+
+  if grep -qE '^conf/ai/llmm/' <<<"$UPD" && grep -q '^llmm' .update-list; then
+    ECHO 'Refreshing llmm..'
+    bash "$EVANGELIST/conf/ai/llmm/install.sh" || ECHO2 "llmm refresh failed"
   fi
 
   if grep -qE '^n?vim' .update-list; then

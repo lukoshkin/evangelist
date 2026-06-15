@@ -16,7 +16,7 @@ _evangelist() {
   subcmds=(
     'zsh+:includes all settings except for bash, jupyter, and systemd.'
     'bash+:includes all settings except for zsh, jupyter, and systemd.'
-    'zsh' 'bash' 'git' 'vim' 'tmux' 'jupyter' 'kitty' 'systemd'
+    'zsh' 'bash' 'git' 'vim' 'tmux' 'jupyter' 'kitty' 'systemd' 'ai' 'llmm'
   )
 
   # '-A pattern' - do not complete options matching 'pattern'
@@ -42,8 +42,8 @@ _evangelist() {
       ;;
 
     (remaining)
-      integer maxopts=8
-      # There are 7 standalone options: bash zsh git vim tmux jupyter kitty systemd.
+      integer maxopts=10
+      # There are 9 standalone options: bash zsh git vim tmux jupyter kitty systemd ai llmm.
       # Plus, name of the command 'install'.
 
       # If $line contains '+', the bundle covers git/vim/tmux/kitty, so only
