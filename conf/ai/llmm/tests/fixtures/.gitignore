@@ -1,0 +1,3 @@
+# Test fixtures are committed deliberately; override any global *.log ignore
+# so sample server logs used by test_status.zsh stay tracked without `add -f`.
+!*.log
