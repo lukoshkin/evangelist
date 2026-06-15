@@ -59,6 +59,12 @@ menu).
 - `llmm` — start the default model and launch Claude Code.
 - `llmm pick` — pick a discovered model, then start + launch.
 - `llmm [pick] --minimal` — use the minimal profile (small ctx, no warmup).
+- `llmm [pick] --full` — full Claude Code session (default is **lean**: no MCP,
+  trimmed tools, `--bare`, a slim Qwen-tuned system prompt, and a context window
+  matched to the real local window). `--lean` forces lean explicitly.
+- `llmm [pick] --ctx N` — override the context window for this launch (e.g.
+  `--ctx 81920` for ~80K). Feeds both llama-server's `--ctx-size` and Claude
+  Code's `CLAUDE_CODE_AUTO_COMPACT_WINDOW`.
 - `llmm pull <repo[:quant]>` — download a model into the dedicated store.
 - `llmm status` (`stat`/`stats`) — system RAM + the managed server's
   pid/alias/model/RSS/ctx and the model's on-disk size.
@@ -73,6 +79,14 @@ menu).
   built-in defaults. Two profiles (`default`, `minimal`) hold
   `ctx_size`/`gpu_layers`/`flash_attn`/`warmup`/`mmap`. The Claude-facing
   alias is derived from the model name automatically (no separate setting).
+  Lean-mode knobs: `LLMM_LEAN` (1 = lean by default), `LLMM_MCP_CONFIG` (path to a
+  minimal MCP json to re-admit servers like context7 under lean; empty = none),
+  `LLMM_SYSTEM_PROMPT` (replacement prompt path; empty = shipped
+  `prompts/lean-coder.md`), and `LLMM_COMPACT_PCT` (auto-compact threshold %,
+  default 80). The effective context window is `--ctx N` > the active profile's
+  `ctx_size`; Claude Code is told that same window so auto-compaction triggers
+  before the local server overflows (it otherwise assumes 200K for custom
+  endpoints).
 - Models: `$XDG_DATA_HOME/llmm/models` (`HF_HOME`); the built server lives
   under `$XDG_DATA_HOME/llmm/bin`.
 - Runtime state: `$XDG_STATE_HOME/llmm/{run,log}` — per-port `.meta` +
@@ -81,9 +95,20 @@ menu).
 ### Tests
 
 `zsh conf/ai/llmm/tests/harness.zsh` runs the unit suite (pure helpers:
-config precedence, model labels/discovery/alias derivation, arg building,
-meta round-trip, log rotation, dispatcher routing). Server start/launch
+config precedence, effective window resolution, model
+labels/discovery/alias derivation, arg building, meta round-trip, log rotation,
+dispatcher routing, and lean/full launch-arg assembly). Server start/launch
 are verified by manual smoke (a real `llama-server`).
 
 v1 manages a single server. Multiple concurrent port-keyed servers are a
 planned v1.1 extension (the `.meta`/log files are already port-keyed).
+
+### Why lean
+
+A local model's context window is small (≈32–64K on a 48 GB Mac for
+Qwen3-Coder-Next), but Claude Code's fixed overhead — built-in tools (~24K), MCP
+tool schemas (~17K), system prompt (~3–4K), memory (~4.5K), skills (~4K) — can eat
+~50K of it before any work begins. Compaction only reclaims conversation tokens,
+not this fixed overhead, so the fix is to cut the overhead: lean mode recovers
+roughly 35–40K, leaving the window for actual code. Note 32K is the safe ctx floor
+on 48 GB; raise `default.ctx_size` (or use `--ctx`) on machines with more RAM.
