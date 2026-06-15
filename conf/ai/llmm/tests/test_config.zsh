@@ -15,6 +15,13 @@ assert_eq "$(config::pf default ctx_size)" 65536 "pf default"
 assert_eq "$(config::pf minimal ctx_size)" 16384 "pf minimal"
 assert_eq "$(config::pf minimal warmup)" 0 "pf minimal warmup"
 
+# config::ctx_size: profile value by default; LLMM_CTX_OVERRIDE (set by `llmm --ctx N`) wins.
+assert_eq "$(config::ctx_size default)" 65536 "ctx_size from profile"
+LLMM_CTX_OVERRIDE=81920
+assert_eq "$(config::ctx_size default)" 81920 "ctx_size honors override"
+unset LLMM_CTX_OVERRIDE
+assert_eq "$(config::ctx_size default)" 65536 "ctx_size back to profile after unset"
+
 # config::data_dir / state_dir / models_dir honor XDG.
 # Plain (not prefix) assignment: command-substitution subshells inherit even
 # non-exported params, so $(config::data_dir) sees these. unset afterward so

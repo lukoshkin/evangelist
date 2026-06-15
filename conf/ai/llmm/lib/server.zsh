@@ -26,7 +26,7 @@ server::build_args() {
   local -a a
   if [[ -f "$model" ]]; then a+=(--model "$model"); else a+=(--hf-repo "$model"); fi
   a+=(--alias "$alias" --port "$port")
-  a+=(--ctx-size "$(config::pf "$profile" ctx_size)")
+  a+=(--ctx-size "$(config::ctx_size "$profile")")
   a+=(--flash-attn "$(config::pf "$profile" flash_attn)")
   a+=(--jinja)
   a+=(--n-gpu-layers "$(config::pf "$profile" gpu_layers)")
@@ -97,7 +97,7 @@ server::start() {
   local i
   for (( i = 1; i <= 300; i++ )); do
     if server::is_healthy "$port"; then
-      server::meta_write "$port" "$pid" "$model" "$alias" "$(config::pf "$profile" ctx_size)" "$profile"
+      server::meta_write "$port" "$pid" "$model" "$alias" "$(config::ctx_size "$profile")" "$profile"
       ui::info "server ready (pid $pid)"
       return 0
     fi

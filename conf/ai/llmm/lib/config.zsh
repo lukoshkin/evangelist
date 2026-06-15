@@ -13,6 +13,18 @@ config::file()        { print -r -- "$(config::config_home)/llmm/config.zsh"; }
 # config::pf <profile> <field> -> echoes LLMM_PROFILES[profile.field]
 config::pf() { print -r -- "${LLMM_PROFILES[$1.$2]-}"; }
 
+# config::ctx_size <profile> -> effective context window. The per-launch override
+# (LLMM_CTX_OVERRIDE, set by `llmm --ctx N`) wins; otherwise the profile's ctx_size.
+# Single source of truth so llama-server's --ctx-size and Claude Code's
+# CLAUDE_CODE_AUTO_COMPACT_WINDOW never drift.
+config::ctx_size() {
+  if [[ -n "${LLMM_CTX_OVERRIDE:-}" ]]; then
+    print -r -- "$LLMM_CTX_OVERRIDE"
+  else
+    config::pf "$1" ctx_size
+  fi
+}
+
 # config::seed -> copy the shipped default into the user config if absent.
 config::seed() {
   local dst="$(config::file)" src="$LLMM_ROOT/config.default.zsh"
