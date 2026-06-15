@@ -20,8 +20,8 @@ Claude Code is built for Sonnet/Opus over a 200K–1M token window. Pointed at a
 local server it works, but two things fight you:
 
 1. **Fixed overhead crowds out a small window.** On a 48 GB Mac the practical
-   context ceiling is ~32K comfortable / 64K borderline (the 80B-A3B weights stay
-   resident). Against a 64K window, Claude Code's *fixed* cost is roughly:
+   context ceiling is ~32K comfortable / 72K borderline (the 80B-A3B weights stay
+   resident). Against a ~72K window, Claude Code's *fixed* cost is roughly:
    built-in tools **~24K** + MCP tool schemas **~17K** + system prompt **~3–4K** +
    memory **~4.5K** + skills **~4K** ≈ **~50K of 64K** before any real work.
    Compaction only reclaims *conversation* tokens, never this fixed overhead — so
@@ -57,11 +57,10 @@ window for actual work.
   window at ~100K and reserves a fixed ~33% buffer, so on a sub-100K server the
   `MAX_CONTEXT_TOKENS` / `AUTO_COMPACT_WINDOW` / `PCT_OVERRIDE` env vars are **inert**
   (only `DISABLE_1M_CONTEXT` takes effect). `/context` shows a 100K window and
-  compaction fires at ~67K — slightly above a 64K server, so the top ~2K isn't a
-  reliable working area (llama.cpp context-shifts there rather than erroring).
-  **Treat ~60K as the practical ceiling on a 64K server** and `/compact` manually
-  if you near it. The env vars are kept because they *do* apply once the window
-  exceeds ~100K (e.g. a 128K-ctx box).
+  compaction fires at ~67K — slightly beyond the borderline of a 72K server,
+  leaving a small safe buffer (~5K). **Treat ~65K as the practical ceiling** and
+  `/compact` manually if you near it. The env vars are kept because
+  they *do* apply once the window exceeds ~100K (e.g. a 128K-ctx box).
 - **Plan mode is prompt-enforced.** A weak local model follows the plan-mode
   contract less reliably than Sonnet/Opus. For heavy planning, `llmm --full` or a
   frontier model is better.

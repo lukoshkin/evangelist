@@ -69,6 +69,9 @@ menu).
 - `llmm [pick] --ctx N` — override the context window for this launch (e.g.
   `--ctx 81920` for ~80K). Feeds both llama-server's `--ctx-size` and Claude
   Code's `CLAUDE_CODE_AUTO_COMPACT_WINDOW`.
+- Any flag llmm doesn't recognize is passed straight through to `claude` — e.g.
+  `llmm -c` / `llmm --continue` (continue the last session) and `llmm -r [id]` /
+  `llmm --resume [id]` (resume a session), with the server ensured first.
 - `llmm pull <repo[:quant]>` — download a model into the dedicated store.
 - `llmm status` (`stat`/`stats`) — system RAM + the managed server's
   pid/alias/model/RSS/ctx and the model's on-disk size.
@@ -99,7 +102,7 @@ menu).
   doesn't size the window from the model's nominal 256K/1M. Without this Claude
   Code tags the endpoint `[1m]` and picks a ~100K auto-compact window that
   overflows the local server. With it, `/context` reads the real window (e.g.
-  64K) and compaction fires at `LLMM_COMPACT_PCT`% of it (~52K at 80%).
+  72K) and compaction fires at `LLMM_COMPACT_PCT`% of it (~57K at 80%).
 - Models: `$XDG_DATA_HOME/llmm/models` (`HF_HOME`); the built server lives
   under `$XDG_DATA_HOME/llmm/bin`.
 - Runtime state: `$XDG_STATE_HOME/llmm/{run,log}` — per-port `.meta` +
@@ -118,7 +121,7 @@ planned v1.1 extension (the `.meta`/log files are already port-keyed).
 
 ### Why lean
 
-A local model's context window is small (≈32–64K on a 48 GB Mac for
+A local model's context window is small (≈32–72K on a 48 GB Mac for
 Qwen3-Coder-Next), but Claude Code's fixed overhead — built-in tools (~24K), MCP
 tool schemas (~17K), system prompt (~3–4K), memory (~4.5K), skills (~4K) — can eat
 ~50K of it before any work begins. Compaction only reclaims conversation tokens,
@@ -133,8 +136,7 @@ window at ~100K and reserves a fixed ~33% buffer, so on a server smaller than th
 the `CLAUDE_CODE_MAX_CONTEXT_TOKENS` / `CLAUDE_CODE_AUTO_COMPACT_WINDOW` /
 `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` env vars are inert (only `CLAUDE_CODE_DISABLE_1M_CONTEXT`
 takes effect, dropping the `[1m]` tag). `/context` then shows a 100K window and
-compaction fires at ~67K — slightly above a 64K server, so the top ~2K isn't a
-reliable working area (llama.cpp context-shifts there rather than erroring). Treat
-~60K as the practical ceiling on a 64K server and `/compact` manually if you near
-it. The env vars are kept because they *do* apply once the window exceeds ~100K
+compaction fires at ~67K — slightly beyond the borderline of a 72K server,
+leaving a small safe buffer (~5K). Treat ~65K as the practical ceiling and
+`/compact` manually if you near it. The env vars are kept because they *do* apply once the window exceeds ~100K
 (e.g. a 128K-ctx box), so the config stays correct for larger machines.

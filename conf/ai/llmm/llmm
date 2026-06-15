@@ -31,6 +31,7 @@ start-path flags:
   --minimal           use the minimal server profile (small ctx, no warmup)
   --lean | --full     lean Claude Code session (default) or full session
   --ctx N             override the context window for this launch (e.g. 81920)
+  (any other flag, e.g. -c/--continue, -r/--resume, -p) is passed through to claude
 EOF
 }
 
@@ -80,8 +81,11 @@ llmm::cmd_config() {
 # llmm::route <command> [args...] — pure routing; returns rc 2 on unknown command.
 llmm::route() {
   local cmd="${1:-}"; [[ $# -gt 0 ]] && shift
-  # If the "command" is actually a flag, treat as empty command and put it back.
-  if [[ "$cmd" == --* ]]; then
+  # A leading dash-flag is never a command: claude's own -c/--continue, -r/--resume,
+  # -p/--print, --model, etc., and our --minimal/--lean/--full/--ctx. Route it to the
+  # default start path so the loop below claims our flags and forwards the rest to
+  # claude. -h/--help stay as the help command.
+  if [[ "$cmd" == -* && "$cmd" != -h && "$cmd" != --help ]]; then
     set -- "$cmd" "$@"
     cmd=''
   fi

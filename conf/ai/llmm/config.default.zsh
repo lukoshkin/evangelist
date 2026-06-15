@@ -34,6 +34,6 @@ LLMM_COMPACT_PCT=${LLMM_COMPACT_PCT:-80}
 # parallel: server slots (--parallel). Claude Code drives one conversation, so 1
 #   is enough; with kv_unified the KV pool is unchanged, this just drops dead slots.
 typeset -gA LLMM_PROFILES=(
-  default.ctx_size 65536  default.gpu_layers auto  default.flash_attn on  default.warmup 1  default.mmap 0  default.ctx_checkpoints 8  default.parallel 1
+  default.ctx_size 73728  default.gpu_layers auto  default.flash_attn on  default.warmup 1  default.mmap 0  default.ctx_checkpoints 8  default.parallel 1
   minimal.ctx_size 16384  minimal.gpu_layers auto  minimal.flash_attn on  minimal.warmup 0  minimal.mmap 0  minimal.ctx_checkpoints 8  minimal.parallel 1
 )

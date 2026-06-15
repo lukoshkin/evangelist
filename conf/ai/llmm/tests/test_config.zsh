@@ -59,7 +59,7 @@ _test_llmm_dispatch() {
   # Stub side-effecting deps.
   server::ensure()   { print "ensure:$1:$2:$3:$4"; }
   server::meta_get() { return 1; }   # no running server meta — keep derived alias
-  claude::launch()   { print "launch:$1:$2:$3:$4"; }   # alias:port:lean:ctx
+  claude::launch()   { local a=$1 p=$2 l=$3 c=$4; shift 4; print "launch:$a:$p:$l:$c args:$*"; }   # alias:port:lean:ctx + forwarded
   models::pick()     { print "/picked/model-Q3_K_M.gguf"; }
   config::load()     { :; }
   LLMM_PORT=11111 LLMM_MODEL=/m.gguf
@@ -77,6 +77,16 @@ _test_llmm_dispatch() {
   assert_contains "$(llmm::route '' 2>&1)" "launch:m:11111:0:65536" "LLMM_LEAN=0 honored"
   assert_contains "$(llmm::route --lean 2>&1)" "launch:m:11111:1:65536" "--lean forces lean"
   unset LLMM_LEAN
+
+  # claude's own flags pass through llmm to claude (short forms too), while llmm
+  # flags are still consumed and help/bogus keep their meaning.
+  assert_contains "$(llmm::route -c 2>&1)" "args:-c" "short -c forwarded to claude"
+  assert_contains "$(llmm::route --continue 2>&1)" "args:--continue" "long --continue forwarded"
+  assert_contains "$(llmm::route -r mysess 2>&1)" "args:-r mysess" "short -r + value forwarded"
+  assert_contains "$(llmm::route --resume 2>&1)" "args:--resume" "long --resume forwarded"
+  assert_contains "$(llmm::route -c --ctx 81920 2>&1)" "launch:m:11111:1:81920 args:-c" "ctx consumed, -c forwarded"
+  assert_contains "$(llmm::route --help 2>&1)" "usage" "--help shows llmm usage"
+  assert_contains "$(llmm::route -h 2>&1)" "usage" "-h shows llmm usage"
 }
 _test_llmm_dispatch
 
