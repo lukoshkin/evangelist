@@ -61,7 +61,7 @@ menu).
 - `llmm [pick] --minimal` — use the minimal profile (small ctx, no warmup).
 - `llmm pull <repo[:quant]>` — download a model into the dedicated store.
 - `llmm status` (`stat`/`stats`) — system RAM + the managed server's
-  pid/alias/model/RSS/ctx and log-parsed model/KV/Metal buffer sizes.
+  pid/alias/model/RSS/ctx and the model's on-disk size.
 - `llmm logs [-f] [--tail N]` — tail the server log (default `--tail 100`).
 - `llmm config` — open the config in `$EDITOR`.
 - `llmm kill` — stop the running server.
@@ -71,7 +71,8 @@ menu).
 - Config: `$XDG_CONFIG_HOME/llmm/config.zsh` (seeded from
   `llmm/config.default.zsh`). Precedence: env `LLMM_*` > config file >
   built-in defaults. Two profiles (`default`, `minimal`) hold
-  `ctx_size`/`gpu_layers`/`flash_attn`/`warmup`/`mmap`.
+  `ctx_size`/`gpu_layers`/`flash_attn`/`warmup`/`mmap`. The Claude-facing
+  alias is derived from the model name automatically (no separate setting).
 - Models: `$XDG_DATA_HOME/llmm/models` (`HF_HOME`); the built server lives
   under `$XDG_DATA_HOME/llmm/bin`.
 - Runtime state: `$XDG_STATE_HOME/llmm/{run,log}` — per-port `.meta` +
@@ -80,9 +81,9 @@ menu).
 ### Tests
 
 `zsh conf/ai/llmm/tests/harness.zsh` runs the unit suite (pure helpers:
-config precedence, model labels/discovery, arg building, meta round-trip,
-log rotation/parsing, dispatcher routing). Server start/launch are
-verified by manual smoke (a real `llama-server`).
+config precedence, model labels/discovery/alias derivation, arg building,
+meta round-trip, log rotation, dispatcher routing). Server start/launch
+are verified by manual smoke (a real `llama-server`).
 
 v1 manages a single server. Multiple concurrent port-keyed servers are a
 planned v1.1 extension (the `.meta`/log files are already port-keyed).

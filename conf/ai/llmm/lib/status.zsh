@@ -1,18 +1,14 @@
 #!/usr/bin/env zsh
 # status.zsh — hardware-oriented report for the managed server.
 
-# status::parse_log <logfile> <model|kv|metal> -> echoes the matched size string.
-status::parse_log() {
-  local lf="$1" what="$2" line
-  [[ -f "$lf" ]] || return 1
-  case "$what" in
-    model) line="$(grep -iE 'model size' "$lf" | head -1)" ;;
-    kv)    line="$(grep -iE 'KV self size' "$lf" | head -1)" ;;
-    metal) line="$(grep -iE 'Metal.*buffer size' "$lf" | head -1)" ;;
-  esac
-  [[ -n "$line" ]] || return 1
-  # Extract the "<number> MiB" (or GiB) tail.
-  print -r -- "${line##*= }" | sed -E 's/^[[:space:]]*//'
+# status::file_size <path> -> human size of a file, or rc 1 if not a file.
+# Robust + version-independent (vs scraping llama.cpp's startup banner, whose
+# wording changes between releases).
+status::file_size() {
+  local f="$1" bytes
+  [[ -f "$f" ]] || return 1
+  bytes=$(stat -f%z "$f" 2>/dev/null || stat -c%s "$f" 2>/dev/null) || return 1
+  awk -v b="$bytes" 'BEGIN { if (b >= 1073741824) printf "%.1f GiB", b/1073741824; else printf "%.0f MiB", b/1048576 }'
 }
 
 # status::mem_system -> one-line "RAM used / total (pct%)".
@@ -49,18 +45,16 @@ status::report() {
     print -r -- "  stop it with 'llmm kill', then 'llmm' to start a managed one"
     return 0
   fi
-  local pid alias model prof lf rss
+  local pid alias model prof rss size
   pid="$(server::meta_get "$port" pid)"
   alias="$(server::meta_get "$port" alias)"
   model="$(server::meta_get "$port" model)"
   prof="$(server::meta_get "$port" profile)"
-  lf="$(server::meta_get "$port" logfile)"
   rss=$(ps -o rss= -p "$pid" 2>/dev/null | awk '{printf "%d MiB", $1/1024}')
+  size="$(status::file_size "$model" 2>/dev/null)"
   print -r -- "server  :$port  pid=$pid  alias=$alias  profile=$prof"
   print -r -- "  model : $model"
+  [[ -n "$size" ]] && print -r -- "  size  : $size"
   print -r -- "  rss   : ${rss:-?}"
   print -r -- "  ctx   : $(server::meta_get "$port" ctx_size)"
-  print -r -- "  model size : $(status::parse_log "$lf" model 2>/dev/null || echo '?')"
-  print -r -- "  kv size    : $(status::parse_log "$lf" kv 2>/dev/null || echo '?')"
-  print -r -- "  metal buf  : $(status::parse_log "$lf" metal 2>/dev/null || echo '?')"
 }
