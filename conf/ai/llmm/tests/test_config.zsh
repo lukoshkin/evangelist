@@ -54,7 +54,7 @@ _test_llmm_dispatch() {
   claude::launch() { print "launch:$1:$2"; }
   models::pick()   { print "/picked/model-Q3_K_M.gguf"; }
   config::load()   { :; }
-  LLMM_PORT=11111 LLMM_MODEL=/m.gguf LLMM_ALIAS=al
+  LLMM_PORT=11111 LLMM_MODEL=/m.gguf
 
   assert_contains "$(llmm::route help 2>&1)" "usage" "route help"
   assert_rc 2 "$(llmm::route bogus >/dev/null 2>&1; echo $?)" "unknown subcommand rc"
