@@ -6,3 +6,35 @@ assert_eq "$(ui::pick_index 0 5)" -1 "ui::pick_index too-low"
 assert_eq "$(ui::pick_index 6 5)" -1 "ui::pick_index too-high"
 assert_eq "$(ui::pick_index abc 5)" -1 "ui::pick_index non-numeric"
 assert_eq "$(ui::pick_index '' 5)" -1 "ui::pick_index empty"
+
+source "$LLMM_LIB/config.zsh"
+
+# Profile lookup reads dotted keys from LLMM_PROFILES.
+typeset -gA LLMM_PROFILES=( default.ctx_size 65536  minimal.ctx_size 16384  minimal.warmup 0 )
+assert_eq "$(config::pf default ctx_size)" 65536 "pf default"
+assert_eq "$(config::pf minimal ctx_size)" 16384 "pf minimal"
+assert_eq "$(config::pf minimal warmup)" 0 "pf minimal warmup"
+
+# config::data_dir / state_dir / models_dir honor XDG.
+# Plain (not prefix) assignment: command-substitution subshells inherit even
+# non-exported params, so $(config::data_dir) sees these. unset afterward so
+# they don't leak into sibling test files sourced by the same harness shell.
+XDG_DATA_HOME=/tmp/xdh
+config::reset_dirs
+assert_eq "$(config::data_dir)" /tmp/xdh/llmm "data_dir XDG"
+assert_eq "$(config::models_dir)" /tmp/xdh/llmm/models "models_dir XDG"
+XDG_STATE_HOME=/tmp/xsh
+config::reset_dirs
+assert_eq "$(config::state_dir)" /tmp/xsh/llmm "state_dir XDG"
+unset XDG_DATA_HOME XDG_STATE_HOME
+
+# Env precedence: a pre-set LLMM_PORT (in the environment, as the dispatcher
+# would see it) survives sourcing a config that sets it; an unset one is filled.
+typeset tmpcfg="$(mktemp)"
+print 'LLMM_PORT=22222\nLLMM_MODEL=from-file' > "$tmpcfg"
+export LLMM_PORT=99999
+config::load "$tmpcfg"
+assert_eq "$LLMM_PORT" 99999 "env beats file"
+assert_eq "$LLMM_MODEL" from-file "file fills unset"
+unset LLMM_PORT LLMM_MODEL
+rm -f "$tmpcfg"
