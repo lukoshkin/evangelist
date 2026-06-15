@@ -32,13 +32,12 @@ EOF
 
 llmm::start_path() {  # <profile> [extra claude args...]
   local profile="$1"; shift
-  local model="$LLMM_MODEL" alias="${LLMM_ALIAS:-}"
+  local model="$LLMM_MODEL"
   if [[ -n "${LLMM_PICK:-}" ]]; then
     model="$(models::pick)" || exit 1
-    alias=""   # always auto-derive for an explicitly picked model
   fi
-  # Derive a canonical alias (Qwen3-Coder-Next-UD-Q3_K_M form) unless overridden.
-  [[ -n "$alias" ]] || alias="$(models::alias_for "$model")"
+  # Alias is always derived from the model (Qwen3-Coder-Next-UD-Q3_K_M form).
+  local alias="$(models::alias_for "$model")"
   if [[ -n "${SERVE_ONLY:-}" ]]; then
     server::ensure "$profile" "$model" "$alias" "$LLMM_PORT" || exit 1
     ui::info "SERVE_ONLY set — not launching claude"; exec tail -f /dev/null

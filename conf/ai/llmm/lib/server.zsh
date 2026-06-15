@@ -115,22 +115,24 @@ server::start() {
 server::ensure() {
   local profile="$1" model="$2" alias="$3" port="$4"
   if server::is_healthy "$port"; then
-    local rmodel="$(server::meta_get "$port" model 2>/dev/null || true)"
+    local ralias="$(server::meta_get "$port" alias 2>/dev/null || true)"
     local rprof="$(server::meta_get "$port" profile 2>/dev/null || true)"
-    if [[ -z "$rmodel" ]]; then
+    if [[ -z "$ralias" ]]; then
       ui::warn "a foreign server is healthy on :$port (not started by llmm); reusing it"
       return 0
     fi
-    if [[ "$rmodel" == "$model" && "$rprof" == "$profile" ]]; then
-      ui::info "reusing running server :$port"
+    # Identity is the canonical alias, so an HF repo spec and the downloaded
+    # .gguf for the same model are treated as the same server (no restart prompt).
+    if [[ "$ralias" == "$alias" && "$rprof" == "$profile" ]]; then
+      ui::info "reusing running server :$port ($ralias)"
       return 0
     fi
     if [[ -t 0 ]]; then
-      print -u2 -n "running server has model=$rmodel profile=$rprof; restart with new config? [y/N] "
+      print -u2 -n "running server is $ralias ($rprof); switch to $alias ($profile)? [y/N] "
       local ans; read -r ans
-      if [[ "$ans" == [yY]* ]]; then server::kill "$port"; else ui::info "reusing existing"; return 0; fi
+      if [[ "$ans" == [yY]* ]]; then server::kill "$port"; else ui::info "keeping $ralias"; return 0; fi
     else
-      ui::warn "non-interactive: reusing running server despite config mismatch"; return 0
+      ui::warn "non-interactive: keeping running $ralias despite requested $alias"; return 0
     fi
   fi
   server::start "$profile" "$model" "$alias" "$port"

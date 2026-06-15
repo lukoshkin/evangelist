@@ -1,6 +1,0 @@
-llama_model_loader: loaded meta data
-print_info: model size       =  18234.50 MiB
-llama_kv_cache_unified: KV self size  =  4096.00 MiB
-ggml_metal_init: Metal KV buffer size =  4096.00 MiB
-ggml_metal: Metal compute buffer size =  1024.00 MiB
-main: server is listening on http://127.0.0.1:11111
