@@ -3,7 +3,9 @@
 
 LLMM_PORT=${LLMM_PORT:-11111}
 LLMM_MODEL=${LLMM_MODEL:-'unsloth/Qwen3-Coder-Next-GGUF:UD-Q3_K_M'}
-LLMM_ALIAS=${LLMM_ALIAS:-qwen3-coder-next}
+# Alias shown in Claude Code and passed to llama-server --alias. Leave empty to
+# auto-derive from the model (e.g. Qwen3-Coder-Next-UD-Q3_K_M); set to override.
+LLMM_ALIAS=${LLMM_ALIAS:-}
 LLMM_LOG_MAX_MIB=${LLMM_LOG_MAX_MIB:-50}   # rotate the server log past this size
 
 # mmap: 0 = --no-mmap (load weights into RAM up front). Default 0 on macOS:

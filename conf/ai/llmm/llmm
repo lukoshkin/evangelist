@@ -32,16 +32,23 @@ EOF
 
 llmm::start_path() {  # <profile> [extra claude args...]
   local profile="$1"; shift
-  local model="$LLMM_MODEL" alias="$LLMM_ALIAS"
+  local model="$LLMM_MODEL" alias="${LLMM_ALIAS:-}"
   if [[ -n "${LLMM_PICK:-}" ]]; then
     model="$(models::pick)" || exit 1
-    alias="${model:t:r}"
+    alias=""   # always auto-derive for an explicitly picked model
   fi
+  # Derive a canonical alias (Qwen3-Coder-Next-UD-Q3_K_M form) unless overridden.
+  [[ -n "$alias" ]] || alias="$(models::alias_for "$model")"
   if [[ -n "${SERVE_ONLY:-}" ]]; then
     server::ensure "$profile" "$model" "$alias" "$LLMM_PORT" || exit 1
     ui::info "SERVE_ONLY set — not launching claude"; exec tail -f /dev/null
   fi
   server::ensure "$profile" "$model" "$alias" "$LLMM_PORT" || exit 1
+  # Adopt the actually-running server's alias so Claude's label matches what is
+  # loaded — e.g. when ensure reused an existing server with a different model
+  # (declined restart). Foreign servers have no meta; keep the derived alias.
+  local running_alias="$(server::meta_get "$LLMM_PORT" alias 2>/dev/null)"
+  [[ -n "$running_alias" ]] && alias="$running_alias"
   claude::launch "$alias" "$LLMM_PORT" "$@"
 }
 

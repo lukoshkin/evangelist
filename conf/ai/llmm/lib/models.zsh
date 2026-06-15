@@ -15,6 +15,25 @@ models::label() {
   fi
 }
 
+# models::alias_for <model> -> canonical short alias used for --alias and the
+# Claude label. Designed so the same model yields the same alias whether named
+# as an HF repo spec or as its downloaded .gguf file:
+#   unsloth/Qwen3-Coder-Next-GGUF:UD-Q3_K_M  -> Qwen3-Coder-Next-UD-Q3_K_M
+#   /…/Qwen3-Coder-Next-UD-Q3_K_M.gguf        -> Qwen3-Coder-Next-UD-Q3_K_M
+models::alias_for() {
+  local m="$1" base
+  if [[ -f "$m" || "$m" == *.gguf ]]; then
+    base="${m:t:r}"                      # filename, drop the .gguf extension
+  else
+    local repo="${m%%:*}" quant=""
+    [[ "$m" == *:* ]] && quant="${m#*:}"
+    base="${repo:t}"                     # repo basename (drop org/)
+    base="${base%-GGUF}"; base="${base%-gguf}"   # drop a trailing -GGUF tag
+    [[ -n "$quant" ]] && base="$base-$quant"
+  fi
+  print -r -- "$base"
+}
+
 # models::discover -> one absolute path per line, sorted+unique.
 # Search dirs: models dir, legacy state models dir, default HF hub. Overridable
 # for tests via LLMM_DISCOVER_DIRS array.
