@@ -57,13 +57,25 @@ _test_llmm_dispatch() {
   LLMM_NO_MAIN=1 source "$LLMM_ROOT/llmm"
 
   # Stub side-effecting deps.
-  server::ensure() { print "ensure:$1:$2:$3:$4"; }
-  claude::launch() { print "launch:$1:$2"; }
-  models::pick()   { print "/picked/model-Q3_K_M.gguf"; }
-  config::load()   { :; }
+  server::ensure()   { print "ensure:$1:$2:$3:$4"; }
+  server::meta_get() { return 1; }   # no running server meta — keep derived alias
+  claude::launch()   { print "launch:$1:$2:$3:$4"; }   # alias:port:lean:ctx
+  models::pick()     { print "/picked/model-Q3_K_M.gguf"; }
+  config::load()     { :; }
   LLMM_PORT=11111 LLMM_MODEL=/m.gguf
 
   assert_contains "$(llmm::route help 2>&1)" "usage" "route help"
   assert_rc 2 "$(llmm::route bogus >/dev/null 2>&1; echo $?)" "unknown subcommand rc"
+
+  # Leanness + ctx propagate to claude::launch. Model /m.gguf -> alias "m";
+  # default profile ctx_size 65536 (set in LLMM_PROFILES above).
+  LLMM_LEAN=1
+  assert_contains "$(llmm::route '' 2>&1)" "launch:m:11111:1:65536" "lean on by default"
+  assert_contains "$(llmm::route --full 2>&1)" "launch:m:11111:0:65536" "--full disables lean"
+  assert_contains "$(llmm::route --ctx 81920 2>&1)" "launch:m:11111:1:81920" "--ctx overrides window"
+  LLMM_LEAN=0
+  assert_contains "$(llmm::route '' 2>&1)" "launch:m:11111:0:65536" "LLMM_LEAN=0 honored"
+  assert_contains "$(llmm::route --lean 2>&1)" "launch:m:11111:1:65536" "--lean forces lean"
+  unset LLMM_LEAN
 }
 _test_llmm_dispatch

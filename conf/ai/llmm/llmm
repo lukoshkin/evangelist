@@ -20,24 +20,30 @@ usage: llmm [command] [flags]
 
   (no command)        start default model, launch Claude Code
   pick                pick a model, then start + launch
-  [pick] --minimal    use the minimal profile (small ctx, no warmup)
   pull <repo[:quant]> download a model into the dedicated store
   status | stat | stats   show server + hardware stats
   logs [-f] [--tail N]    tail the server log (default --tail 100)
   config              open the config in $EDITOR
   kill                stop the running server
   help                show this help
+
+start-path flags:
+  --minimal           use the minimal server profile (small ctx, no warmup)
+  --lean | --full     lean Claude Code session (default) or full session
+  --ctx N             override the context window for this launch (e.g. 81920)
 EOF
 }
 
-llmm::start_path() {  # <profile> [extra claude args...]
-  local profile="$1"; shift
+llmm::start_path() {  # <profile> <lean> [extra claude args...]
+  local profile="$1" lean="$2"; shift 2
   local model="$LLMM_MODEL"
   if [[ -n "${LLMM_PICK:-}" ]]; then
     model="$(models::pick)" || exit 1
   fi
   # Alias is always derived from the model (Qwen3-Coder-Next-UD-Q3_K_M form).
   local alias="$(models::alias_for "$model")"
+  # Effective window: --ctx override (via LLMM_CTX_OVERRIDE) or the profile's ctx_size.
+  local ctx="$(config::ctx_size "$profile")"
   if [[ -n "${SERVE_ONLY:-}" ]]; then
     server::ensure "$profile" "$model" "$alias" "$LLMM_PORT" || exit 1
     ui::info "SERVE_ONLY set — not launching claude"; exec tail -f /dev/null
@@ -48,7 +54,7 @@ llmm::start_path() {  # <profile> [extra claude args...]
   # (declined restart). Foreign servers have no meta; keep the derived alias.
   local running_alias="$(server::meta_get "$LLMM_PORT" alias 2>/dev/null)"
   [[ -n "$running_alias" ]] && alias="$running_alias"
-  claude::launch "$alias" "$LLMM_PORT" "$@"
+  claude::launch "$alias" "$LLMM_PORT" "$lean" "$ctx" "$@"
 }
 
 llmm::cmd_logs() {
@@ -74,17 +80,37 @@ llmm::cmd_config() {
 # llmm::route <command> [args...] — pure routing; returns rc 2 on unknown command.
 llmm::route() {
   local cmd="${1:-}"; [[ $# -gt 0 ]] && shift
-  # --minimal may appear as the command's flag on start paths.
+  # If the "command" is actually a flag, treat as empty command and put it back.
+  if [[ "$cmd" == --* ]]; then
+    set -- "$cmd" "$@"
+    cmd=''
+  fi
+  # Start-path flags may follow the command. --ctx consumes the next token.
   local profile=default
+  local lean="${LLMM_LEAN:-1}"
   local -a rest=()
-  local a
-  for a in "$@"; do
-    [[ "$a" == --minimal ]] && profile=minimal || rest+=("$a")
+  local -a args=("$@")
+  local i=1
+  while (( i <= ${#args} )); do
+    case "${args[i]}" in
+      --minimal) profile=minimal ;;
+      --lean)    lean=1 ;;
+      --full)    lean=0 ;;
+      --ctx)
+        if (( i + 1 > ${#args} )); then ui::die "--ctx requires a value"; fi
+        LLMM_CTX_OVERRIDE="${args[i+1]}"; (( i++ )) ;;
+      *)         rest+=("${args[i]}") ;;
+    esac
+    (( i++ ))
   done
+  if [[ -n "${LLMM_CTX_OVERRIDE:-}" ]]; then
+    [[ "$LLMM_CTX_OVERRIDE" == <-> ]] || ui::die "--ctx requires a positive integer, got: $LLMM_CTX_OVERRIDE"
+    export LLMM_CTX_OVERRIDE
+  fi
 
   case "$cmd" in
-    ''|start)      llmm::start_path "$profile" "${rest[@]}" ;;
-    pick)          LLMM_PICK=1 llmm::start_path "$profile" "${rest[@]}" ;;
+    ''|start)      llmm::start_path "$profile" "$lean" "${rest[@]}" ;;
+    pick)          LLMM_PICK=1 llmm::start_path "$profile" "$lean" "${rest[@]}" ;;
     pull)          models::pull "${rest[1]:-}" ;;
     status|stat|stats) status::report ;;
     logs)          llmm::cmd_logs "${rest[@]}" ;;
