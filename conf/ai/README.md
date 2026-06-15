@@ -77,8 +77,13 @@ menu).
 - Config: `$XDG_CONFIG_HOME/llmm/config.zsh` (seeded from
   `llmm/config.default.zsh`). Precedence: env `LLMM_*` > config file >
   built-in defaults. Two profiles (`default`, `minimal`) hold
-  `ctx_size`/`gpu_layers`/`flash_attn`/`warmup`/`mmap`. The Claude-facing
-  alias is derived from the model name automatically (no separate setting).
+  `ctx_size`/`gpu_layers`/`flash_attn`/`warmup`/`mmap`/`ctx_checkpoints`/`parallel`.
+  `ctx_checkpoints` caps llama.cpp's per-slot context checkpoints (default 8; each
+  is ~75 MiB, upstream default 32 ≈ 2.4 GB) — they only speed reprocessing on
+  context shift, which Claude Code sidesteps by compacting, so trimming them frees
+  RAM on a full box. `parallel` is the server slot count (default 1; Claude Code
+  drives a single conversation). The Claude-facing alias is derived from the model
+  name automatically (no separate setting).
   Lean-mode knobs: `LLMM_LEAN` (1 = lean by default), `LLMM_MCP_CONFIG` (path to a
   minimal MCP json to re-admit servers like context7 under lean; empty = none),
   `LLMM_SYSTEM_PROMPT` (replacement prompt path; empty = shipped
@@ -118,3 +123,14 @@ fixed cost to **~1.8K** measured (system prompt ~0.6K, tools ~1.2K, no MCP /
 memory / skills), leaving essentially the whole window for actual code. Note 32K
 is the safe ctx floor on 48 GB; raise `default.ctx_size` (or use `--ctx`) on
 machines with more RAM.
+
+**Known limitation (sub-100K windows).** Claude Code v2.1.x floors the auto-compact
+window at ~100K and reserves a fixed ~33% buffer, so on a server smaller than that
+the `CLAUDE_CODE_MAX_CONTEXT_TOKENS` / `CLAUDE_CODE_AUTO_COMPACT_WINDOW` /
+`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` env vars are inert (only `CLAUDE_CODE_DISABLE_1M_CONTEXT`
+takes effect, dropping the `[1m]` tag). `/context` then shows a 100K window and
+compaction fires at ~67K — slightly above a 64K server, so the top ~2K isn't a
+reliable working area (llama.cpp context-shifts there rather than erroring). Treat
+~60K as the practical ceiling on a 64K server and `/compact` manually if you near
+it. The env vars are kept because they *do* apply once the window exceeds ~100K
+(e.g. a 128K-ctx box), so the config stays correct for larger machines.

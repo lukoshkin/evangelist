@@ -28,7 +28,12 @@ LLMM_COMPACT_PCT=${LLMM_COMPACT_PCT:-80}
 #   predictable RSS, no mid-generation page-in stalls, and avoids the Metal
 #   warmup-time allocation OOM. Set 1 to memory-map (lazy, lower apparent RAM,
 #   evictable under pressure) when a model barely fits.
+# ctx_checkpoints: max llama.cpp context checkpoints per slot (--ctx-checkpoints,
+#   default upstream is 32 × ~75 MiB ≈ 2.4 GB). They only speed up reprocessing on
+#   context shift; Claude Code compacts instead, so 8 trims ~1.8 GB on a full box.
+# parallel: server slots (--parallel). Claude Code drives one conversation, so 1
+#   is enough; with kv_unified the KV pool is unchanged, this just drops dead slots.
 typeset -gA LLMM_PROFILES=(
-  default.ctx_size 65536  default.gpu_layers auto  default.flash_attn on  default.warmup 1  default.mmap 0
-  minimal.ctx_size 16384  minimal.gpu_layers auto  minimal.flash_attn on  minimal.warmup 0  minimal.mmap 0
+  default.ctx_size 65536  default.gpu_layers auto  default.flash_attn on  default.warmup 1  default.mmap 0  default.ctx_checkpoints 8  default.parallel 1
+  minimal.ctx_size 16384  minimal.gpu_layers auto  minimal.flash_attn on  minimal.warmup 0  minimal.mmap 0  minimal.ctx_checkpoints 8  minimal.parallel 1
 )

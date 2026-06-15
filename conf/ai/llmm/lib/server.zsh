@@ -30,6 +30,8 @@ server::build_args() {
   a+=(--flash-attn "$(config::pf "$profile" flash_attn)")
   a+=(--jinja)
   a+=(--n-gpu-layers "$(config::pf "$profile" gpu_layers)")
+  a+=(--ctx-checkpoints "$(config::pf "$profile" ctx_checkpoints)")
+  a+=(--parallel "$(config::pf "$profile" parallel)")
   [[ "$(config::pf "$profile" warmup)" == 0 ]] && a+=(--no-warmup)
   [[ "$(config::pf "$profile" mmap)"   == 0 ]] && a+=(--no-mmap)
   print -r -- "${a[*]}"

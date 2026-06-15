@@ -3,8 +3,8 @@ source "$LLMM_LIB/config.zsh"
 source "$LLMM_LIB/server.zsh"
 
 typeset -gA LLMM_PROFILES=(
-  default.ctx_size 65536 default.gpu_layers auto default.flash_attn on default.warmup 1 default.mmap 0
-  minimal.ctx_size 16384 minimal.gpu_layers auto minimal.flash_attn on minimal.warmup 0 minimal.mmap 0
+  default.ctx_size 65536 default.gpu_layers auto default.flash_attn on default.warmup 1 default.mmap 0 default.ctx_checkpoints 8 default.parallel 1
+  minimal.ctx_size 16384 minimal.gpu_layers auto minimal.flash_attn on minimal.warmup 0 minimal.mmap 0 minimal.ctx_checkpoints 8 minimal.parallel 1
 )
 
 # Local model arg uses --model only when the path is a real file (build_args tests -f).
@@ -15,6 +15,8 @@ args="$(server::build_args default "$lm" myalias 11111)"
 assert_contains "$args" "--ctx-size 65536" "args ctx"
 assert_contains "$args" "--alias myalias" "args alias"
 assert_contains "$args" "--model $lm" "args local model"
+assert_contains "$args" "--ctx-checkpoints 8" "args ctx-checkpoints"
+assert_contains "$args" "--parallel 1" "args parallel"
 [[ "$args" != *"--no-warmup"* ]] && pass1=ok || pass1=no
 assert_eq "$pass1" ok "default keeps warmup"
 
