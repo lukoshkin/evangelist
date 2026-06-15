@@ -41,6 +41,14 @@ status::report() {
     print -r -- "no managed server running on :$port"
     return 0
   fi
+  # Healthy but no .meta -> a server llmm did not start (e.g. a stray
+  # llama-server on the same port). Report it plainly instead of blanks.
+  if [[ ! -f "$(server::metafile "$port")" ]]; then
+    local fpid="$(pgrep -f "llama-server.*--port $port" 2>/dev/null | head -1)"
+    print -r -- "server  :$port  foreign (healthy, not started by llmm${fpid:+; pid=$fpid})"
+    print -r -- "  stop it with 'llmm kill', then 'llmm' to start a managed one"
+    return 0
+  fi
   local pid alias model prof lf rss
   pid="$(server::meta_get "$port" pid)"
   alias="$(server::meta_get "$port" alias)"
