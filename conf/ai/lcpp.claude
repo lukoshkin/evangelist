@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PORT="${LLAMA_CPP_PORT:-11111}"
+MODEL_ALIAS="${LLAMA_CPP_ALIAS:-qwen3-coder-next}"
+HF_MODEL="${LLAMA_CPP_HF_MODEL:-unsloth/Qwen3-Coder-Next-GGUF:UD-Q4_K_M}"
+CTX_SIZE="${LLAMA_CPP_CTX_SIZE:-65536}"
+GPU_LAYERS="${LLAMA_CPP_GPU_LAYERS:-auto}"
+
+LLAMA_CPP_SERVER=$(readlink -f "$(command -v llama-server)")
+LLAMA_CPP_BIN=$(dirname "$LLAMA_CPP_SERVER")
+
+if [[ "${1:-}" == "--pick" ]]; then
+  shift
+  state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/models"
+  hf_hub="${XDG_CACHE_HOME:-$HOME/.cache}/huggingface/hub"
+
+  models=()
+  while IFS= read -r f; do models+=("$f"); done < <({
+    find "$state_dir" -name '*.gguf' -type f 2>/dev/null
+    find -L "$hf_hub" -maxdepth 4 -name '*.gguf' -type f 2>/dev/null
+  } | sort)
+
+  if [[ ${#models[@]} -eq 0 ]]; then
+    echo "No .gguf models found in:" >&2
+    echo "  $state_dir" >&2
+    echo "  $hf_hub/models--*" >&2
+    exit 1
+  fi
+
+  _fmt_label() {
+    local f="$1"
+    if [[ "$f" == *"/huggingface/hub/models--"* ]]; then
+      local dir org rest repo
+      dir=$(grep -oE 'models--[^/]+' <<<"$f" | sed 's/^models--//')
+      org="${dir%%--*}"; rest="${dir#*--}"
+      repo="$org/$rest"
+      printf '[hf]    %-60s  %s' "$repo" "$(basename "$f")"
+    else
+      printf '[local] %s' "$(basename "$f")"
+    fi
+  }
+
+  if command -v fzf &>/dev/null; then
+    selected=$(
+      for f in "${models[@]}"; do printf '%s\t%s\n' "$(_fmt_label "$f")" "$f"; done \
+        | fzf --prompt="Pick model: " --no-sort --with-nth=1 --delimiter=$'\t' \
+        | cut -f2
+    )
+    if [[ -z "$selected" ]]; then echo "Aborted." >&2; exit 1; fi
+  else
+    echo "Available models:"
+    for i in "${!models[@]}"; do
+      printf '  %d) %s\n' "$((i + 1))" "$(_fmt_label "${models[$i]}")"
+    done
+    read -rp "Pick [1-${#models[@]}]: " choice
+    if [[ ! "$choice" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > ${#models[@]} )); then
+      echo "Invalid selection: '$choice'." >&2; exit 1
+    fi
+    selected="${models[$((choice - 1))]}"
+  fi
+
+  echo "Using model: $selected"
+  HF_MODEL="$selected"
+  MODEL_ALIAS=$(basename "$selected" .gguf)
+fi
+
+if [[ "${1:-}" == "--kill" ]]; then
+  pids=()
+  while IFS= read -r pid; do
+    pids+=("$pid")
+  done < <(pgrep -f llama-server 2>/dev/null || true)
+
+  if [[ ${#pids[@]} -eq 0 ]]; then
+    echo "No llama-server processes running."
+    exit 0
+  fi
+
+  labels=()
+  for pid in "${pids[@]}"; do
+    args=$(ps -p "$pid" -o args= 2>/dev/null || true)
+    port=$(grep -oE '\-\-port [0-9]+' <<<"$args" | awk '{print $2}')
+    alias=$(grep -oE '\-\-alias [^ ]+' <<<"$args" | awk '{print $2}')
+    labels+=("pid=${pid}  port=${port:-?}  alias=${alias:-?}")
+  done
+
+  if [[ ${#pids[@]} -eq 1 ]]; then
+    echo "Killing: ${labels[0]}"
+    kill "${pids[0]}"
+    exit 0
+  fi
+
+  echo "Running llama-server instances:"
+  for i in "${!labels[@]}"; do
+    echo "  $((i + 1))) ${labels[$i]}"
+  done
+  read -rp "Kill which? [1-${#pids[@]}]: " choice
+  if [[ ! "$choice" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > ${#pids[@]} )); then
+    echo "Invalid selection: '$choice'." >&2; exit 1
+  fi
+  idx=$((choice - 1))
+  echo "Killing: ${labels[$idx]}"
+  kill "${pids[$idx]}"
+  exit 0
+fi
+
+if ! curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1; then
+  echo "Starting llama-server on port ${PORT}..."
+  echo "  Model: ${HF_MODEL}"
+  if [[ -f "$HF_MODEL" ]]; then
+    model_arg=(--model "$HF_MODEL")
+  else
+    model_arg=(--hf-repo "$HF_MODEL")
+    echo "  Note: first run downloads the model from HuggingFace — this may take several minutes."
+  fi
+  DYLD_LIBRARY_PATH="$LLAMA_CPP_BIN${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}" llama-server \
+    "${model_arg[@]}" \
+    --alias "$MODEL_ALIAS" \
+    --port "$PORT" \
+    --ctx-size "$CTX_SIZE" \
+    --flash-attn on \
+    --jinja \
+    --no-mmap \
+    --no-warmup \
+    --n-gpu-layers "$GPU_LAYERS" \
+    >/tmp/llama-server-claude-code.log 2>&1 &
+
+  server_ready=false
+  for i in {1..300}; do
+    if curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1; then
+      server_ready=true
+      break
+    fi
+    sleep 2
+    if ((i % 15 == 0)); then
+      echo "  Still waiting for server ($((i * 2))s elapsed)..."
+    fi
+  done
+
+  if [[ $server_ready != true ]]; then
+    echo "ERROR: llama-server failed to start within 600s. Last log lines:" >&2
+    tail -20 /tmp/llama-server-claude-code.log >&2
+    exit 1
+  fi
+fi
+
+if [[ -n ${SERVE_ONLY+any} ]]; then
+  tail -f /dev/null
+fi
+
+ANTHROPIC_BASE_URL="http://127.0.0.1:${PORT}" \
+  ANTHROPIC_API_KEY="llama-cpp" \
+  ANTHROPIC_AUTH_TOKEN="llama-cpp" \
+  ANTHROPIC_DEFAULT_SONNET_MODEL="$MODEL_ALIAS" \
+  ANTHROPIC_DEFAULT_HAIKU_MODEL="$MODEL_ALIAS" \
+  ANTHROPIC_DEFAULT_OPUS_MODEL="$MODEL_ALIAS" \
+  CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1 \
+  claude "$@"
