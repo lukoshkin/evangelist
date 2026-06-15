@@ -42,6 +42,10 @@ standalone repo: a `llmm` dispatcher sourcing focused `lib/*.zsh` units
 (`ui`, `config`, `models`, `server`, `status`, `claude`), a bash 3.2-safe
 `install.sh`, and a self-contained zsh test harness under `tests/`.
 
+For the *why and how* — the lean adaptation that makes a weak local model usable
+in Claude Code, the known limitations, and field notes on models tried on real
+hardware — see [`llmm/README.md`](llmm/README.md).
+
 ### Install
 
 `evangelist install llmm` (a thin shim over `conf/ai/llmm/install.sh`).
