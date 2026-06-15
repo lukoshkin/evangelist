@@ -23,6 +23,14 @@ assert_contains() {  # assert_contains <haystack> <needle> [label]
   fi
 }
 
+assert_not_contains() {  # assert_not_contains <haystack> <needle> [label]
+  (( _tests++ ))
+  if [[ "$1" == *"$2"* ]]; then
+    print -u2 "FAIL ${3:-assert_not_contains}: [$1] unexpectedly contains [$2]"
+    (( _fails++ ))
+  fi
+}
+
 assert_rc() {  # assert_rc <expected_rc> <actual_rc> [label]
   (( _tests++ ))
   if [[ "$1" != "$2" ]]; then
