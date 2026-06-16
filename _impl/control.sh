@@ -412,9 +412,14 @@ control::update() {
     bash "$EVANGELIST/conf/ai/install.sh" "$ai_mode" "$ai_tool"
   fi
 
-  if grep -qE '^conf/ai/llmm/' <<<"$UPD" && grep -q '^llmm' .update-list; then
-    ECHO 'Refreshing llmm..'
-    bash "$EVANGELIST/conf/ai/llmm/install.sh" || ECHO2 "llmm refresh failed"
+  if grep -q '^llmm' .update-list; then
+    local _llmm_src="${LLMM_SRC:-${XDG_DATA_HOME:-$HOME/.local/share}/llmm/src}"
+    if [ -f "$_llmm_src/install.sh" ]; then
+      ECHO 'Refreshing llmm..'
+      bash "$_llmm_src/install.sh" --update || ECHO2 "llmm refresh failed"
+    else
+      ECHO2 "llmm not installed at $_llmm_src; run: evangelist install llmm"
+    fi
   fi
 
   if grep -qE '^n?vim' .update-list; then

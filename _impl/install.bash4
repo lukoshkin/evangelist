@@ -589,10 +589,17 @@ install::ai_settings() {
 install::llmm_settings() {
   ECHO Installing llmm local-LLM manager..
 
-  ## macOS + Linux; builds llama.cpp from source via the canonical installer.
+  ## Clone the standalone llmm repo if not present, then delegate to its
+  ## install.sh. All logic lives in the standalone repo; this is a thin shim.
+  local src="${LLMM_SRC:-${XDG_DATA_HOME:-$HOME/.local/share}/llmm/src}"
+  local url="${LLMM_REPO_URL:-https://github.com/lukoshkin/llmm.git}"
   local -a args=()
   [[ "${_AI_FORCE:-false}" == true ]] && args+=(--force)
-  bash "$EVANGELIST/conf/ai/llmm/install.sh" "${args[@]}" || return 1
+  if [ ! -d "$src/.git" ]; then
+    ECHO "cloning llmm -> $src"
+    git clone "$url" "$src" || return 1
+  fi
+  bash "$src/install.sh" "${args[@]}" || return 1
 
   ECHO Successfully installed: llmm.
 }

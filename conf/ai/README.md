@@ -36,27 +36,21 @@ convert/tests`.
 
 ## llmm — local-LLM manager
 
-`llmm/` is a self-contained zsh tool that runs a local `llama.cpp` server
-and launches Claude Code against it. It is structured as a future
-standalone repo: a `llmm` dispatcher sourcing focused `lib/*.zsh` units
-(`ui`, `config`, `models`, `server`, `status`, `claude`), a bash 3.2-safe
-`install.sh`, and a self-contained zsh test harness under `tests/`.
+`llmm` is a standalone zsh tool (separate repo) that runs a local
+`llama.cpp` server and launches Claude Code against it. Source lives at
+`$XDG_DATA_HOME/llmm/src` (default `~/.local/share/llmm/src`) after
+install; `~/.local/bin/llmm` symlinks there.
 
-For the *why and how* — the lean adaptation that makes a weak local model usable
-in Claude Code, the known limitations, and field notes on models tried on real
-hardware — see [`llmm/README.md`](llmm/README.md).
+For the *why and how* — the lean adaptation, known limitations, and field
+notes on models tried — see `README.md` in the llmm repo (or
+`~/.local/share/llmm/src/README.md` locally after install).
 
 ### Install
 
-`evangelist install llmm` (a thin shim over `conf/ai/llmm/install.sh`).
-The installer builds `llama.cpp` from source into an XDG-local prefix
-(`$XDG_DATA_HOME/llmm`, backend auto-detected: Metal on macOS, CUDA/
-Vulkan/CPU on Linux — prompted when interactive), installs `uv` +
-`huggingface_hub[cli]` for model downloads, symlinks `~/.local/bin/llmm`,
-and seeds the config. Re-run after editing anything under `conf/ai/llmm/`
-via `evangelist update` (it refreshes `llmm` automatically). Requires
-`zsh` at runtime; `fzf` is optional (the picker falls back to a numbered
-menu).
+`evangelist install llmm` — clones the llmm repo and runs its
+`install.sh` (builds `llama.cpp`, installs deps, seeds config).
+Re-run via `evangelist update` (if `llmm` is in your `.update-list`) or
+directly with `llmm update`.
 
 ### Commands
 
@@ -94,7 +88,7 @@ menu).
   Lean-mode knobs: `LLMM_LEAN` (1 = lean by default), `LLMM_MCP_CONFIG` (path to a
   minimal MCP json to re-admit servers like context7 under lean; empty = none),
   `LLMM_SYSTEM_PROMPT` (replacement prompt path; empty = shipped
-  `prompts/lean-coder.md`), and `LLMM_COMPACT_PCT` (auto-compact threshold %,
+  `~/.local/share/llmm/src/prompts/lean-coder.md`), and `LLMM_COMPACT_PCT` (auto-compact threshold %,
   default 80). The effective context window is `--ctx N` > the active profile's
   `ctx_size`; lean tells Claude Code that same window (via
   `CLAUDE_CODE_MAX_CONTEXT_TOKENS` + `CLAUDE_CODE_AUTO_COMPACT_WINDOW`) and
@@ -110,33 +104,7 @@ menu).
 
 ### Tests
 
-`zsh conf/ai/llmm/tests/harness.zsh` runs the unit suite (pure helpers:
-config precedence, effective window resolution, model
-labels/discovery/alias derivation, arg building, meta round-trip, log rotation,
-dispatcher routing, and lean/full launch-arg assembly). Server start/launch
-are verified by manual smoke (a real `llama-server`).
+`zsh ~/.local/share/llmm/src/tests/harness.zsh` (after install).
 
 v1 manages a single server. Multiple concurrent port-keyed servers are a
 planned v1.1 extension (the `.meta`/log files are already port-keyed).
-
-### Why lean
-
-A local model's context window is small (≈32–72K on a 48 GB Mac for
-Qwen3-Coder-Next), but Claude Code's fixed overhead — built-in tools (~24K), MCP
-tool schemas (~17K), system prompt (~3–4K), memory (~4.5K), skills (~4K) — can eat
-~50K of it before any work begins. Compaction only reclaims conversation tokens,
-not this fixed overhead, so the fix is to cut the overhead: lean mode drops the
-fixed cost to **~1.8K** measured (system prompt ~0.6K, tools ~1.2K, no MCP /
-memory / skills), leaving essentially the whole window for actual code. Note 32K
-is the safe ctx floor on 48 GB; raise `default.ctx_size` (or use `--ctx`) on
-machines with more RAM.
-
-**Known limitation (sub-100K windows).** Claude Code v2.1.x floors the auto-compact
-window at ~100K and reserves a fixed ~33% buffer, so on a server smaller than that
-the `CLAUDE_CODE_MAX_CONTEXT_TOKENS` / `CLAUDE_CODE_AUTO_COMPACT_WINDOW` /
-`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` env vars are inert (only `CLAUDE_CODE_DISABLE_1M_CONTEXT`
-takes effect, dropping the `[1m]` tag). `/context` then shows a 100K window and
-compaction fires at ~67K — slightly beyond the borderline of a 72K server,
-leaving a small safe buffer (~5K). Treat ~65K as the practical ceiling and
-`/compact` manually if you near it. The env vars are kept because they *do* apply once the window exceeds ~100K
-(e.g. a 128K-ctx box), so the config stays correct for larger machines.
