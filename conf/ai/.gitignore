@@ -6,7 +6,7 @@ claude/*
 !claude/skills
 !claude/scripts
 !claude/CLAUDE.md
-!claude/statusline.sh
+!claude/statusline*sh
 !claude/settings.json
 
 ## converter caches

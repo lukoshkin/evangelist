@@ -210,7 +210,12 @@ we use `.get` or check on None
 - **Prefer multiline strings** for long text instead of concatenation
 - **Avoid deeply nested functions** - prefer flat, readable code structure.
   Divide complex functionality into helper functions/methods. Use early returns
-- **No trailing commas** — they force ruff to always spread code vertically regardless of line length
+- **Don't hand-write trailing commas** — leave comma management to ruff. A manually
+  placed (magic) trailing comma forces ruff to keep a collection exploded vertically;
+  omitting it lets ruff collapse short collections onto one line. ruff adding its own
+  trailing comma when it must break a long collection one-per-line is correct and
+  expected — don't remove those. The rule is about not *forcing* layout by hand, not
+  about forbidding the comma ruff produces.
 
 ### Type Hints
 
