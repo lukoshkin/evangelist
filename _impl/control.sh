@@ -208,6 +208,7 @@ control::install() {
   ## Discard duplicates
   declare -a _PARAMS
   for arg in "${params[@]}"; do
+    [[ -z $arg ]] && continue
     [[ ${_PARAMS[*]} =~ $arg ]] || _PARAMS+=("$arg")
   done
   set -- "${_PARAMS[@]}"

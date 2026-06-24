@@ -303,6 +303,11 @@ install() {
       _extract_exe_to_bin "$delta.tar.gz" delta
   fi
 
+  ask_user 'Install croc (p2p file transfer)?'
+  if [[ $_MODE != docker && $REPLY =~ [yY] ]]; then
+    curl https://getcroc.schollz.com | bash
+  fi
+
   ask_user 'Install Python dependencies?'
   if [[ $REPLY =~ [yY] ]]; then
     pip3 install $pip_opts -r pip.requirements.txt

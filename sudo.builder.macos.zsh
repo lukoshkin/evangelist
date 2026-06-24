@@ -192,6 +192,7 @@ Valid modes are 'user', 'auto'"
     automake
     bash
     cmake
+    croc
     curl
     fd
     fzf

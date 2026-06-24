@@ -111,6 +111,98 @@ gpub() {
   git push -u origin "$branch"
 }
 
+## Pack and send git changes (commits or working-tree diff) to another machine
+## via croc for p2p transfer.
+##
+## gsend [--staged] [<range>]
+##   No args      — packs staged + unstaged changes vs HEAD as a unified diff.
+##   --staged     — packs only staged changes (index vs HEAD).
+##   <range>      — any git range (e.g. HEAD~3, main..HEAD) passed to format-patch.
+##
+## grecv [<croc-code>]
+##   Receives the archive (croc code optional — croc will prompt if omitted),
+##   detects type from the marker, and applies the changes in the current repo.
+gsend() {
+  command -v croc &>/dev/null || { echo "gsend: croc not found"; return 1; }
+  command -v git  &>/dev/null || { echo "gsend: git not found";  return 1; }
+
+  local staged=0
+  [[ $1 == --staged ]] && { staged=1; shift; }
+
+  local tmpdir contentdir archive type
+  tmpdir=$(mktemp -d)
+  contentdir="$tmpdir/content"
+  archive="$tmpdir/git-transfer.tar.gz"
+  mkdir "$contentdir"
+
+  if [[ -n $1 ]]; then
+    type=commits
+    git format-patch "$1" --stdout > "$contentdir/changes.patch" || {
+      command rm -rf "$tmpdir"; return 1
+    }
+  elif [[ $staged -eq 1 ]]; then
+    if git diff --cached --quiet 2>/dev/null; then
+      echo "gsend: nothing to send (index is clean)"
+      command rm -rf "$tmpdir"
+      return 1
+    fi
+    type=diff
+    git diff --cached > "$contentdir/changes.patch"
+  else
+    if git diff HEAD --quiet 2>/dev/null; then
+      echo "gsend: nothing to send (working tree and index are clean)"
+      command rm -rf "$tmpdir"
+      return 1
+    fi
+    type=diff
+    git diff HEAD > "$contentdir/changes.patch"
+  fi
+
+  echo "$type" > "$contentdir/type"
+  git rev-parse --abbrev-ref HEAD 2>/dev/null > "$contentdir/branch"
+
+  COPYFILE_DISABLE=1 tar czf "$archive" -C "$contentdir" .
+  croc send "$archive"
+  command rm -rf "$tmpdir"
+}
+
+grecv() {
+  command -v croc &>/dev/null || { echo "grecv: croc not found"; return 1; }
+  command -v git  &>/dev/null || { echo "grecv: git not found";  return 1; }
+
+  local tmpdir extractdir archive type branch
+  tmpdir=$(mktemp -d)
+  extractdir="$tmpdir/contents"
+  mkdir "$extractdir"
+
+  (cd "$tmpdir" && croc receive "$@") || { command rm -rf "$tmpdir"; return 1; }
+
+  archive=$(find "$tmpdir" -maxdepth 1 -name "*.tar.gz" | head -1)
+  [[ -f $archive ]] || {
+    echo "grecv: no archive found after receive"
+    command rm -rf "$tmpdir"
+    return 1
+  }
+
+  tar xzf "$archive" -C "$extractdir"
+
+  type=$(< "$extractdir/type")
+  branch=$(< "$extractdir/branch" 2>/dev/null) || branch=unknown
+  echo "Applying $type from branch '$branch'..."
+
+  case $type in
+    commits) git am    "$extractdir/changes.patch" ;;
+    diff)    git apply "$extractdir/changes.patch" ;;
+    *)
+      echo "grecv: unknown transfer type '$type'"
+      command rm -rf "$tmpdir"
+      return 1
+      ;;
+  esac
+
+  command rm -rf "$tmpdir"
+}
+
 ## Open the last file closed:
 # alias v="vim +'e #<1'"
 # alias v="vim +'execute \"normal \<C-P>\<Enter>\"'"
