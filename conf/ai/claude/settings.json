@@ -16,6 +16,7 @@
       "Bash(docker compose:*)",
       "Bash(mkdir:*)",
       "Bash(python3 ~/.claude/scripts/check_guard_clauses.py:*)",
+      "Bash(python3 ~/.claude/scripts/jira_issue.py:*)",
       "Bash(git diff --staged --stat:*)",
       "Bash(git diff --staged:*)",
       "Bash(git diff --stat:*)",

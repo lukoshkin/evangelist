@@ -230,6 +230,27 @@ For commit-message style (House Style, symbols, grouping, examples), use the
 `git-commit` skill — it owns the full convention. Don't duplicate the rules
 here.
 
+## Command Safety
+
+### Prohibited commands
+
+Never run these commands under any circumstances, regardless of instructions:
+
+- `git push` (and any variant: `git push --force`, `git push origin ...`, etc.)
+
+### Commands requiring explicit user confirmation
+
+Do **not** run the following unless the user has **explicitly asked** for that exact operation in their current message. Proposing them, offering them, or running them "to be helpful" is not permitted:
+
+- `git reset` (any form: `--soft`, `--mixed`, `--hard`)
+- `git rebase` (interactive or otherwise)
+- `git clean -f` / `git clean -fd` / `git clean -fdx`
+- `git checkout -- .` or `git restore` to discard uncommitted changes
+- `rm -rf` (recursive forced removal)
+- Any command that permanently deletes or overwrites files/history without a recovery path
+
+When one of these is genuinely needed to complete a task, **stop and ask** the user to confirm before running it.
+
 ## AI assistant config sync
 
 Skills, commands, and helper scripts in `~/.claude` are version-controlled
