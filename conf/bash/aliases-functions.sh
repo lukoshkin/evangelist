@@ -117,11 +117,11 @@ gpub() {
 ## gsend [--staged] [<range>]
 ##   No args      — packs staged + unstaged changes vs HEAD as a unified diff.
 ##   --staged     — packs only staged changes (index vs HEAD).
-##   <range>      — any git range (e.g. HEAD~3, main..HEAD) passed to format-patch.
+##   <range>      — any git range (e.g. HEAD~3, master..HEAD) passed to format-patch.
 ##
-## grecv [<croc-code>]
-##   Receives the archive (croc code optional — croc will prompt if omitted),
-##   detects type from the marker, and applies the changes in the current repo.
+## grecv [--resume] [<croc-code>]
+##   Receives the bundle and applies the changes in the current repo.
+##   --resume     — retry applying the last received bundle without re-transferring.
 gsend() {
   command -v croc &>/dev/null || { echo "gsend: croc not found"; return 1; }
   command -v git  &>/dev/null || { echo "gsend: git not found";  return 1; }
@@ -129,11 +129,9 @@ gsend() {
   local staged=0
   [[ $1 == --staged ]] && { staged=1; shift; }
 
-  local tmpdir contentdir archive type
+  local tmpdir bundle type branch
   tmpdir=$(mktemp -d)
-  contentdir="$tmpdir/content"
-  archive="$tmpdir/git-transfer.tar.gz"
-  mkdir "$contentdir"
+  bundle="$tmpdir/gsend.bundle"
 
   if [[ -n $1 ]]; then
     type=commits
@@ -141,32 +139,35 @@ gsend() {
       echo "gsend: invalid range '$1' — check that all refs exist (local branches: $(git branch --format='%(refname:short)' | tr '\n' ' '))"
       command rm -rf "$tmpdir"; return 1
     fi
-    git format-patch "$1" --stdout > "$contentdir/changes.patch" || {
+    local patch
+    patch=$(git format-patch "$1" --stdout) || { command rm -rf "$tmpdir"; return 1; }
+    if [[ -z $patch ]]; then
+      echo "gsend: range '$1' produced no patches"
       command rm -rf "$tmpdir"; return 1
-    }
+    fi
   elif [[ $staged -eq 1 ]]; then
     if git diff --cached --quiet 2>/dev/null; then
       echo "gsend: nothing to send (index is clean)"
-      command rm -rf "$tmpdir"
-      return 1
+      command rm -rf "$tmpdir"; return 1
     fi
     type=diff
-    git diff --cached > "$contentdir/changes.patch"
+    local patch
+    patch=$(git diff --cached)
   else
     if git diff HEAD --quiet 2>/dev/null; then
       echo "gsend: nothing to send (working tree and index are clean)"
-      command rm -rf "$tmpdir"
-      return 1
+      command rm -rf "$tmpdir"; return 1
     fi
     type=diff
-    git diff HEAD > "$contentdir/changes.patch"
+    local patch
+    patch=$(git diff HEAD)
   fi
 
-  echo "$type" > "$contentdir/type"
-  git rev-parse --abbrev-ref HEAD 2>/dev/null > "$contentdir/branch"
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)
+  printf 'GSEND_TYPE=%s\nGSEND_BRANCH=%s\nGSEND_PATCH_FOLLOWS\n' "$type" "$branch" > "$bundle"
+  printf '%s' "$patch" >> "$bundle"
 
-  COPYFILE_DISABLE=1 tar czf "$archive" --no-xattrs -C "$contentdir" .
-  croc send "$archive"
+  croc send "$bundle"
   command rm -rf "$tmpdir"
 }
 
@@ -174,19 +175,20 @@ grecv() {
   command -v croc &>/dev/null || { echo "grecv: croc not found"; return 1; }
   command -v git  &>/dev/null || { echo "grecv: git not found";  return 1; }
 
-  local gitdir type branch patch_cache type_cache
+  local gitdir patch_cache type_cache
   gitdir=$(git rev-parse --git-dir 2>/dev/null) || { echo "grecv: not in a git repo"; return 1; }
   patch_cache="$gitdir/GRECV_PATCH"
   type_cache="$gitdir/GRECV_TYPE"
 
   _grecv_apply() {
-    type=$(< "$type_cache")
-    echo "Applying $type..."
-    case $type in
+    local apply_type
+    apply_type=$(< "$type_cache")
+    echo "Applying $apply_type..."
+    case $apply_type in
       commits) git am    "$patch_cache" ;;
       diff)    git apply "$patch_cache" ;;
       *)
-        echo "grecv: unknown transfer type '$type'"
+        echo "grecv: unknown transfer type '$apply_type'"
         return 1
         ;;
     esac && { command rm -f "$patch_cache" "$type_cache"; echo "grecv: done, cache cleaned up"; }
@@ -198,30 +200,25 @@ grecv() {
     return
   fi
 
-  local tmpdir extractdir archive
+  local tmpdir bundle type branch
   tmpdir=$(mktemp -d)
-  extractdir="$tmpdir/contents"
-  mkdir "$extractdir"
 
   (cd "$tmpdir" && croc "$@") || { command rm -rf "$tmpdir"; return 1; }
 
-  archive=$(find "$tmpdir" -maxdepth 1 -name "*.tar.gz" | head -1)
-  [[ -f $archive ]] || {
-    echo "grecv: no archive found after receive"
+  bundle=$(find "$tmpdir" -maxdepth 1 -name "gsend.bundle" | head -1)
+  [[ -f $bundle ]] || {
+    echo "grecv: no gsend.bundle found after receive"
     command rm -rf "$tmpdir"
     return 1
   }
 
-  tar xzf "$archive" -C "$extractdir"
-
-  type=$(< "$extractdir/type")
-  branch=$(< "$extractdir/branch" 2>/dev/null) || branch=unknown
-
-  cp "$extractdir/changes.patch" "$patch_cache"
+  type=$(grep -m1 '^GSEND_TYPE=' "$bundle" | cut -d= -f2)
+  branch=$(grep -m1 '^GSEND_BRANCH=' "$bundle" | cut -d= -f2)
+  sed '1,/^GSEND_PATCH_FOLLOWS$/d' "$bundle" > "$patch_cache"
   echo "$type" > "$type_cache"
-  echo "Applying $type from branch '$branch'..."
 
   command rm -rf "$tmpdir"
+  echo "Applying $type from branch '$branch'..."
   _grecv_apply
 }
 
