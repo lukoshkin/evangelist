@@ -137,6 +137,10 @@ gsend() {
 
   if [[ -n $1 ]]; then
     type=commits
+    if ! git rev-list "$1" -- &>/dev/null; then
+      echo "gsend: invalid range '$1' — check that all refs exist (local branches: $(git branch --format='%(refname:short)' | tr '\n' ' '))"
+      command rm -rf "$tmpdir"; return 1
+    fi
     git format-patch "$1" --stdout > "$contentdir/changes.patch" || {
       command rm -rf "$tmpdir"; return 1
     }
@@ -161,7 +165,7 @@ gsend() {
   echo "$type" > "$contentdir/type"
   git rev-parse --abbrev-ref HEAD 2>/dev/null > "$contentdir/branch"
 
-  COPYFILE_DISABLE=1 tar czf "$archive" -C "$contentdir" .
+  COPYFILE_DISABLE=1 tar czf "$archive" --no-xattrs -C "$contentdir" .
   croc send "$archive"
   command rm -rf "$tmpdir"
 }
@@ -170,12 +174,36 @@ grecv() {
   command -v croc &>/dev/null || { echo "grecv: croc not found"; return 1; }
   command -v git  &>/dev/null || { echo "grecv: git not found";  return 1; }
 
-  local tmpdir extractdir archive type branch
+  local gitdir type branch patch_cache type_cache
+  gitdir=$(git rev-parse --git-dir 2>/dev/null) || { echo "grecv: not in a git repo"; return 1; }
+  patch_cache="$gitdir/GRECV_PATCH"
+  type_cache="$gitdir/GRECV_TYPE"
+
+  _grecv_apply() {
+    type=$(< "$type_cache")
+    echo "Applying $type..."
+    case $type in
+      commits) git am    "$patch_cache" ;;
+      diff)    git apply "$patch_cache" ;;
+      *)
+        echo "grecv: unknown transfer type '$type'"
+        return 1
+        ;;
+    esac && { command rm -f "$patch_cache" "$type_cache"; echo "grecv: done, cache cleaned up"; }
+  }
+
+  if [[ $1 == --resume ]]; then
+    [[ -f $patch_cache ]] || { echo "grecv: no saved patch at $patch_cache"; return 1; }
+    _grecv_apply
+    return
+  fi
+
+  local tmpdir extractdir archive
   tmpdir=$(mktemp -d)
   extractdir="$tmpdir/contents"
   mkdir "$extractdir"
 
-  (cd "$tmpdir" && croc receive "$@") || { command rm -rf "$tmpdir"; return 1; }
+  (cd "$tmpdir" && croc "$@") || { command rm -rf "$tmpdir"; return 1; }
 
   archive=$(find "$tmpdir" -maxdepth 1 -name "*.tar.gz" | head -1)
   [[ -f $archive ]] || {
@@ -188,19 +216,13 @@ grecv() {
 
   type=$(< "$extractdir/type")
   branch=$(< "$extractdir/branch" 2>/dev/null) || branch=unknown
+
+  cp "$extractdir/changes.patch" "$patch_cache"
+  echo "$type" > "$type_cache"
   echo "Applying $type from branch '$branch'..."
 
-  case $type in
-    commits) git am    "$extractdir/changes.patch" ;;
-    diff)    git apply "$extractdir/changes.patch" ;;
-    *)
-      echo "grecv: unknown transfer type '$type'"
-      command rm -rf "$tmpdir"
-      return 1
-      ;;
-  esac
-
   command rm -rf "$tmpdir"
+  _grecv_apply
 }
 
 ## Open the last file closed:
