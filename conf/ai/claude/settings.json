@@ -31,7 +31,7 @@
       "mcp__plugin_context7_context7__query-docs"
     ],
     "deny": [
-      "Write(/home/lukoshkin/.claude/scripts/**)",
+      "Write(~/.claude/scripts/**)",
       "Bash(curl:*)",
       "Bash(rm -rf:*)",
       "Read(./.env)",
@@ -80,6 +80,9 @@
     "mode": "hold"
   },
   "editorMode": "vim",
+  "vimInsertModeRemaps": {
+    "jj": "<Esc>"
+  },
   "skipAutoPermissionPrompt": true,
   "voiceEnabled": true
 }
