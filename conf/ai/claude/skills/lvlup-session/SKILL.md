@@ -32,6 +32,15 @@ After resolving the project root, set it as `PROJECT_DIR` for all subsequent ste
 
 ---
 
+## Slug derivation
+
+Used by both `bootstrap` step 8b and `session` step 5b whenever a skill name
+needs to become a `learning-corpus` topic `<slug>`: lowercase the skill name,
+replace runs of non-alphanumeric characters with `-`, then trim leading and
+trailing `-`.
+
+---
+
 ## COMMAND: `bootstrap`
 
 ### 1 — Collect the plan URL
@@ -123,21 +132,6 @@ Skills with empty `targetLevelProficiency` are normal — they are handled at se
 }
 ```
 
-### 7b — Scaffold the learning-corpus notes corpus
-
-Call the `learning-corpus` skill's operations directly (same project root as
-`PROJECT_DIR`):
-
-1. `init <PROJECT_DIR> --title "<plan_title>" --source "LevelUp plan: <levelup_url>"`
-2. For each gap skill, in `priority.skill_order` order: `add-topic
-   <PROJECT_DIR> <slug> "<skill name>" --body "<skillDescription>"`, where
-   `<slug>` is the skill name lowercased, non-alphanumeric runs replaced with
-   `-`, trimmed of leading/trailing `-`.
-
-This is additive and idempotent (per `learning-corpus`'s own `add-topic`
-idempotency rule) — safe to call on every bootstrap, including re-bootstrap;
-already-registered topics are left untouched.
-
 ### 8 — Write `config.json`
 
 Write `<PROJECT_DIR>/config.json`. Fetch the plan title from the page title or from the plan page heading (the `h1`/`h2` with "Career plan" and the title name). Use the `userId` value returned internally by the script (extract it from the response or make a separate preflight call: `query { user(payload: { externalId: "<id>" }) { id } }`).
@@ -168,6 +162,23 @@ Write `<PROJECT_DIR>/config.json`. Fetch the plan title from the page title or f
   }
 }
 ```
+
+### 8b — Scaffold the learning-corpus notes corpus
+
+Runs after step 8 so `config.json`'s `plan_title` and `priority.skill_order`
+are already on disk to read from.
+
+Call the `learning-corpus` skill's operations directly (same project root as
+`PROJECT_DIR`):
+
+1. `init <PROJECT_DIR> --title "<plan_title>" --source "LevelUp plan: <levelup_url>"`
+2. For each gap skill, in `priority.skill_order` order: `add-topic
+   <PROJECT_DIR> <slug> "<skill name>" --body "<skillDescription>"`, where
+   `<slug>` is derived per **Slug derivation** above.
+
+This is additive and idempotent (per `learning-corpus`'s own `add-topic`
+idempotency rule) — safe to call on every bootstrap, including re-bootstrap;
+already-registered topics are left untouched.
 
 ### 9 — Write registry entry
 
@@ -298,7 +309,8 @@ human-readable corpus (it is a parallel, independent artifact from
    `pending`, `in_progress` → `in_progress`, `needs_review` → `needs_review`,
    `completed` → `done`.
 3. Call `update-topic <PROJECT_DIR> <slug> "<rendered markdown>" --status
-   <mapped status>`, then `render <PROJECT_DIR>`.
+   <mapped status>`, then `render <PROJECT_DIR>`, where `<slug>` is derived
+   per **Slug derivation** above.
 
 ### 6 — Suggest next skill
 

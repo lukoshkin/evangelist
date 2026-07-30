@@ -72,22 +72,51 @@ def build_index() -> None:
     block_dirs = sorted(d for d in ROOT.glob("[0-9][0-9]-*") if d.is_dir())
 
     title = index_md[0].lstrip("# ").strip()
-    budget_line = next((l for l in index_md if l.startswith("**Total budget:**")), "")
+    legend_idx = next((i for i, l in enumerate(index_md) if l.startswith("Legend:")), None)
+    source_line = ""
+    if legend_idx is not None:
+        source_line = next((l for l in index_md[legend_idx + 1:] if l.strip()), "")
 
-    body = [f"<h1>{title}</h1>", f'<p class="meta">{md_inline_to_html(budget_line)}</p>']
+    body = [f"<h1>{title}</h1>"]
+    if source_line:
+        body.append(f'<p class="meta">{md_inline_to_html(source_line)}</p>')
+    meta_len = len(body)
 
     total_done = total_topics = 0
     block_idx = -1
-    current_items: list[str] = []
+    current_items: list[tuple[str, str, str, str]] = []
 
-    def flush_block(header_line: str | None) -> None:
-        nonlocal current_items
-        if header_line is not None:
-            body.append(header_line)
-        if current_items:
-            body.append('<ul class="topics">')
-            body.extend(current_items)
-            body.append("</ul>")
+    def flush_block(header: tuple[str, str] | None) -> None:
+        nonlocal current_items, block_idx
+        if header is None:
+            current_items = []
+            return
+        num, block_title = header
+        if len(current_items) == 1:
+            # One-level shape (learning-corpus add-topic): a single bullet
+            # carries the same title/link as the header would. Render it
+            # once, as the header line, instead of duplicating it below.
+            status, item_title, html_path, _rest = current_items[0]
+            cls = STATUS_CLASS.get(status, "")
+            body.append(
+                f'<div class="block-header {cls}"><h2>{num}. '
+                f'<a href="{html_path}">{item_title}</a></h2></div>'
+            )
+        else:
+            # Two-level shape (socratic-learning): header introduces
+            # multiple distinct topic bullets underneath it.
+            overview_link = ""
+            if block_idx < len(block_dirs) and (block_dirs[block_idx] / "00-overview.html").exists():
+                rel = f"{block_dirs[block_idx].name}/00-overview.html"
+                overview_link = f'<a class="overview-link" href="{rel}">overview</a>'
+            body.append(f'<div class="block-header"><h2>{num}. {block_title}</h2>{overview_link}</div>')
+            if current_items:
+                body.append('<ul class="topics">')
+                for status, item_title, html_path, rest in current_items:
+                    cls = STATUS_CLASS.get(status, "")
+                    budget_span = f' <span class="budget">{md_inline_to_html(rest)}</span>' if rest else ""
+                    body.append(f'<li class="{cls}"><a href="{html_path}">{item_title}</a>{budget_span}</li>')
+                body.append("</ul>")
         current_items = []
 
     pending_header = None
@@ -96,12 +125,7 @@ def build_index() -> None:
         if m:
             flush_block(pending_header)
             block_idx += 1
-            overview_link = ""
-            if block_idx < len(block_dirs) and (block_dirs[block_idx] / "00-overview.html").exists():
-                rel = f"{block_dirs[block_idx].name}/00-overview.html"
-                overview_link = f'<a class="overview-link" href="{rel}">overview</a>'
-            num, rest = m.group(1), md_inline_to_html(m.group(2))
-            pending_header = f'<div class="block-header"><h2>{num}. {rest}</h2>{overview_link}</div>'
+            pending_header = (m.group(1), md_inline_to_html(m.group(2)))
             continue
 
         m = TOPIC_LINE.match(line)
@@ -110,12 +134,8 @@ def build_index() -> None:
             total_topics += 1
             if status == "✅":
                 total_done += 1
-            cls = STATUS_CLASS.get(status, "")
             html_path = re.sub(r"\.md$", ".html", path)
-            current_items.append(
-                f'<li class="{cls}"><a href="{html_path}">{title_text}</a> '
-                f'<span class="budget">{md_inline_to_html(rest)}</span></li>'
-            )
+            current_items.append((status, title_text, html_path, rest))
 
     flush_block(pending_header)
 
@@ -124,7 +144,7 @@ def build_index() -> None:
         f'<p class="meta">{total_done}/{total_topics} topics complete</p>'
         f'<div class="progress-bar"><div class="progress-fill" style="width:{pct}%"></div></div>'
     )
-    body.insert(2, progress)
+    body.insert(meta_len, progress)
 
     session_link = '<p><a href="_session.html">Last session</a></p>' if (ROOT / "_session.html").exists() else ""
     body.append(session_link)
