@@ -115,4 +115,9 @@ Otherwise:
 
 ## OPERATION: `render <corpus-root>`
 
-<!-- filled in Task 5 -->
+1. Check `which pandoc`. If not found: report "pandoc not installed — markdown
+   files are up to date, but HTML rendering was skipped. Install pandoc to
+   enable the HTML viewer." and stop (this is not an error — markdown is
+   always the source of truth and is already current).
+2. Otherwise run `python3 build_viewer.py` with cwd = `<corpus-root>`.
+3. Report: "Rendered. Open `<corpus-root>/index.html`."
