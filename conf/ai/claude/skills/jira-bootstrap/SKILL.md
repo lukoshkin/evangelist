@@ -101,8 +101,81 @@ Summarize the ticket in 3–5 sentences: what needs to be done, acceptance
 criteria extracted from the description or comments, any blockers or open
 questions visible in the thread. Make this the working frame for the session.
 
-### Step 5: Proceed
+### Step 5: Create a working branch
 
-With context loaded and attachments downloaded (unless --light), proceed
-with the work the ticket describes. If `--delegate` was passed, hand off
-`docs/context/<ticket-id>.md` to the target agent.
+Skip this step entirely if the working directory is not a git repo:
+
+```bash
+git rev-parse --is-inside-work-tree 2>/dev/null
+```
+
+Otherwise, before writing any code:
+
+1. **Check for uncommitted changes.** Run `git status`. If the tree is
+   dirty with work unrelated to this ticket, stop and ask the user how to
+   proceed (stash, commit, or abandon) rather than switching branches out
+   from under it.
+
+2. **Check whether a branch for this ticket already exists** (resuming
+   prior work):
+   ```bash
+   git branch -a | grep -i <ticket-id>
+   ```
+   If found, check it out and skip to step 5 below instead of creating a
+   new one.
+
+3. **Determine the base branch.** Usually `main`/`master`, sometimes a
+   `develop` branch. If it's not obvious from the repo or the ticket,
+   check the remote's default:
+   ```bash
+   git remote show origin | sed -n '/HEAD branch/s/.*: //p'
+   ```
+   If still ambiguous, ask the user rather than guessing — branching from
+   the wrong base is expensive to undo later.
+
+4. **Make sure the base branch is up to date** before branching from it:
+   ```bash
+   git fetch origin <base-branch>
+   git checkout <base-branch>
+   git pull --ff-only
+   ```
+   If `--ff-only` fails (local base has diverged), stop and ask the user
+   how to reconcile — don't force or rebase on their behalf.
+
+5. **Determine the branch naming convention.** Look for one already in
+   use before inventing something new:
+   ```bash
+   git branch -a --sort=-committerdate | head -20
+   ```
+   Also check `CONTRIBUTING.md` or the project's `CLAUDE.md` for an
+   explicit convention. If a pattern is visible (e.g.
+   `feature/<ticket-id>-<slug>`, `<username>/<ticket-id>-<slug>`,
+   `<ticket-id>/<slug>`), match it exactly, including case and separators.
+
+   If no convention is discernible, default to:
+   ```
+   <ticket-id>-<kebab-case-slug-of-summary>
+   ```
+   e.g. `PROJ-123-fix-login-timeout`. Keep the ticket ID casing as Jira
+   reports it; derive the slug from the ticket summary, truncated to a
+   few words.
+
+6. **Create the branch from the up-to-date base:**
+   ```bash
+   git checkout -b <branch-name> <base-branch>
+   ```
+   If the user wants workspace isolation (or the project conventionally
+   uses worktrees), use the `using-git-worktrees` skill instead of a bare
+   `checkout -b` — it handles worktree placement and setup.
+
+7. **Confirm before proceeding**: report the branch name and its base to
+   the user, e.g. "Created `PROJ-123-fix-login-timeout` from `main`
+   (up to date)." so a wrong base is caught immediately rather than
+   discovered at merge time.
+
+### Step 6: Proceed
+
+With context loaded, attachments downloaded (unless --light), and a
+branch checked out, proceed with the work the ticket describes. If
+`--delegate` was passed, hand off `docs/context/<ticket-id>.md` (and the
+branch name) to the target agent.
