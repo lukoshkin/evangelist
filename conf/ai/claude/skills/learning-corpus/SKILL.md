@@ -41,7 +41,29 @@ registration order.
 
 ## OPERATION: `init <corpus-root> [--title <title>] [--source <line>]`
 
-<!-- filled in Task 2 -->
+**Idempotent** — if `<corpus-root>/INDEX.md` already exists, do nothing and
+report "Corpus already initialized at `<corpus-root>`."
+
+Otherwise:
+
+1. Create `<corpus-root>/_assets/` if it doesn't exist.
+2. Copy this skill's `assets/style.css` to `<corpus-root>/_assets/style.css`.
+3. Copy this skill's `assets/build_viewer.py` to `<corpus-root>/build_viewer.py`.
+4. Write `<corpus-root>/_session.md`:
+   ```
+   # Session Log
+
+   (no sessions yet)
+   ```
+5. Write `<corpus-root>/INDEX.md`:
+   ```
+   # <title, or "Learning Corpus" if not given>
+
+   Legend: 📋 pending · ⏳ in progress · ⚠️ needs review · ✅ done
+
+   <the --source line verbatim, if given, else omit this line>
+   ```
+6. Report: "Initialized corpus at `<corpus-root>`."
 
 ## OPERATION: `add-topic <corpus-root> <slug> <title> [--body <markdown>]`
 
