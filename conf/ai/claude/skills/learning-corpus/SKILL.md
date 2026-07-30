@@ -67,7 +67,29 @@ Otherwise:
 
 ## OPERATION: `add-topic <corpus-root> <slug> <title> [--body <markdown>]`
 
-<!-- filled in Task 3 -->
+**Idempotent per slug** — if a folder matching `<corpus-root>/[0-9][0-9]-<slug>`
+already exists, do nothing and report "Topic `<slug>` already registered."
+
+Otherwise:
+
+1. Count existing `## ` headers in `<corpus-root>/INDEX.md` → `count`. Next
+   number `N = count + 1`, zero-padded to 2 digits (`01`, `02`, ... `10`, ...).
+2. Create `<corpus-root>/<N>-<slug>/`.
+3. Write `<corpus-root>/<N>-<slug>/00-overview.md`:
+   ```
+   # <title>
+
+   **Status:** 📋 pending
+
+   <--body content verbatim, or nothing if not given>
+   ```
+4. Append to `<corpus-root>/INDEX.md`:
+   ```
+
+   ## <N (unpadded)>. <title>
+   - 📋 [<title>](<N>-<slug>/00-overview.md)
+   ```
+5. Report: "Added topic `<slug>` as `<N>-<slug>/`."
 
 ## OPERATION: `update-topic <corpus-root> <slug> <content> --status <pending|in_progress|needs_review|done>`
 
