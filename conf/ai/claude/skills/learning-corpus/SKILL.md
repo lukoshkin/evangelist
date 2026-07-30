@@ -93,7 +93,25 @@ Otherwise:
 
 ## OPERATION: `update-topic <corpus-root> <slug> <content> --status <pending|in_progress|needs_review|done>`
 
-<!-- filled in Task 4 -->
+1. Glob `<corpus-root>/[0-9][0-9]-<slug>`. If no match, error: "Topic `<slug>`
+   not registered — call add-topic first." Do not create it implicitly.
+2. Read the existing `00-overview.md`'s first line (`# <title>`) to preserve
+   the title exactly as `add-topic` set it.
+3. Map `--status` to its icon: `pending`→📋, `in_progress`→⏳,
+   `needs_review`→⚠️, `done`→✅.
+4. Overwrite `00-overview.md`:
+   ```
+   # <title, preserved from step 2>
+
+   **Status:** <icon> <status>
+
+   <content, verbatim>
+   ```
+5. In `INDEX.md`, find the bullet line whose path is
+   `<N>-<slug>/00-overview.md` and replace its leading icon (the first
+   `\S+` token after `- `) with the new icon from step 3. Leave the rest of
+   the line (title, trailing text) untouched.
+6. Report: "Updated topic `<slug>` (status: `<status>`)."
 
 ## OPERATION: `render <corpus-root>`
 
