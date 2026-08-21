@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "root=$(git rev-parse --show-toplevel 2>/dev/null || echo \"$PWD\"); { [[ -f \"$root/ruff.toml\" || -f \"$root/.ruff.toml\" ]] || { [[ -f \"$root/pyproject.toml\" ]] && grep -q \"^\\[tool\\.ruff\" \"$root/pyproject.toml\"; }; } && { target=\".\"; [[ -d \"$root/src\" ]] && target=\"src\"; cd \"$root\" && uv tool run ruff check --fix \"$target\" && uv tool run ruff format \"$target\"; } || true",
+            "command": "root=$(git rev-parse --show-toplevel 2>/dev/null || echo \"$PWD\"); { [[ -f \"$root/ruff.toml\" || -f \"$root/.ruff.toml\" ]] || { [[ -f \"$root/pyproject.toml\" ]] && grep -q \"^\\[tool\\.ruff\" \"$root/pyproject.toml\"; }; } && { target=\".\"; [[ -d \"$root/src\" ]] && target=\"src\"; cd \"$root\" && uv tool run ruff check --fix \"$target\" >&2 && uv tool run ruff format \"$target\" >&2; } || true; printf '{}\\n'",
             "timeout": 120
           }
         ]
@@ -73,7 +73,6 @@
     "telegram@claude-plugins-official": true,
     "playwright@claude-plugins-official": true
   },
-  "effortLevel": "xhigh",
   "plansDirectory": "./docs/plans",
   "voice": {
     "enabled": true,
