@@ -1,6 +1,16 @@
 local log = require "plenary.log"
-local registry = require "mason-registry"
+local registry_ok, registry = pcall(require, "mason-registry")
 local M = {}
+
+local function warn_unavailable()
+  vim.notify(
+    "mason-registry is not available (mason.nvim isn't loaded"
+      .. (vim.g.nvim_minimal and "; NVIM_MINIMAL=1 is set" or "")
+      .. ")",
+    vim.log.levels.WARN,
+    { title = "mason-reinstall" }
+  )
+end
 
 local function packages_failed_from_log()
   local log_path = vim.fn.stdpath "state" .. "/mason.log"
@@ -66,6 +76,14 @@ end
 --- @return table summary
 local function install_names(names, skip_if_installed, callback)
   local summary = { total = #names, installed = 0, skipped = 0, failed = 0, missing = 0 }
+  if not registry_ok then
+    warn_unavailable()
+    summary.missing = #names
+    if callback then
+      callback(summary)
+    end
+    return summary
+  end
   if #names == 0 then
     if callback then
       callback(summary)

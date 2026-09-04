@@ -4,7 +4,7 @@ return {
     "nvim-treesitter/nvim-treesitter",
     branch = "main",
     lazy = false,
-    build = ":TSUpdate",
+    build = not vim.g.nvim_minimal and ":TSUpdate" or false,
     dependencies = {
       "nvim-treesitter/nvim-treesitter-textobjects",
       "JoosepAlviste/nvim-ts-context-commentstring",
@@ -14,19 +14,21 @@ return {
       ts.setup {
         install_dir = vim.fn.stdpath "data" .. "/site",
       }
-      ts.install {
-        "c",
-        "rust",
-        "python",
-        "javascript",
-        "bash",
-        "yaml",
-        "vim",
-        "lua",
-        "dockerfile",
-        "make",
-        "cmake",
-      }
+      if not vim.g.nvim_minimal then
+        ts.install {
+          "c",
+          "rust",
+          "python",
+          "javascript",
+          "bash",
+          "yaml",
+          "vim",
+          "lua",
+          "dockerfile",
+          "make",
+          "cmake",
+        }
+      end
       local highlight_disable = {
         NvimTree = true,
         latex = true,

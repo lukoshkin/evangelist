@@ -467,6 +467,9 @@ v() {
 
 alias vv='V_CMD=\\fo v'
 alias vg='V_CMD=\\fg v'
+## Skip Mason, treesitter parser auto-install, UI chrome, and Copilot for a
+## lighter startup on weak/remote hosts (see 'user.env' in the nvim config).
+alias vim-min='NVIM_MINIMAL=1 vim'
 alias _vimrc="vim $XDG_CONFIG_HOME/nvim/init.*"
 alias vimrc="vim $EVANGELIST/custom/custom.vim"
 

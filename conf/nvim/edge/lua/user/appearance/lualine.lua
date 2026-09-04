@@ -76,6 +76,7 @@ end
 return {
   "nvim-lualine/lualine.nvim",
   event = "VeryLazy",
+  cond = not vim.g.nvim_minimal,
   dependencies = "nvim-tree/nvim-web-devicons",
   linters = linters,
   opts = {

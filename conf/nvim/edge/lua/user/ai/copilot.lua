@@ -1,6 +1,7 @@
 return {
   "zbirenbaum/copilot.lua",
   event = "VeryLazy",
+  cond = not vim.g.nvim_minimal,
   config = function(_, opts)
     require("copilot").setup(opts)
     --- Suppress annoying Copilot limit messages

@@ -2,11 +2,13 @@ return {
   {
     "williamboman/mason.nvim",
     event = "VeryLazy",
+    cond = not vim.g.nvim_minimal,
     config = true,
   },
   {
     "williamboman/mason-lspconfig.nvim",
     event = "VeryLazy",
+    cond = not vim.g.nvim_minimal,
     opts = {
       automatic_installation = true,
       ensure_installed = {
@@ -26,6 +28,7 @@ return {
   {
     "rshkarin/mason-nvim-lint",
     event = "VeryLazy",
+    cond = not vim.g.nvim_minimal,
     dependencies = {
       "williamboman/mason.nvim",
       "mfussenegger/nvim-lint",
@@ -45,6 +48,7 @@ return {
   {
     "zapling/mason-conform.nvim",
     event = "VeryLazy",
+    cond = not vim.g.nvim_minimal,
     dependencies = {
       "williamboman/mason.nvim",
       "stevearc/conform.nvim",

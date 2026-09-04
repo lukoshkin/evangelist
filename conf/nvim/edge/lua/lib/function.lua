@@ -19,7 +19,10 @@ function M.toggle_mouse()
 end
 
 function M.dismiss_distractive()
-  require("notify").dismiss()
+  local ok, notify = pcall(require, "notify")
+  if ok then
+    notify.dismiss()
+  end
   vim.cmd ":nohlsearch | echo"
 end
 

@@ -1,6 +1,7 @@
 return {
   "rcarriga/nvim-notify",
   event = "VeryLazy",
+  cond = not vim.g.nvim_minimal,
   config = function()
     local notify = require "notify"
 

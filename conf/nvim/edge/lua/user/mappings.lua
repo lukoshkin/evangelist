@@ -248,7 +248,10 @@ api.nvim_create_user_command(
   end,
   {
     nargs = 1,
-    complete = "customlist,v:lua.require'mason-registry'.get_all_package_names",
+    complete = function()
+      local ok, registry = pcall(require, "mason-registry")
+      return ok and registry.get_all_package_names() or {}
+    end,
     desc = "Force reinstall a specific Mason package regardless of its current state",
   }
 )
