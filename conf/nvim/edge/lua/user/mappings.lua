@@ -229,7 +229,27 @@ api.nvim_create_user_command(
   "MasonReinstall",
   function() require("user.mason-reinstall").reinstall_from_logfile() end,
   {
-    desc = "Reinstall Mason packages that failed due to lock files",
+    desc = "Reinstall Mason packages that failed to install",
+  }
+)
+
+api.nvim_create_user_command(
+  "MasonInstallMissing",
+  function() require("user.mason-reinstall").reinstall_from_evnfile() end,
+  {
+    desc = "Install packages from $EVANGELIST/mason-packages.txt that aren't installed yet",
+  }
+)
+
+api.nvim_create_user_command(
+  "MasonForcePackage",
+  function(opts)
+    require("user.mason-reinstall").force_reinstall_package(opts.args)
+  end,
+  {
+    nargs = 1,
+    complete = "customlist,v:lua.require'mason-registry'.get_all_package_names",
+    desc = "Force reinstall a specific Mason package regardless of its current state",
   }
 )
 

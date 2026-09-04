@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Mason Force Reinstall Script
-# This script allows you to force reinstall Mason packages from the command line
+# Mason Reinstall Script
+# CLI wrapper around user.mason-reinstall (conf/nvim/edge/lua/user/mason-reinstall.lua)
 
 set -euo pipefail
 
@@ -9,6 +9,7 @@ set -euo pipefail
 EVANGELIST_DIR="${EVANGELIST:-$HOME/.config/evangelist}"
 MASON_PACKAGES_FILE="$EVANGELIST_DIR/mason-packages.txt"
 LOG_FILE="$HOME/.local/share/nvim/mason-reinstall.log"
+WAIT_TIMEOUT_MS=600000 # 10 minutes
 
 # Colors for output
 RED='\033[0;31m'
@@ -51,44 +52,72 @@ check_packages_file() {
     fi
 }
 
-# Function to force reinstall all packages
-force_reinstall_all() {
-    log_info "Starting force reinstall of all Mason packages..."
-    log_info "Using packages file: $MASON_PACKAGES_FILE"
+# Runs a Lua call against user.mason-reinstall in headless Neovim, waits for
+# the (async) install(s) it triggers to finish via a completion callback,
+# prints a "total=.. installed=.. skipped=.. failed=.. missing=.." summary
+# line, and exits 3 if anything failed or was missing from the registry.
+#
+# $1: a Lua expression that, given a local `mason_reinstall` module and a
+#     `on_summary` callback, triggers the install(s), e.g.:
+#     "mason_reinstall.reinstall_from_logfile(on_summary)"
+run_headless_lua() {
+    local lua_call="$1"
 
-    # Use Neovim to execute the Lua function
     nvim --headless --noplugin -u NONE -c "
         lua << EOF
-        -- Setup basic mason configuration
         vim.opt.rtp:prepend(vim.fn.stdpath('data') .. '/lazy/mason.nvim')
         vim.opt.rtp:prepend(vim.fn.stdpath('config') .. '/lua')
 
-        -- Load and execute the force reinstall function
-        local success, result = pcall(function()
-            local mason_reinstall = require('user.mason-reinstall')
-            return mason_reinstall.evn_force_reinstall()
+        local mason_reinstall = require('user.mason-reinstall')
+        local done, summary = false, nil
+        local function on_summary(s)
+            summary = s
+            done = true
+        end
+
+        local call_ok, call_err = pcall(function()
+            $lua_call
         end)
 
-        if success then
-            print('Force reinstall completed successfully')
-            print('Total: ' .. result.total)
-            print('Success: ' .. result.success)
-            print('Failed: ' .. result.failed)
-            print('Skipped: ' .. result.skipped)
-        else
-            print('Error during force reinstall: ' .. tostring(result))
+        if not call_ok then
+            print('Error: ' .. tostring(call_err))
             vim.cmd('cquit 1')
+        end
+
+        vim.wait($WAIT_TIMEOUT_MS, function() return done end, 200)
+
+        if not done then
+            print('Timed out waiting for installs to finish')
+            vim.cmd('cquit 1')
+        end
+
+        print(string.format(
+            'total=%d installed=%d skipped=%d failed=%d missing=%d',
+            summary.total, summary.installed, summary.skipped, summary.failed, summary.missing
+        ))
+
+        if summary.failed > 0 or summary.missing > 0 then
+            vim.cmd('cquit 3')
         end
 
         vim.cmd('qall')
 EOF
     " 2>&1 | tee -a "$LOG_FILE"
 
-    local exit_code=${PIPESTATUS[0]}
+    return "${PIPESTATUS[0]}"
+}
+
+# Function to reinstall packages that failed to install
+reinstall_failed() {
+    log_info "Reinstalling Mason packages that previously failed to install..."
+
+    local exit_code=0
+    run_headless_lua "mason_reinstall.reinstall_from_logfile(on_summary)" || exit_code=$?
+
     if [[ $exit_code -eq 0 ]]; then
-        log_success "Force reinstall completed successfully"
+        log_success "Reinstall of failed packages completed"
     else
-        log_error "Force reinstall failed with exit code $exit_code"
+        log_error "Reinstall of failed packages finished with exit code $exit_code"
         return $exit_code
     fi
 }
@@ -98,38 +127,13 @@ install_missing() {
     log_info "Installing missing Mason packages..."
     log_info "Using packages file: $MASON_PACKAGES_FILE"
 
-    nvim --headless --noplugin -u NONE -c "
-        lua << EOF
-        -- Setup basic mason configuration
-        vim.opt.rtp:prepend(vim.fn.stdpath('data') .. '/lazy/mason.nvim')
-        vim.opt.rtp:prepend(vim.fn.stdpath('config') .. '/lua')
+    local exit_code=0
+    run_headless_lua "mason_reinstall.reinstall_from_evnfile(on_summary)" || exit_code=$?
 
-        -- Load and execute the install missing function
-        local success, result = pcall(function()
-            local mason_reinstall = require('user.mason-reinstall')
-            return mason_reinstall.evn_install_missing()
-        end)
-
-        if success then
-            print('Install missing completed successfully')
-            print('Total: ' .. result.total)
-            print('Success: ' .. result.success)
-            print('Failed: ' .. result.failed)
-            print('Skipped: ' .. result.skipped)
-        else
-            print('Error during install missing: ' .. tostring(result))
-            vim.cmd('cquit 1')
-        end
-
-        vim.cmd('qall')
-EOF
-    " 2>&1 | tee -a "$LOG_FILE"
-
-    local exit_code=${PIPESTATUS[0]}
     if [[ $exit_code -eq 0 ]]; then
         log_success "Install missing completed successfully"
     else
-        log_error "Install missing failed with exit code $exit_code"
+        log_error "Install missing finished with exit code $exit_code"
         return $exit_code
     fi
 }
@@ -139,34 +143,13 @@ force_reinstall_package() {
     local package_name="$1"
     log_info "Force reinstalling package: $package_name"
 
-    nvim --headless --noplugin -u NONE -c "
-        lua << EOF
-        -- Setup basic mason configuration
-        vim.opt.rtp:prepend(vim.fn.stdpath('data') .. '/lazy/mason.nvim')
-        vim.opt.rtp:prepend(vim.fn.stdpath('config') .. '/lua')
+    local exit_code=0
+    run_headless_lua "mason_reinstall.force_reinstall_package('$package_name', on_summary)" || exit_code=$?
 
-        -- Load and execute the force reinstall function for specific package
-        local success, result = pcall(function()
-            local mason_reinstall = require('user.mason-reinstall')
-            return mason_reinstall.force_reinstall_package('$package_name')
-        end)
-
-        if success then
-            print('Package $package_name force reinstall initiated successfully')
-        else
-            print('Error during package $package_name force reinstall: ' .. tostring(result))
-            vim.cmd('cquit 1')
-        end
-
-        vim.cmd('qall')
-EOF
-    " 2>&1 | tee -a "$LOG_FILE"
-
-    local exit_code=${PIPESTATUS[0]}
     if [[ $exit_code -eq 0 ]]; then
-        log_success "Package $package_name force reinstall initiated successfully"
+        log_success "Package $package_name force reinstall completed"
     else
-        log_error "Package $package_name force reinstall failed with exit code $exit_code"
+        log_error "Package $package_name force reinstall finished with exit code $exit_code"
         return $exit_code
     fi
 }
@@ -188,24 +171,20 @@ show_packages() {
 # Function to show usage
 show_usage() {
     cat <<EOF
-Mason Force Reinstall Script
+Mason Reinstall Script
 
 USAGE:
     $(basename "$0") [COMMAND] [OPTIONS]
 
 COMMANDS:
-    force-all              Force reinstall all packages from mason-packages.txt
-    install-missing        Install only missing packages (skip already installed)
-    force-package <name>   Force reinstall a specific package
-    list                   Show configured packages
-    help                   Show this help message
-
-OPTIONS:
-    -v, --verbose         Enable verbose logging
-    -q, --quiet          Suppress output (errors only)
+    reinstall-failed        Reinstall packages that mason.log recorded as failed
+    install-missing         Install packages from mason-packages.txt that aren't installed yet
+    force-package <name>    Force reinstall a specific package regardless of its current state
+    list                    Show configured packages
+    help                    Show this help message
 
 EXAMPLES:
-    $(basename "$0") force-all
+    $(basename "$0") reinstall-failed
     $(basename "$0") install-missing
     $(basename "$0") force-package lua-language-server
     $(basename "$0") list
@@ -216,6 +195,11 @@ FILES:
 
 ENVIRONMENT VARIABLES:
     EVANGELIST           Path to evangelist directory (default: \$HOME/.config/evangelist)
+
+EXIT CODES:
+    0: Success
+    1: General error (missing dependencies, file not found, timed out waiting for installs)
+    3: One or more packages failed to install or weren't found in the registry
 EOF
 }
 
@@ -228,10 +212,9 @@ main() {
     echo "=== Mason Reinstall Script Started at $(date) ===" >>"$LOG_FILE"
 
     case "${1:-help}" in
-    "force-all" | "--force-all" | "-f")
+    "reinstall-failed" | "--reinstall-failed" | "-r")
         check_nvim
-        check_packages_file
-        force_reinstall_all
+        reinstall_failed
         ;;
     "install-missing" | "--install-missing" | "-i")
         check_nvim
