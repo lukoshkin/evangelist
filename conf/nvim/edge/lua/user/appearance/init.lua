@@ -2,22 +2,26 @@ return {
   {
     "lukas-reineke/indent-blankline.nvim",
     event = "VeryLazy",
+    cond = not vim.g.nvim_minimal,
     config = true,
     main = "ibl",
   },
   {
     "lukoshkin/highlight-whitespace",
     event = { "BufRead", "BufNewFile" },
+    cond = not vim.g.nvim_minimal,
     config = true,
   },
   {
     "SmiteshP/nvim-navic",
     dependencies = "neovim/nvim-lspconfig",
     event = "LspAttach",
+    cond = not vim.g.nvim_minimal,
   },
   {
     "lukoshkin/unititle.nvim",
     event = "VeryLazy",
+    cond = not vim.g.nvim_minimal,
   },
   {
     "unblevable/quick-scope",

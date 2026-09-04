@@ -117,6 +117,7 @@ return {
   --- May require manual installation with "sudo"
   build = "npm install -g mcp-hub@latest",
   event = "VeryLazy",
+  cond = not vim.g.nvim_minimal,
   opts = {
     extensions = {
       -- avante = { make_slash_commands = true },

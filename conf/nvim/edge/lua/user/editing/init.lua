@@ -36,6 +36,7 @@ return {
   {
     "lukoshkin/tidy.nvim",
     event = { "BufRead", "BufNewFile" },
+    cond = not vim.g.nvim_minimal,
     config = true,
   },
   {

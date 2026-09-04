@@ -3,6 +3,7 @@ return {
     "folke/snacks.nvim",
     priority = 1000,
     lazy = false,
+    cond = not vim.g.nvim_minimal,
     opts = {
       input = {
         keys = {
@@ -65,6 +66,7 @@ return {
   {
     "mrjones2014/smart-splits.nvim",
     lazy = false,
+    cond = not vim.g.nvim_minimal,
     build = "./kitty/install-kittens.bash",
     keys = {
       { "<C-w><C-j>", function() require("smart-splits").move_cursor_down() end },
