@@ -132,16 +132,35 @@ all at once.
 
 ## Subagent Workflow
 
-When dispatched as a subagent by `superpowers:subagent-driven-development` in a
-**Python project**, run the project's code-quality skill (e.g.
-`ensure-code-quality` if the project's CLAUDE.md defines one) on every Python
-file you touched before reporting the task complete. If the project defines no
-such skill, run `ruff check` and `mypy` on the touched files. This applies to
-all subagent types (general-purpose, Explore, feature-dev, code-simplifier,
-etc.) when they make code changes.
+A full quality pass (all `ensure-code-quality` rules + ruff/mypy) on every
+single subagent's diff is expensive token-for-token relative to what it
+catches — most of its rules are style/consistency, not bug-catching, and the
+tool invocations are a fixed cost paid once per task regardless of diff size.
+Split the cadence instead:
 
-The check belongs in the subagent's context — that's where the changes
-happened and where the file list is freshest. Do not defer it to the parent.
+**Per-task subagents (inline, no tool call).** When dispatched as a
+subagent — by `superpowers:subagent-driven-development` or any other
+`Agent()` call — that edits **Python** code, apply these three rules as you
+write, without invoking the quality skill or any linter: no speculative
+`.get()` on dicts (rule 1), no spurious `| None` on model fields (rule 2), no
+shallow try-except (rule 4). All three guard the same failure shape — a
+contract promises a value is present and defensive code pretends it might
+not be — and catch real bugs; the rest of `ensure-code-quality`'s rules are
+consistency/style and can wait. Do not run ruff, mypy, or the full skill from
+inside a per-task subagent; do not defer even this inline pass to the parent
+— the subagent's own context is where the diff and rationale are freshest.
+
+**Orchestrating session (batched, tool-backed).** The session dispatching
+the subagents — not a subagent itself — runs the full pass (all
+`ensure-code-quality` rules, or its project-specific equivalent, plus
+`code_checks`'s ruff format/check + mypy) over the accumulated diff at:
+- every big chunk of related work: roughly every 3–5 completed tasks, or a
+  plan's own phase boundary if the plan defines one, whichever comes first;
+- mandatorily, once more, immediately before the final whole-branch review.
+
+If the project defines no `ensure-code-quality`-equivalent skill, the
+orchestrator runs bare `ruff check` and `mypy` at the same checkpoints
+instead.
 
 **Model selection for dispatched agents**: Never delegate Python work to
 Haiku. Use Sonnet or Opus only. Haiku produces plausible-looking but subtly
