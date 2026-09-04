@@ -13,6 +13,16 @@ lsp.config("*", { capabilities = caps })
 
 --- Basedpyright for Python LSP (completion, navigation, rename, code actions)
 lsp.config.basedpyright = {
+  --- Under NVIM_MINIMAL, mason.nvim never runs, so it never prepends its
+  --- bin dir onto $PATH -- point straight at the binary Mason already
+  --- installed there instead of touching $PATH (which would make every
+  --- other mason-installed server reachable too, not just this one).
+  cmd = vim.g.nvim_minimal_pylsp
+      and {
+        vim.fn.stdpath "data" .. "/mason/bin/basedpyright-langserver",
+        "--stdio",
+      }
+    or nil,
   settings = {
     basedpyright = {
       analysis = {

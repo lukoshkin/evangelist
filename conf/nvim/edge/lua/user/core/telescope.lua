@@ -197,7 +197,9 @@ return {
 
     telescope.load_extension "project"
     telescope.load_extension "neoclip"
-    telescope.load_extension "notify"
+    --- 'notify' comes from nvim-notify, which is excluded under
+    --- NVIM_MINIMAL -- pcall so telescope's own config doesn't abort.
+    pcall(telescope.load_extension, "notify")
     telescope.load_extension "undo"
   end,
 }
