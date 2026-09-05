@@ -28,6 +28,8 @@ return {
           "make",
           "cmake",
         }
+      elseif vim.g.nvim_minimal_pyts then
+        ts.install { "python" }
       end
       local highlight_disable = {
         NvimTree = true,
