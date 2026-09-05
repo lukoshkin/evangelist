@@ -29,7 +29,26 @@ return {
           "cmake",
         }
       elseif vim.g.nvim_minimal_pyts then
-        ts.install { "python" }
+        if vim.fn.executable "tree-sitter" == 0 then
+          vim.notify(
+            "NVIM_MINIMAL_PYTS is set but the `tree-sitter` CLI is missing"
+              .. " from $PATH, so installing the Python parser here would"
+              .. " just fail with a cryptic ENOENT. Options (review each"
+              .. " before running -- don't pipe/copy blindly):\n"
+              .. "  1) Install the tree-sitter CLI, e.g. from"
+              .. " https://github.com/tree-sitter/tree-sitter/releases"
+              .. " (verify the asset matches this host's OS/arch first),"
+              .. " then reopen a Python file.\n"
+              .. "  2) Copy an already-built parser.so from a host with a"
+              .. " matching architecture to:\n"
+              .. "     "
+              .. vim.fn.stdpath "data"
+              .. "/site/parser/python.so",
+            vim.log.levels.WARN
+          )
+        else
+          ts.install { "python" }
+        end
       end
       local highlight_disable = {
         NvimTree = true,
